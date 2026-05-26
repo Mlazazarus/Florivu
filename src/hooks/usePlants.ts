@@ -8,7 +8,10 @@ export function usePlants(userId: string | undefined) {
   const [error,        setError]        = useState<string | null>(null);
 
   const fetchObservations = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setObservations([]);
+      return;
+    }
     setLoading(true); setError(null);
     try {
       const { data, error } = await supabase

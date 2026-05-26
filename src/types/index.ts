@@ -18,6 +18,8 @@ export interface PlantNetResponse {
   remainingIdentificationRequests: number;
 }
 
+export type OrganType = 'flower' | 'leaf' | 'fruit' | 'bark' | 'auto';
+
 export interface Observation {
   id: string;
   user_id: string;
@@ -48,16 +50,3 @@ export interface TaxonomyFamily {
   family: string;
   genera: GenusGroup[];
 }
-
-export type RootStackParamList = {
-  Auth: undefined;
-  Main: undefined;
-  Result:      { results: PlantNetResponse; photoUri: string };
-  PlantDetail: { observation: Observation };
-};
-
-export type MainTabParamList = {
-  Home:       undefined;
-  Collection: undefined;
-  Taxonomy:   undefined;
-};

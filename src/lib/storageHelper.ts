@@ -1,22 +1,25 @@
-import * as FileSystem from 'expo-file-system';
-import { decode } from 'base64-arraybuffer';
 import { supabase } from './supabase';
 
 const BUCKET = 'plant-photos';
 
-export async function uploadPlantPhoto(userId: string, localUri: string): Promise<string> {
-  const ext      = localUri.split('.').pop() ?? 'jpg';
-  const fileName = `${userId}/${Date.now()}.${ext}`;
+function sanitizeFileName(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '-');
+}
 
-  const base64 = await FileSystem.readAsStringAsync(localUri, {
-    encoding: FileSystem.EncodingType.Base64,
+export async function uploadPlantPhoto(userId: string, file: File): Promise<string> {
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const fileName = `${userId}/${Date.now()}-${sanitizeFileName(file.name)}`;
+
+  const { error } = await supabase.storage.from(BUCKET).upload(fileName, file, {
+    cacheControl: '3600',
+    contentType: file.type || `image/${ext}`,
+    upsert: false,
   });
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, decode(base64), { contentType: `image/${ext}`, upsert: false });
+  if (error) {
+    throw error;
+  }
 
-  if (error) throw error;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
   return data.publicUrl;
 }

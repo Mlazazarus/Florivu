@@ -17,6 +17,7 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -26,7 +27,9 @@ export function useAuth() {
     if (error) throw error;
   };
   const signUp  = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const options =
+      typeof window === 'undefined' ? undefined : { emailRedirectTo: window.location.origin };
+    const { error } = await supabase.auth.signUp({ email, password, options });
     if (error) throw error;
   };
   const signOut = async () => {
