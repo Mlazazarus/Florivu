@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.tools/
+.env
+.expo-start.log
+.expo-start.err.log
+.expo-server.log
+.expo-server.err.log
