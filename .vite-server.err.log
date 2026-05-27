@@ -1,0 +1,10 @@
+[PlantNetProxy] Proxy request failed. Error: PlantNet upstream request timed out after 5205ms.
+    at ClientRequest.<anonymous> (file:///C:/Users/poaop/Documents/Scripts/PlantDex/vite.config.ts.timestamp-1779851525641-6d4bd55510d49.mjs:68:11)
+    at Object.onceWrapper (node:events:638:28)
+    at ClientRequest.emit (node:events:524:28)
+    at TLSSocket.emitRequestTimeout (node:_http_client:849:9)
+    at Object.onceWrapper (node:events:638:28)
+    at TLSSocket.emit (node:events:536:35)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)

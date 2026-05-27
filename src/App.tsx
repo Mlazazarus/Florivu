@@ -4,17 +4,20 @@ import AuthPanel from './components/AuthPanel';
 import DebugLogPanel from './components/DebugLogPanel';
 import ObservationCard from './components/ObservationCard';
 import ObservationModal from './components/ObservationModal';
+import ProfilePanel, { ProfilePanelSaveValues } from './components/ProfilePanel';
 import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
 import { usePlants } from './hooks/usePlants';
+import { useProfile } from './hooks/useProfile';
+import { deleteAccount } from './lib/accountApi';
 import { IMAGE_FILE_ACCEPT, prepareImageFile } from './lib/imageFile';
 import { resolveObservationLocation } from './lib/observationLocation';
 import { identifyPlant } from './lib/plantApi';
-import { uploadPlantPhoto } from './lib/storageHelper';
+import { uploadPlantPhoto, uploadProfilePhoto } from './lib/storageHelper';
 import { formatError, logError, logInfo } from './lib/logger';
 import { Observation, OrganType, PlantNetResponse, PlantNetResult } from './types';
 
-type AppTab = 'identify' | 'collection' | 'taxonomy' | 'settings';
+type AppTab = 'identify' | 'collection' | 'taxonomy' | 'profile' | 'settings';
 
 type BannerState =
   | { tone: 'error' | 'success'; message: string }
@@ -44,6 +47,15 @@ export default function App() {
     getTaxonomyTree,
     storageMode: collectionMode,
   } = usePlants(user?.id);
+  const {
+    profile,
+    loading: profileLoading,
+    saving: profileSaving,
+    error: profileError,
+    storageMode: profileMode,
+    fetchProfile,
+    saveProfile,
+  } = useProfile(user?.id, user?.email);
 
   const [activeTab, setActiveTab] = useState<AppTab>('identify');
   const [email, setEmail] = useState('');
@@ -61,6 +73,7 @@ export default function App() {
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [taxonomyFocusScientificName, setTaxonomyFocusScientificName] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -80,12 +93,28 @@ export default function App() {
   }, [fetchObservations, user?.id]);
 
   useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    void fetchProfile();
+  }, [fetchProfile, user?.id]);
+
+  useEffect(() => {
     if (!error) {
       return;
     }
 
     setBanner({ tone: 'error', message: error });
   }, [error]);
+
+  useEffect(() => {
+    if (!profileError) {
+      return;
+    }
+
+    setBanner({ tone: 'error', message: profileError });
+  }, [profileError]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -129,7 +158,8 @@ export default function App() {
     observations.map((observation) => observation.species || observation.scientific_name),
   ).size;
   const taxonomy = getTaxonomyTree();
-  const userLabel = user?.email ?? 'Account';
+  const userEmail = user?.email ?? 'Account';
+  const userLabel = profile?.display_name?.trim() || userEmail;
   const userInitial = userLabel.charAt(0).toUpperCase();
 
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -172,6 +202,76 @@ export default function App() {
   const openSettings = () => {
     setActiveTab('settings');
     setAccountMenuOpen(false);
+  };
+
+  const openProfile = () => {
+    setActiveTab('profile');
+    setAccountMenuOpen(false);
+  };
+
+  const handleSaveProfile = async (values: ProfilePanelSaveValues) => {
+    if (!user) {
+      setBanner({ tone: 'error', message: 'Sign in before editing your profile.' });
+      return;
+    }
+
+    setBanner(null);
+
+    try {
+      let nextProfilePhotoUrl = values.profilePhotoUrl;
+
+      if (values.profilePhotoFile) {
+        const uploadResult = await uploadProfilePhoto(user.id, values.profilePhotoFile);
+        nextProfilePhotoUrl = uploadResult.photoUrl;
+      }
+
+      await saveProfile({
+        display_name: values.displayName,
+        profile_photo_url: nextProfilePhotoUrl,
+        home_zip_code: values.homeZipCode,
+        facebook_url: values.facebookUrl,
+        is_public: values.isPublic,
+      });
+
+      setBanner({
+        tone: 'success',
+        message: 'Profile updated.',
+      });
+    } catch (saveError) {
+      setBanner({ tone: 'error', message: formatError(saveError) });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Delete your PlantDex account and associated data? This cannot be undone.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingAccount(true);
+    setBanner(null);
+
+    try {
+      await deleteAccount(user.id);
+      setBanner({ tone: 'success', message: 'Account deleted.' });
+
+      try {
+        await signOut();
+      } catch (signOutAfterDeleteError) {
+        logError('App', 'Sign out after account deletion failed.', signOutAfterDeleteError);
+      }
+    } catch (deleteError) {
+      setBanner({ tone: 'error', message: formatError(deleteError) });
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -450,16 +550,29 @@ export default function App() {
             onClick={() => setAccountMenuOpen((value) => !value)}
             type="button"
           >
-            <span className="account-trigger__avatar">{userInitial}</span>
+            <span className="account-trigger__avatar">
+              {profile?.profile_photo_url ? (
+                <img
+                  alt={userLabel}
+                  className="account-trigger__avatar-image"
+                  src={profile.profile_photo_url}
+                />
+              ) : (
+                userInitial
+              )}
+            </span>
             <span className="account-trigger__label">
               <strong>{userLabel}</strong>
-              <span>Account</span>
+              <span>{userEmail}</span>
             </span>
             <span className="account-trigger__chevron">{accountMenuOpen ? '^' : 'v'}</span>
           </button>
 
           {accountMenuOpen ? (
             <div className="account-dropdown" role="menu">
+              <button className="account-dropdown__item" onClick={openProfile} type="button">
+                Profile
+              </button>
               <button className="account-dropdown__item" onClick={openSettings} type="button">
                 Settings
               </button>
@@ -727,6 +840,38 @@ export default function App() {
                 </div>
               </div>
             </div>
+          </section>
+        ) : null}
+
+        {activeTab === 'profile' ? (
+          <section className="panel-stack">
+            {profileLoading && !profile ? (
+              <div className="panel">
+                <div className="empty-state">
+                  <strong>Loading profile...</strong>
+                </div>
+              </div>
+            ) : profile && user ? (
+              <ProfilePanel
+                deleteBusy={deletingAccount}
+                observationCount={observations.length}
+                observations={observations}
+                profile={profile}
+                saveBusy={profileSaving}
+                storageMode={profileMode}
+                uniqueSpeciesCount={uniqueSpeciesCount}
+                user={user}
+                onDeleteAccount={handleDeleteAccount}
+                onSave={handleSaveProfile}
+              />
+            ) : (
+              <div className="panel">
+                <div className="empty-state">
+                  <strong>Profile unavailable.</strong>
+                  <span>Sign in again to load profile settings.</span>
+                </div>
+              </div>
+            )}
           </section>
         ) : null}
       </main>

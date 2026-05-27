@@ -68,11 +68,16 @@ export interface UploadedPhotoResult {
   storageMode: 'bucket' | 'inline';
 }
 
-export async function uploadPlantPhoto(userId: string, file: File): Promise<UploadedPhotoResult> {
+async function uploadPublicImage(
+  userId: string,
+  file: File,
+  folder: 'plants' | 'profiles',
+): Promise<UploadedPhotoResult> {
   const ext = file.name.split('.').pop() ?? 'jpg';
-  const fileName = `${userId}/${Date.now()}-${sanitizeFileName(file.name)}`;
-  logInfo('Storage', 'Uploading plant photo.', {
+  const fileName = `${userId}/${folder}/${Date.now()}-${sanitizeFileName(file.name)}`;
+  logInfo('Storage', 'Uploading public image.', {
     userId,
+    folder,
     fileName,
     fileType: file.type,
     fileSize: file.size,
@@ -89,16 +94,28 @@ export async function uploadPlantPhoto(userId: string, file: File): Promise<Uplo
       logWarn('Storage', 'Bucket missing. Falling back to inline image storage.', error);
       const photoUrl = await createInlinePhotoDataUrl(file);
       logInfo('Storage', 'Inline image fallback prepared.', {
+        folder,
         length: photoUrl.length,
       });
       return { photoUrl, storageMode: 'inline' };
     }
 
-    logError('Storage', 'Photo upload failed.', error);
+    logError('Storage', 'Public image upload failed.', error);
     throw error;
   }
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
-  logInfo('Storage', 'Photo upload complete.', { publicUrl: data.publicUrl });
+  logInfo('Storage', 'Public image upload complete.', {
+    folder,
+    publicUrl: data.publicUrl,
+  });
   return { photoUrl: data.publicUrl, storageMode: 'bucket' };
+}
+
+export async function uploadPlantPhoto(userId: string, file: File): Promise<UploadedPhotoResult> {
+  return uploadPublicImage(userId, file, 'plants');
+}
+
+export async function uploadProfilePhoto(userId: string, file: File): Promise<UploadedPhotoResult> {
+  return uploadPublicImage(userId, file, 'profiles');
 }

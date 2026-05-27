@@ -20,6 +20,17 @@ export interface PlantNetResponse {
 
 export type OrganType = 'flower' | 'leaf' | 'fruit' | 'bark' | 'auto';
 
+export interface UserProfile {
+  user_id: string;
+  display_name: string;
+  profile_photo_url?: string | null;
+  home_zip_code?: string | null;
+  facebook_url?: string | null;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Observation {
   id: string;
   user_id: string;

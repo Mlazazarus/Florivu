@@ -111,3 +111,60 @@ Re-optimizing dependencies because vite config has changed
 [2m8:15:16 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
 [2m8:15:26 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
 [LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:09:56 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'images.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 138902,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'images.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 138902,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 990 }
+[ReverseGeocode] Reverse geocoding complete. {
+  latitude: 32.90630686039557,
+  longitude: -117.16663512867603,
+  zipCode: '92126'
+}
+[LocalObservationStore] Stored observation. {
+  id: '9a227049-6261-4176-9d44-04918fed820e',
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  species: 'Phoenix canariensis'
+}
+[2m9:19:16 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[2m9:21:04 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:21:04 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[2m9:22:01 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+Re-optimizing dependencies because vite config has changed
+[2m9:22:02 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[2m9:24:35 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[2m9:25:32 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m9:25:44 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m9:26:03 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[2m9:26:29 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ProfilePanel.tsx[22m
+[2m9:26:48 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:27:03 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:27:03 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
