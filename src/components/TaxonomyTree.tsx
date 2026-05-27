@@ -1,14 +1,32 @@
+import { useEffect, useRef } from 'react';
 import { Observation, TaxonomyFamily } from '../types';
 
 interface TaxonomyTreeProps {
+  activeScientificName: string | null;
   families: TaxonomyFamily[];
   onSelectObservation: (observation: Observation) => void;
 }
 
 export default function TaxonomyTree({
+  activeScientificName,
   families,
   onSelectObservation,
 }: TaxonomyTreeProps) {
+  const speciesCardRefs = useRef(new Map<string, HTMLButtonElement | null>());
+
+  useEffect(() => {
+    if (!activeScientificName) {
+      return;
+    }
+
+    const activeCard = speciesCardRefs.current.get(activeScientificName);
+    activeCard?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [activeScientificName, families]);
+
   return (
     <div className="taxonomy-map">
       <div className="taxonomy-map__hint">
@@ -52,12 +70,20 @@ export default function TaxonomyTree({
                         <div className="taxonomy-species-rail">
                           {genus.species.map((species) => {
                             const leadObservation = species.observations[0];
+                            const isActive = species.scientificName === activeScientificName;
 
                             return (
                               <button
-                                className="taxonomy-species-card taxonomy-species-card--filled"
+                                className={
+                                  isActive
+                                    ? 'taxonomy-species-card taxonomy-species-card--filled taxonomy-species-card--active'
+                                    : 'taxonomy-species-card taxonomy-species-card--filled'
+                                }
                                 key={species.scientificName}
                                 onClick={() => onSelectObservation(leadObservation)}
+                                ref={(node) => {
+                                  speciesCardRefs.current.set(species.scientificName, node);
+                                }}
                                 type="button"
                               >
                                 <div className="taxonomy-species-card__image-wrap">

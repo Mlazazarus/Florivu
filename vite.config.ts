@@ -18,6 +18,7 @@ interface LocalObservationRecord {
   species: string;
   confidence: number;
   date_found: string;
+  zip_code?: string | null;
   notes?: string;
   created_at: string;
 }
@@ -171,6 +172,93 @@ function plantNetProxyPlugin(mode: string): Plugin {
   };
 }
 
+function reverseGeocodePlugin(): Plugin {
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (req.method !== 'GET' || requestUrl.pathname !== '/api/reverse-geocode') {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    const latitude = Number(requestUrl.searchParams.get('latitude'));
+    const longitude = Number(requestUrl.searchParams.get('longitude'));
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ message: 'latitude and longitude query parameters are required.' }));
+      return;
+    }
+
+    try {
+      const upstreamUrl = new URL('https://nominatim.openstreetmap.org/reverse');
+      upstreamUrl.searchParams.set('format', 'jsonv2');
+      upstreamUrl.searchParams.set('lat', latitude.toString());
+      upstreamUrl.searchParams.set('lon', longitude.toString());
+      upstreamUrl.searchParams.set('zoom', '18');
+      upstreamUrl.searchParams.set('addressdetails', '1');
+
+      const upstreamResponse = await fetch(upstreamUrl, {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'PlantDex/1.0 (local reverse geocoding)',
+        },
+      });
+      const responseText = await upstreamResponse.text();
+
+      if (!upstreamResponse.ok) {
+        console.error('[ReverseGeocode] Upstream request failed.', {
+          status: upstreamResponse.status,
+          body: responseText,
+        });
+        res.statusCode = 502;
+        res.end(JSON.stringify({ message: 'Reverse geocoding failed.' }));
+        return;
+      }
+
+      const payload = JSON.parse(responseText) as { address?: { postcode?: unknown } };
+      const zipCode =
+        typeof payload.address?.postcode === 'string' && payload.address.postcode.trim()
+          ? payload.address.postcode.trim()
+          : null;
+
+      console.info('[ReverseGeocode] Reverse geocoding complete.', {
+        latitude,
+        longitude,
+        zipCode,
+      });
+
+      res.statusCode = 200;
+      res.end(JSON.stringify({ zipCode }));
+    } catch (error) {
+      console.error('[ReverseGeocode] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message:
+            error instanceof Error ? error.message : 'Unexpected reverse geocoding failure.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'reverse-geocode-proxy',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
 function localObservationStorePlugin(): Plugin {
   const storePath = resolve(process.cwd(), '.local-data', 'observations.json');
 
@@ -299,7 +387,7 @@ function localObservationStorePlugin(): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), plantNetProxyPlugin(mode), localObservationStorePlugin()],
+  plugins: [react(), plantNetProxyPlugin(mode), reverseGeocodePlugin(), localObservationStorePlugin()],
   envPrefix: ['VITE_', 'EXPO_PUBLIC_'],
   server: {
     host: '0.0.0.0',

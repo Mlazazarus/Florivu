@@ -31,6 +31,7 @@ export interface Observation {
   species: string;
   confidence: number;
   date_found: string;
+  zip_code?: string | null;
   notes?: string;
   created_at: string;
 }

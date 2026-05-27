@@ -86,3 +86,28 @@
   userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
   species: 'Tulipa agenensis'
 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m7:12:19 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m7:12:23 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m8:02:47 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:02:54 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m8:12:05 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+Re-optimizing dependencies because vite config has changed
+[2m8:12:05 PM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:13:24 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:13:52 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:14:01 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:14:17 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m8:14:29 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationModal.tsx[22m
+[2m8:14:39 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/TaxonomyTree.tsx[22m
+[2m8:14:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m8:15:16 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m8:15:26 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }

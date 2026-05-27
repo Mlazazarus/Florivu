@@ -8,12 +8,14 @@ interface ObservationModalProps {
   observation: Observation;
   onClose: () => void;
   onDelete: (observation: Observation) => void;
+  onOpenTaxonomy: (observation: Observation) => void;
 }
 
 export default function ObservationModal({
   observation,
   onClose,
   onDelete,
+  onOpenTaxonomy,
 }: ObservationModalProps) {
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
@@ -35,7 +37,9 @@ export default function ObservationModal({
         <div className="modal-content">
           <p className="eyebrow">Saved observation</p>
           <h2>{observation.common_name}</h2>
-          <p className="latin-name">{observation.scientific_name}</p>
+          <button className="latin-link latin-name" onClick={() => onOpenTaxonomy(observation)} type="button">
+            {observation.scientific_name}
+          </button>
 
           <div className="detail-grid">
             <div>
@@ -57,6 +61,10 @@ export default function ObservationModal({
             <div>
               <span>Species</span>
               <strong>{observation.species}</strong>
+            </div>
+            <div>
+              <span>ZIP code</span>
+              <strong>{observation.zip_code ?? 'Not captured'}</strong>
             </div>
             <div>
               <span>Recorded</span>

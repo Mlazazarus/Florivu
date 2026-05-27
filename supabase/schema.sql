@@ -11,9 +11,12 @@ create table if not exists observations (
   species         text not null,
   confidence      numeric not null,
   date_found      timestamptz not null default now(),
+  zip_code        text,
   notes           text,
   created_at      timestamptz not null default now()
 );
+
+alter table observations add column if not exists zip_code text;
 
 alter table observations enable row level security;
 

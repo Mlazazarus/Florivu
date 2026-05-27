@@ -20,6 +20,15 @@ function shouldUseLocalObservationFallback(error: unknown) {
   );
 }
 
+function isZipCodeColumnMissing(error: unknown) {
+  const message =
+    error && typeof error === 'object' && 'message' in error
+      ? String((error as { message: unknown }).message).toLowerCase()
+      : String(error ?? '').toLowerCase();
+
+  return message.includes('zip_code') && (message.includes('column') || message.includes('schema cache'));
+}
+
 export function usePlants(userId: string | undefined) {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,11 +91,25 @@ export function usePlants(userId: string | undefined) {
       commonName: observation.common_name,
     });
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('observations')
       .insert(observation)
       .select()
       .single();
+
+    if (error && observation.zip_code && isZipCodeColumnMissing(error)) {
+      const { zip_code: _zipCode, ...observationWithoutZipCode } = observation;
+      logInfo('Plants', 'Observations table does not support zip_code yet. Retrying without ZIP code.', {
+        userId: observation.user_id,
+        species: observation.species,
+      });
+
+      ({ data, error } = await supabase
+        .from('observations')
+        .insert(observationWithoutZipCode)
+        .select()
+        .single());
+    }
 
     if (error) {
       if (userId && shouldUseLocalObservationFallback(error)) {

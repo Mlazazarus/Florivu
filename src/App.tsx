@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import plantDexLogo from '../plantdexLogo.png';
 import AuthPanel from './components/AuthPanel';
 import DebugLogPanel from './components/DebugLogPanel';
 import ObservationCard from './components/ObservationCard';
@@ -7,6 +8,7 @@ import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
 import { usePlants } from './hooks/usePlants';
 import { IMAGE_FILE_ACCEPT, prepareImageFile } from './lib/imageFile';
+import { resolveObservationLocation } from './lib/observationLocation';
 import { identifyPlant } from './lib/plantApi';
 import { uploadPlantPhoto } from './lib/storageHelper';
 import { formatError, logError, logInfo } from './lib/logger';
@@ -49,6 +51,7 @@ export default function App() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
   const [banner, setBanner] = useState<BannerState>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [organ, setOrgan] = useState<OrganType>('auto');
@@ -56,6 +59,7 @@ export default function App() {
   const [results, setResults] = useState<PlantNetResponse | null>(null);
   const [savingSpecies, setSavingSpecies] = useState<string | null>(null);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
+  const [taxonomyFocusScientificName, setTaxonomyFocusScientificName] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const libraryInputRef = useRef<HTMLInputElement>(null);
@@ -193,6 +197,7 @@ export default function App() {
         preparedFileSize: preparedFile.size,
       });
 
+      setOriginalFile(nextFile);
       setSelectedFile(preparedFile);
       setResults(null);
 
@@ -210,6 +215,7 @@ export default function App() {
 
   const clearSelection = () => {
     logInfo('App', 'Cleared selected file and results.');
+    setOriginalFile(null);
     setSelectedFile(null);
     setResults(null);
     setSavingSpecies(null);
@@ -265,7 +271,10 @@ export default function App() {
     });
 
     try {
-      const uploadResult = await uploadPlantPhoto(user.id, selectedFile);
+      const [locationResult, uploadResult] = await Promise.all([
+        resolveObservationLocation(originalFile ?? selectedFile),
+        uploadPlantPhoto(user.id, selectedFile),
+      ]);
       const savedObservation = await saveObservation({
         user_id: user.id,
         photo_url: uploadResult.photoUrl,
@@ -276,6 +285,7 @@ export default function App() {
         species: result.species.scientificNameWithoutAuthor,
         confidence: result.score,
         date_found: new Date().toISOString(),
+        zip_code: locationResult.zipCode,
       });
 
       setActiveTab('collection');
@@ -284,8 +294,8 @@ export default function App() {
         tone: 'success',
         message:
           uploadResult.storageMode === 'inline'
-            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.`
-            : `${savedObservation.common_name} was added to your collection.`,
+            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.${savedObservation.zip_code ? ` Tagged with ZIP ${savedObservation.zip_code}.` : ''}`
+            : `${savedObservation.common_name} was added to your collection.${savedObservation.zip_code ? ` Tagged with ZIP ${savedObservation.zip_code}.` : ''}`,
       });
     } catch (saveError) {
       logError('App', 'Save result failed.', saveError);
@@ -293,6 +303,12 @@ export default function App() {
     } finally {
       setSavingSpecies(null);
     }
+  };
+
+  const openObservationTaxonomy = (observation: Observation) => {
+    setTaxonomyFocusScientificName(observation.scientific_name);
+    setSelectedObservation(null);
+    setActiveTab('taxonomy');
   };
 
   const handleDeleteObservation = async (observation: Observation) => {
@@ -381,8 +397,8 @@ export default function App() {
       <div className="app-backdrop" />
       <header className="site-header">
         <div className="header-brand">
-          <p className="eyebrow">PlantDex</p>
-          <h1>Web field journal</h1>
+          <img alt="PlantDex" className="header-brand__logo" src={plantDexLogo} />
+          <h1 className="header-brand__wordmark">plantdex</h1>
         </div>
 
         <div className="header-stats" aria-label="Collection stats">
@@ -642,6 +658,7 @@ export default function App() {
                       observation={observation}
                       onDelete={handleDeleteObservation}
                       onOpen={setSelectedObservation}
+                      onOpenTaxonomy={openObservationTaxonomy}
                     />
                   ))}
                 </div>
@@ -666,7 +683,11 @@ export default function App() {
                   <span>Save an identified plant and the families, genera, and species will appear here.</span>
                 </div>
               ) : (
-                <TaxonomyTree families={taxonomy} onSelectObservation={setSelectedObservation} />
+                <TaxonomyTree
+                  activeScientificName={taxonomyFocusScientificName}
+                  families={taxonomy}
+                  onSelectObservation={setSelectedObservation}
+                />
               )}
             </div>
           </section>
@@ -715,6 +736,7 @@ export default function App() {
           observation={selectedObservation}
           onClose={() => setSelectedObservation(null)}
           onDelete={handleDeleteObservation}
+          onOpenTaxonomy={openObservationTaxonomy}
         />
       ) : null}
       <DebugLogPanel />
