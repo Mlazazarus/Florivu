@@ -6,3 +6,6 @@ dist/
 .expo-start.err.log
 .expo-server.log
 .expo-server.err.log
+.vite-server.log
+.vite-server.err.log
+.local-data/

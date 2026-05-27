@@ -1,15 +1,18 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import AuthPanel from './components/AuthPanel';
+import DebugLogPanel from './components/DebugLogPanel';
 import ObservationCard from './components/ObservationCard';
 import ObservationModal from './components/ObservationModal';
 import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
 import { usePlants } from './hooks/usePlants';
+import { IMAGE_FILE_ACCEPT, prepareImageFile } from './lib/imageFile';
 import { identifyPlant } from './lib/plantApi';
 import { uploadPlantPhoto } from './lib/storageHelper';
+import { formatError, logError, logInfo } from './lib/logger';
 import { Observation, OrganType, PlantNetResponse, PlantNetResult } from './types';
 
-type AppTab = 'identify' | 'collection' | 'taxonomy';
+type AppTab = 'identify' | 'collection' | 'taxonomy' | 'settings';
 
 type BannerState =
   | { tone: 'error' | 'success'; message: string }
@@ -27,14 +30,6 @@ function resultLabel(result: PlantNetResult) {
   return result.species.commonNames[0] ?? result.species.scientificNameWithoutAuthor;
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Something went wrong.';
-}
-
 export default function App() {
   const { session, user, loading, signIn, signOut, signUp } = useAuth();
   const {
@@ -45,6 +40,7 @@ export default function App() {
     saveObservation,
     deleteObservation,
     getTaxonomyTree,
+    storageMode: collectionMode,
   } = usePlants(user?.id);
 
   const [activeTab, setActiveTab] = useState<AppTab>('identify');
@@ -60,9 +56,16 @@ export default function App() {
   const [results, setResults] = useState<PlantNetResponse | null>(null);
   const [savingSpecies, setSavingSpecies] = useState<string | null>(null);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const identifyInFlightRef = useRef(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    logInfo('App', 'PlantDex web app mounted.', { origin: window.location.origin });
+  }, []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -92,10 +95,38 @@ export default function App() {
     return () => URL.revokeObjectURL(nextPreviewUrl);
   }, [selectedFile]);
 
+  useEffect(() => {
+    if (!accountMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [accountMenuOpen]);
+
   const uniqueSpeciesCount = new Set(
     observations.map((observation) => observation.species || observation.scientific_name),
   ).size;
   const taxonomy = getTaxonomyTree();
+  const userLabel = user?.email ?? 'Account';
+  const userInitial = userLabel.charAt(0).toUpperCase();
 
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -119,7 +150,7 @@ export default function App() {
         await signIn(email.trim(), password);
       }
     } catch (submitError) {
-      setBanner({ tone: 'error', message: getErrorMessage(submitError) });
+      setBanner({ tone: 'error', message: formatError(submitError) });
     } finally {
       setAuthBusy(false);
     }
@@ -130,37 +161,78 @@ export default function App() {
       await signOut();
       setBanner({ tone: 'success', message: 'Signed out.' });
     } catch (signOutError) {
-      setBanner({ tone: 'error', message: getErrorMessage(signOutError) });
+      setBanner({ tone: 'error', message: formatError(signOutError) });
     }
   };
 
-  const handleFileSelection = (event: ChangeEvent<HTMLInputElement>) => {
+  const openSettings = () => {
+    setActiveTab('settings');
+    setAccountMenuOpen(false);
+  };
+
+  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
     const nextFile = event.target.files?.[0];
     event.target.value = '';
 
     if (!nextFile) {
+      logInfo('App', 'File selection canceled.');
       return;
     }
 
-    setSelectedFile(nextFile);
-    setResults(null);
     setBanner(null);
+
+    try {
+      const preparedFile = await prepareImageFile(nextFile);
+
+      logInfo('App', 'File selected for identification.', {
+        originalFileName: nextFile.name,
+        originalFileType: nextFile.type,
+        originalFileSize: nextFile.size,
+        preparedFileName: preparedFile.name,
+        preparedFileType: preparedFile.type,
+        preparedFileSize: preparedFile.size,
+      });
+
+      setSelectedFile(preparedFile);
+      setResults(null);
+
+      if (preparedFile.name !== nextFile.name || preparedFile.type !== nextFile.type) {
+        setBanner({
+          tone: 'success',
+          message: `${nextFile.name} was converted to JPEG for compatibility.`,
+        });
+      }
+    } catch (selectionError) {
+      logError('App', 'File preparation failed.', selectionError);
+      setBanner({ tone: 'error', message: formatError(selectionError) });
+    }
   };
 
   const clearSelection = () => {
+    logInfo('App', 'Cleared selected file and results.');
     setSelectedFile(null);
     setResults(null);
     setSavingSpecies(null);
   };
 
   const handleIdentify = async () => {
+    if (identifyInFlightRef.current) {
+      logInfo('App', 'Identify action ignored because a request is already in flight.');
+      return;
+    }
+
     if (!selectedFile) {
       setBanner({ tone: 'error', message: 'Select a photo before identifying.' });
       return;
     }
 
+    identifyInFlightRef.current = true;
     setIdentifying(true);
     setBanner(null);
+    logInfo('App', 'Identify action triggered.', {
+      fileName: selectedFile.name,
+      organ,
+    });
 
     try {
       const nextResults = await identifyPlant(selectedFile, organ);
@@ -170,8 +242,10 @@ export default function App() {
         message: `PlantNet returned ${nextResults.results.length} likely matches.`,
       });
     } catch (identifyError) {
-      setBanner({ tone: 'error', message: getErrorMessage(identifyError) });
+      logError('App', 'Identify action failed.', identifyError);
+      setBanner({ tone: 'error', message: formatError(identifyError) });
     } finally {
+      identifyInFlightRef.current = false;
       setIdentifying(false);
     }
   };
@@ -185,12 +259,16 @@ export default function App() {
     const speciesName = result.species.scientificNameWithoutAuthor;
     setSavingSpecies(speciesName);
     setBanner(null);
+    logInfo('App', 'Saving result to collection.', {
+      species: speciesName,
+      commonName: resultLabel(result),
+    });
 
     try {
-      const photoUrl = await uploadPlantPhoto(user.id, selectedFile);
+      const uploadResult = await uploadPlantPhoto(user.id, selectedFile);
       const savedObservation = await saveObservation({
         user_id: user.id,
-        photo_url: photoUrl,
+        photo_url: uploadResult.photoUrl,
         common_name: resultLabel(result),
         scientific_name: result.species.scientificName,
         family: result.species.family.scientificName,
@@ -204,10 +282,14 @@ export default function App() {
       setSelectedObservation(savedObservation);
       setBanner({
         tone: 'success',
-        message: `${savedObservation.common_name} was added to your collection.`,
+        message:
+          uploadResult.storageMode === 'inline'
+            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.`
+            : `${savedObservation.common_name} was added to your collection.`,
       });
     } catch (saveError) {
-      setBanner({ tone: 'error', message: getErrorMessage(saveError) });
+      logError('App', 'Save result failed.', saveError);
+      setBanner({ tone: 'error', message: formatError(saveError) });
     } finally {
       setSavingSpecies(null);
     }
@@ -217,6 +299,7 @@ export default function App() {
     const confirmed = window.confirm(`Remove ${observation.common_name} from your collection?`);
 
     if (!confirmed) {
+      logInfo('App', 'Observation delete canceled by user.', { id: observation.id });
       return;
     }
 
@@ -232,7 +315,8 @@ export default function App() {
         message: `${observation.common_name} was removed from your collection.`,
       });
     } catch (deleteError) {
-      setBanner({ tone: 'error', message: getErrorMessage(deleteError) });
+      logError('App', 'Delete observation failed.', deleteError);
+      setBanner({ tone: 'error', message: formatError(deleteError) });
     }
   };
 
@@ -296,9 +380,24 @@ export default function App() {
     <div className="page-shell">
       <div className="app-backdrop" />
       <header className="site-header">
-        <div>
+        <div className="header-brand">
           <p className="eyebrow">PlantDex</p>
           <h1>Web field journal</h1>
+        </div>
+
+        <div className="header-stats" aria-label="Collection stats">
+          <div className="header-stat">
+            <span>Observations</span>
+            <strong>{observations.length}</strong>
+          </div>
+          <div className="header-stat">
+            <span>Species</span>
+            <strong>{uniqueSpeciesCount}</strong>
+          </div>
+          <div className="header-stat">
+            <span>Families</span>
+            <strong>{taxonomy.length}</strong>
+          </div>
         </div>
 
         <div className="header-actions">
@@ -325,10 +424,38 @@ export default function App() {
               Taxonomy
             </button>
           </nav>
+        </div>
 
-          <button className="secondary-button" onClick={handleSignOut} type="button">
-            Sign out
+        <div className="account-menu" ref={accountMenuRef}>
+          <button
+            aria-expanded={accountMenuOpen}
+            aria-haspopup="menu"
+            className="account-trigger"
+            onClick={() => setAccountMenuOpen((value) => !value)}
+            type="button"
+          >
+            <span className="account-trigger__avatar">{userInitial}</span>
+            <span className="account-trigger__label">
+              <strong>{userLabel}</strong>
+              <span>Account</span>
+            </span>
+            <span className="account-trigger__chevron">{accountMenuOpen ? '^' : 'v'}</span>
           </button>
+
+          {accountMenuOpen ? (
+            <div className="account-dropdown" role="menu">
+              <button className="account-dropdown__item" onClick={openSettings} type="button">
+                Settings
+              </button>
+              <button
+                className="account-dropdown__item account-dropdown__item--danger"
+                onClick={handleSignOut}
+                type="button"
+              >
+                Logout
+              </button>
+            </div>
+          ) : null}
         </div>
       </header>
 
@@ -341,35 +468,10 @@ export default function App() {
         </div>
       ) : null}
 
-      <section className="hero-strip">
-        <div className="hero-copy">
-          <p className="eyebrow">Current account</p>
-          <h2>{user?.email}</h2>
-          <p>
-            Upload a plant photo from any browser, identify it with PlantNet, and keep a structured
-            archive in Supabase.
-          </p>
-        </div>
-        <div className="hero-metrics">
-          <div className="metric-card">
-            <span>Observations</span>
-            <strong>{observations.length}</strong>
-          </div>
-          <div className="metric-card">
-            <span>Species</span>
-            <strong>{uniqueSpeciesCount}</strong>
-          </div>
-          <div className="metric-card">
-            <span>Families</span>
-            <strong>{taxonomy.length}</strong>
-          </div>
-        </div>
-      </section>
-
       <main className="workspace">
         {activeTab === 'identify' ? (
-          <section className="panel-stack">
-            <div className="panel">
+          <section className="panel-stack panel-stack--identify">
+            <div className="panel panel--identify-input">
               <div className="panel-header">
                 <div>
                   <p className="eyebrow">Step 1</p>
@@ -383,11 +485,15 @@ export default function App() {
               </div>
 
               <div className="upload-layout">
-                <div className="upload-card">
+                <div className="upload-card upload-card--compact">
                   {previewUrl ? (
-                    <img alt={selectedFile?.name ?? 'Selected plant'} className="preview-image" src={previewUrl} />
+                    <img
+                      alt={selectedFile?.name ?? 'Selected plant'}
+                      className="preview-image preview-image--compact"
+                      src={previewUrl}
+                    />
                   ) : (
-                    <div className="preview-placeholder">
+                    <div className="preview-placeholder preview-placeholder--compact">
                       <strong>No photo selected yet.</strong>
                       <span>Use the camera button on your phone or choose a file from your library.</span>
                     </div>
@@ -396,14 +502,14 @@ export default function App() {
 
                 <div className="upload-controls">
                   <input
-                    accept="image/*"
+                    accept={IMAGE_FILE_ACCEPT}
                     className="sr-only"
                     onChange={handleFileSelection}
                     ref={libraryInputRef}
                     type="file"
                   />
                   <input
-                    accept="image/*"
+                    accept={IMAGE_FILE_ACCEPT}
                     capture="environment"
                     className="sr-only"
                     onChange={handleFileSelection}
@@ -452,13 +558,13 @@ export default function App() {
                   </button>
 
                   <p className="field-hint">
-                    Best results usually come from a clear single-subject photo in natural light.
+                    Best results usually come from a clear single-subject photo in natural light. JPG, PNG, WebP, HEIC, HEIF, GIF, BMP, and AVIF are accepted.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="panel">
+            <div className="panel panel--results">
               <div className="panel-header">
                 <div>
                   <p className="eyebrow">Step 2</p>
@@ -565,6 +671,43 @@ export default function App() {
             </div>
           </section>
         ) : null}
+
+        {activeTab === 'settings' ? (
+          <section className="panel-stack">
+            <div className="panel">
+              <div className="panel-header">
+                <div>
+                  <p className="eyebrow">Settings</p>
+                  <h2>Account and app status</h2>
+                </div>
+              </div>
+
+              <div className="settings-grid">
+                <div className="settings-card">
+                  <span>Signed in account</span>
+                  <strong>{userLabel}</strong>
+                  <p>Use the account menu in the header for quick settings access and logout.</p>
+                </div>
+                <div className="settings-card">
+                  <span>Collection backend</span>
+                  <strong>{collectionMode === 'local' ? 'Local fallback store' : 'Supabase'}</strong>
+                  <p>
+                    {collectionMode === 'local'
+                      ? 'The observations table is missing in Supabase, so collection data is being stored on this local Vite server.'
+                      : 'Observations are being read from and written to your Supabase project.'}
+                  </p>
+                </div>
+                <div className="settings-card">
+                  <span>Collection summary</span>
+                  <strong>{observations.length} saved observations</strong>
+                  <p>
+                    {uniqueSpeciesCount} species across {taxonomy.length} families.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
       </main>
 
       {selectedObservation ? (
@@ -574,6 +717,7 @@ export default function App() {
           onDelete={handleDeleteObservation}
         />
       ) : null}
+      <DebugLogPanel />
     </div>
   );
 }

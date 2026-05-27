@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { logInfo, logWarn } from './logger';
 
 const SUPABASE_URL =
   import.meta.env.EXPO_PUBLIC_SUPABASE_URL ??
@@ -12,7 +13,14 @@ const SUPABASE_PUBLISHABLE_KEY =
   '';
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.warn('[Supabase] Missing env vars - auth and DB will not work.');
+  logWarn('Supabase', 'Missing env vars. Auth and database access will not work.', {
+    hasUrl: Boolean(SUPABASE_URL),
+    hasPublishableKey: Boolean(SUPABASE_PUBLISHABLE_KEY),
+  });
+} else {
+  logInfo('Supabase', 'Supabase client configured.', {
+    url: SUPABASE_URL,
+  });
 }
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

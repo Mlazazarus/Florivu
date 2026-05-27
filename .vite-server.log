@@ -1,5 +1,5 @@
 
-  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m500[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m381[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m8081[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://100.93.120.65:[1m8081[22m/[39m
@@ -7,3 +7,82 @@
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.206:[1m8081[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.220.1:[1m8081[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.6.1:[1m8081[22m/[39m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'precheck', count: 0 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'Screenshot 2026-05-26 150444.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 63305,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2995 }
+[LocalObservationStore] Stored observation. {
+  id: 'cccc667d-f846-4016-8458-7f1cdab31cce',
+  userId: 'manual-monstera-test',
+  species: 'Monstera deliciosa'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'manual-monstera-test', count: 1 }
+[2m4:31:32 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'final-check', count: 1 }
+[2m4:38:23 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m4:38:23 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m4:38:23 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/TaxonomyTree.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m5:26:21 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/TaxonomyTree.tsx[22m
+[2m5:26:21 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m5:26:21 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/TaxonomyTree.tsx[22m
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'queensday-cut-peony-tulip-display.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 112649,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3010 }
+[LocalObservationStore] Stored observation. {
+  id: '74d9264d-fe73-4c80-aa2f-a3f9c0bfeaf8',
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  species: 'Tulipa gesneriana'
+}
+[2m5:27:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m5:27:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[2m5:29:27 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m5:34:04 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[2m5:34:54 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[2m5:35:04 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'Tulip_Jumbo_Pink-6.webp',
+  fileType: 'image/webp',
+  fileSize: 89914,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 400, bytes: 101 }
+[2m5:35:25 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[2m5:36:14 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m5:38:58 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m5:38:59 PM[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33mheic2any[32m[39m
+[2m5:38:59 PM[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'Tulip_Jumbo_Pink-6.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 192397,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2890 }
+[LocalObservationStore] Stored observation. {
+  id: 'c8ffb195-beaa-4316-972a-9f31a3a99f24',
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  species: 'Tulipa agenensis'
+}
