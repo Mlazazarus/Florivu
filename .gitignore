@@ -9,3 +9,4 @@ dist/
 .vite-server.log
 .vite-server.err.log
 .local-data/
+*.log

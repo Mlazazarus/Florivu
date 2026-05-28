@@ -174,3 +174,635 @@
     at Socket._onTimeout (node:net:595:8)
     at listOnTimeout (node:internal/timers:581:17)
     at process.processTimers (node:internal/timers:519:7)
+[PlantNetProxy] Proxy request failed. Error: PlantNet upstream request timed out after 5012ms.
+    at ClientRequest.<anonymous> (file:///C:/Users/poaop/Documents/Scripts/PlantDex/vite.config.ts.timestamp-1779932733581-2064343646d1a.mjs:69:11)
+    at Object.onceWrapper (node:events:638:28)
+    at ClientRequest.emit (node:events:524:28)
+    at TLSSocket.emitRequestTimeout (node:_http_client:849:9)
+    at Object.onceWrapper (node:events:638:28)
+    at TLSSocket.emit (node:events:536:35)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+[2m7:08:29 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:08:29 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:08:38 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:08:38 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:08:51 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:08:51 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:09:45 PM[22m [31m[1m[vite][22m[39m Pre-transform error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[39m   [36mconst[39m [deletingAccount[33m,[39m setDeletingAccount] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m 131 |[39m   [36mconst[39m [searchQuery[33m,[39m setSearchQuery] [33m=[39m useState([32m''[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 132 |[39m   [36mconst[39m [searchResults[33m,[39m setSearchResults] [33m=[39m useState[33m<[39m[33mPlantNetResult[39m[][33m>[39m([])[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m
+ [90m 133 |[39m   [36mconst[39m [isSearching[33m,[39m setIsSearching] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m 134 |[39m
+ [90m 135 |[39m   [36mconst[39m libraryInputRef [33m=[39m useRef[33m<[39m[33mHTMLInputElement[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[2m7:09:45 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:09:59 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[2m7:10:01 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\poaop\Documents\Scripts\PlantDex\src\App.tsx: Identifier 'searchResults' has already been declared. (132:9)
+
+[0m [90m 130 |[31m   [36mconst[31m [deletingAccount[33m,[31m setDeletingAccount] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 131 |[31m   [36mconst[31m [searchQuery[33m,[31m setSearchQuery] [33m=[31m useState([32m''[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 132 |[31m   [36mconst[31m [searchResults[33m,[31m setSearchResults] [33m=[31m useState[33m<[31m[33mPlantNetResult[31m[][33m>[31m([])[33m;[31m
+ [90m     |[31m          [31m[1m^[22m[31m
+ [90m 133 |[31m   [36mconst[31m [isSearching[33m,[31m setIsSearching] [33m=[31m useState([36mfalse[31m)[33m;[31m
+ [90m 134 |[31m
+ [90m 135 |[31m   [36mconst[31m libraryInputRef [33m=[31m useRef[33m<[31m[33mHTMLInputElement[31m[33m>[31m([36mnull[31m)[33m;[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/poaop/Documents/Scripts/PlantDex/src/App.tsx[39m:132:9
+[33m  130|    const [deletingAccount, setDeletingAccount] = useState(false);
+  131|    const [searchQuery, setSearchQuery] = useState('');
+  132|    const [searchResults, setSearchResults] = useState<PlantNetResult[]>([]);
+     |           ^
+  133|    const [isSearching, setIsSearching] = useState(false);
+  134|  [39m
+      at constructor (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:365:19)
+      at TypeScriptParserMixin.raise (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:6616:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1619:19)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:1585:12)
+      at TypeScriptScopeHandler.declareName (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:4892:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7584:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7580:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7517:12)
+      at TypeScriptParserMixin.checkLVal (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:7557:16)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13429:10)
+      at TypeScriptParserMixin.parseVarId (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9769:11)
+      at TypeScriptParserMixin.parseVar (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13400:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13247:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9425:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12868:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12764:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseBlock (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13314:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12117:24)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12103:10)
+      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9189:18)
+      at C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13462:12
+      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12420:14)
+      at TypeScriptParserMixin.parseFunction (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13461:10)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13924:19)
+      at TypeScriptParserMixin.parseExportDefaultExpression (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9419:18)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13845:25)
+      at TypeScriptParserMixin.parseExport (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9402:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12895:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:9525:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12784:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12761:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13333:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:13326:10)
+      at TypeScriptParserMixin.parseProgram (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12639:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:12629:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14505:25)
+      at TypeScriptParserMixin.parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:10143:18)
+      at parse (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\parser\lib\index.js:14539:38)
+      at parser (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\Users\poaop\Documents\Scripts\PlantDex\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+[PlantNetProxy] Proxy request failed. Error: PlantNet upstream request timed out after 5013ms.
+    at ClientRequest.<anonymous> (file:///C:/Users/poaop/Documents/Scripts/PlantDex/vite.config.ts.timestamp-1779932733581-2064343646d1a.mjs:69:11)
+    at Object.onceWrapper (node:events:638:28)
+    at ClientRequest.emit (node:events:524:28)
+    at TLSSocket.emitRequestTimeout (node:_http_client:849:9)
+    at Object.onceWrapper (node:events:638:28)
+    at TLSSocket.emit (node:events:536:35)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)

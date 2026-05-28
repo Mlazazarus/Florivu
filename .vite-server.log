@@ -1203,3 +1203,148 @@ Re-optimizing dependencies because vite config has changed
   organ: 'auto',
   timeoutMs: 120000
 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0458.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 188388,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3092 }
+[LocalObservationStore] Stored observation. {
+  id: 'f7798646-ebc8-4069-b911-ac265e2d3742',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Pachira glabra'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 8 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'Tulip_Jumbo_Pink-6.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 192397,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'Tulip_Jumbo_Pink-6.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 192397,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2896 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0457.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 108554,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3128 }
+[2m7:08:14 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 8 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m7:08:24 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 8 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m7:08:29 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m7:08:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m7:08:51 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[ReverseGeocode] Reverse geocoding complete. {
+  latitude: 32.90634163560385,
+  longitude: -117.16663358878806,
+  zipCode: '92126'
+}
+[LocalObservationStore] Stored observation. {
+  id: '3db5a1b5-cdef-405e-bd6c-83c867145a9d',
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  species: 'Tulipa agenensis'
+}
+[2m7:09:12 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m7:10:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m7:10:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m7:10:08 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 8 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0456.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 275656,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0456.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 275656,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3083 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 4 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Stored observation. {
+  id: 'b266e663-bf68-4997-b16e-448fefc34972',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Chlorophytum comosum'
+}
