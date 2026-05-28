@@ -46,7 +46,7 @@ export async function saveLocalObservation(
 export async function updateLocalObservation(
   id: string,
   userId: string,
-  updates: Pick<Observation, 'zip_code'>,
+  updates: Partial<Pick<Observation, 'zip_code' | 'is_favorite' | 'is_house_plant'>>,
 ): Promise<Observation> {
   logInfo('LocalCollection', 'Updating observation in local fallback store.', {
     id,

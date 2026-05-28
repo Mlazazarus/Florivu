@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Observation } from '../types';
+import { observationLabelOptions } from './ObservationLabels';
 
 const fullDateFormatter = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'long',
@@ -10,6 +11,10 @@ interface ObservationModalProps {
   onClose: () => void;
   onDelete: (observation: Observation) => void;
   onOpenTaxonomy: (observation: Observation) => void;
+  onSaveLabels: (
+    observation: Observation,
+    labels: Pick<Observation, 'is_favorite' | 'is_house_plant'>,
+  ) => Promise<void>;
   onSaveZipCode: (observation: Observation, zipCode: string | null) => Promise<void>;
 }
 
@@ -18,15 +23,50 @@ export default function ObservationModal({
   onClose,
   onDelete,
   onOpenTaxonomy,
+  onSaveLabels,
   onSaveZipCode,
 }: ObservationModalProps) {
   const [zipCode, setZipCode] = useState(observation.zip_code ?? '');
+  const [favorite, setFavorite] = useState(observation.is_favorite);
+  const [housePlant, setHousePlant] = useState(observation.is_house_plant);
+  const [savingLabels, setSavingLabels] = useState(false);
   const [savingZipCode, setSavingZipCode] = useState(false);
 
   useEffect(() => {
     setZipCode(observation.zip_code ?? '');
+    setFavorite(observation.is_favorite);
+    setHousePlant(observation.is_house_plant);
+    setSavingLabels(false);
     setSavingZipCode(false);
   }, [observation]);
+
+  const handleLabelToggle = async (field: 'is_favorite' | 'is_house_plant') => {
+    if (savingLabels) {
+      return;
+    }
+
+    const previousLabels = {
+      is_favorite: favorite,
+      is_house_plant: housePlant,
+    };
+    const nextLabels = {
+      ...previousLabels,
+      [field]: !previousLabels[field],
+    };
+
+    setFavorite(nextLabels.is_favorite);
+    setHousePlant(nextLabels.is_house_plant);
+    setSavingLabels(true);
+
+    try {
+      await onSaveLabels(observation, nextLabels);
+    } catch {
+      setFavorite(previousLabels.is_favorite);
+      setHousePlant(previousLabels.is_house_plant);
+    } finally {
+      setSavingLabels(false);
+    }
+  };
 
   const handleZipCodeSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,6 +102,37 @@ export default function ObservationModal({
           <button className="latin-link latin-name" onClick={() => onOpenTaxonomy(observation)} type="button">
             {observation.scientific_name}
           </button>
+
+          <section className="detail-grid__editable detail-grid__editable--labels" aria-label="Collection labels">
+            <div className="detail-grid__editable-header">
+              <span className="detail-grid__editable-title">Collection labels</span>
+              <span className="detail-grid__editable-status">
+                {savingLabels ? 'Saving labels...' : 'Saved automatically'}
+              </span>
+            </div>
+            <div className="collection-label-toggle-row">
+              {observationLabelOptions.map(({ description, field, Icon, label }) => {
+                const active = field === 'is_favorite' ? favorite : housePlant;
+
+                return (
+                  <button
+                    aria-pressed={active}
+                    className={active ? 'collection-label-toggle collection-label-toggle--active' : 'collection-label-toggle'}
+                    disabled={savingLabels}
+                    key={field}
+                    onClick={() => void handleLabelToggle(field)}
+                    type="button"
+                  >
+                    <Icon className="collection-label-toggle__icon" />
+                    <span className="collection-label-toggle__copy">
+                      <strong>{label}</strong>
+                      <span>{description}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
           <div className="detail-grid">
             <div>

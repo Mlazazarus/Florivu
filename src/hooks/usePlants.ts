@@ -22,18 +22,69 @@ function shouldUseLocalObservationFallback(error: unknown) {
 }
 
 function isZipCodeColumnMissing(error: unknown) {
+  return isObservationColumnMissing(error, 'zip_code');
+}
+
+function isObservationColumnMissing(error: unknown, columnName: string) {
   const message =
     error && typeof error === 'object' && 'message' in error
       ? String((error as { message: unknown }).message).toLowerCase()
       : String(error ?? '').toLowerCase();
 
-  return message.includes('zip_code') && (message.includes('column') || message.includes('schema cache'));
+  return message.includes(columnName) && (message.includes('column') || message.includes('schema cache'));
+}
+
+function areEnhancedObservationColumnsMissing(error: unknown) {
+  return (
+    isObservationColumnMissing(error, 'zip_code') ||
+    isObservationColumnMissing(error, 'is_favorite') ||
+    isObservationColumnMissing(error, 'is_house_plant')
+  );
 }
 
 function normalizeZipCode(zipCode: string | null) {
   const trimmed = zipCode?.trim();
   return trimmed ? trimmed : null;
 }
+
+function normalizeObservation(observation: Observation): Observation {
+  return {
+    ...observation,
+    zip_code: observation.zip_code ?? null,
+    is_favorite: Boolean(observation.is_favorite),
+    is_house_plant: Boolean(observation.is_house_plant),
+  };
+}
+
+function stripUnsupportedObservationFields(
+  observation: Omit<Observation, 'id' | 'created_at'>,
+  error: unknown,
+) {
+  const nextObservation = { ...observation } as Partial<Omit<Observation, 'id' | 'created_at'>>;
+  const removedFields: string[] = [];
+
+  if (isZipCodeColumnMissing(error)) {
+    delete nextObservation.zip_code;
+    removedFields.push('zip_code');
+  }
+
+  if (isObservationColumnMissing(error, 'is_favorite')) {
+    delete nextObservation.is_favorite;
+    removedFields.push('is_favorite');
+  }
+
+  if (isObservationColumnMissing(error, 'is_house_plant')) {
+    delete nextObservation.is_house_plant;
+    removedFields.push('is_house_plant');
+  }
+
+  return {
+    nextObservation: nextObservation as Omit<Observation, 'id' | 'created_at'>,
+    removedFields,
+  };
+}
+
+type ObservationUpdate = Partial<Pick<Observation, 'zip_code' | 'is_favorite' | 'is_house_plant'>>;
 
 export function usePlants(userId: string | undefined) {
   const [observations, setObservations] = useState<Observation[]>([]);
@@ -63,7 +114,7 @@ export function usePlants(userId: string | undefined) {
         throw error;
       }
 
-      setObservations(data ?? []);
+      setObservations((data ?? []).map((observation) => normalizeObservation(observation as Observation)));
       setStorageMode('supabase');
       logInfo('Plants', 'Observation fetch complete.', {
         userId,
@@ -103,18 +154,22 @@ export function usePlants(userId: string | undefined) {
       .select()
       .single();
 
-    if (error && observation.zip_code && isZipCodeColumnMissing(error)) {
-      const { zip_code: _zipCode, ...observationWithoutZipCode } = observation;
-      logInfo('Plants', 'Observations table does not support zip_code yet. Retrying without ZIP code.', {
-        userId: observation.user_id,
-        species: observation.species,
-      });
+    if (error) {
+      const { nextObservation, removedFields } = stripUnsupportedObservationFields(observation, error);
 
-      ({ data, error } = await supabase
-        .from('observations')
-        .insert(observationWithoutZipCode)
-        .select()
-        .single());
+      if (removedFields.length > 0) {
+        logInfo('Plants', 'Observations table is missing newer columns. Retrying save without unsupported fields.', {
+          removedFields,
+          userId: observation.user_id,
+          species: observation.species,
+        });
+
+        ({ data, error } = await supabase
+          .from('observations')
+          .insert(nextObservation)
+          .select()
+          .single());
+      }
     }
 
     if (error) {
@@ -133,31 +188,21 @@ export function usePlants(userId: string | undefined) {
       throw error;
     }
 
-    const saved = data as Observation;
+    const saved = normalizeObservation(data as Observation);
     setObservations((previous) => [saved, ...previous]);
     setStorageMode('supabase');
     logInfo('Plants', 'Observation saved.', { id: saved.id, species: saved.species });
     return saved;
   };
 
-  const updateObservationZipCode = async (
-    id: string,
-    zipCode: string | null,
-  ): Promise<Observation> => {
+  const updateObservation = async (id: string, updates: ObservationUpdate): Promise<Observation> => {
     if (!userId) {
       throw new Error('No signed-in user.');
     }
 
-    const normalizedZipCode = normalizeZipCode(zipCode);
-    logInfo('Plants', 'Updating observation ZIP code.', {
-      id,
-      userId,
-      zipCode: normalizedZipCode,
-    });
-
     let { data, error } = await supabase
       .from('observations')
-      .update({ zip_code: normalizedZipCode })
+      .update(updates)
       .eq('id', id)
       .eq('user_id', userId)
       .select()
@@ -165,30 +210,71 @@ export function usePlants(userId: string | undefined) {
 
     if (error) {
       if (shouldUseLocalObservationFallback(error)) {
-        const updated = await updateLocalObservation(id, userId, { zip_code: normalizedZipCode });
+        const updated = normalizeObservation(await updateLocalObservation(id, userId, updates));
         setObservations((previous) =>
           previous.map((observation) => (observation.id === id ? updated : observation)),
         );
         setStorageMode('local');
-        logInfo('Plants', 'Updated local observation ZIP code.', {
-          id: updated.id,
-          zipCode: updated.zip_code ?? null,
-        });
         return updated;
       }
 
-      logError('Plants', 'Observation ZIP update failed.', error);
+      if (areEnhancedObservationColumnsMissing(error)) {
+        throw new Error(
+          'Your Supabase observations table is missing newer PlantDex columns. Run supabase/schema.sql, then try again.',
+        );
+      }
+
+      logError('Plants', 'Observation update failed.', error);
       throw error;
     }
 
-    const updated = data as Observation;
+    const updated = normalizeObservation(data as Observation);
     setObservations((previous) =>
       previous.map((observation) => (observation.id === id ? updated : observation)),
     );
     setStorageMode('supabase');
+    return updated;
+  };
+
+  const updateObservationZipCode = async (
+    id: string,
+    zipCode: string | null,
+  ): Promise<Observation> => {
+    const normalizedZipCode = normalizeZipCode(zipCode);
+    logInfo('Plants', 'Updating observation ZIP code.', {
+      id,
+      userId,
+      zipCode: normalizedZipCode,
+    });
+
+    const updated = await updateObservation(id, { zip_code: normalizedZipCode });
     logInfo('Plants', 'Observation ZIP code updated.', {
       id: updated.id,
       zipCode: updated.zip_code ?? null,
+    });
+    return updated;
+  };
+
+  const updateObservationLabels = async (
+    id: string,
+    labels: Pick<Observation, 'is_favorite' | 'is_house_plant'>,
+  ): Promise<Observation> => {
+    logInfo('Plants', 'Updating observation labels.', {
+      id,
+      userId,
+      isFavorite: labels.is_favorite,
+      isHousePlant: labels.is_house_plant,
+    });
+
+    const updated = await updateObservation(id, {
+      is_favorite: labels.is_favorite,
+      is_house_plant: labels.is_house_plant,
+    });
+
+    logInfo('Plants', 'Observation labels updated.', {
+      id: updated.id,
+      isFavorite: updated.is_favorite,
+      isHousePlant: updated.is_house_plant,
     });
     return updated;
   };
@@ -259,6 +345,7 @@ export function usePlants(userId: string | undefined) {
     error,
     fetchObservations,
     saveObservation,
+    updateObservationLabels,
     updateObservationZipCode,
     deleteObservation,
     getTaxonomyTree,

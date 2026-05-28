@@ -13,6 +13,8 @@ create table if not exists observations (
   date_found      timestamptz not null default now(),
   zip_code        text,
   notes           text,
+  is_favorite     boolean not null default false,
+  is_house_plant  boolean not null default false,
   created_at      timestamptz not null default now()
 );
 
@@ -36,6 +38,8 @@ create table if not exists friendships (
 );
 
 alter table observations add column if not exists zip_code text;
+alter table observations add column if not exists is_favorite boolean not null default false;
+alter table observations add column if not exists is_house_plant boolean not null default false;
 alter table profiles add column if not exists profile_photo_url text;
 alter table profiles add column if not exists home_zip_code text;
 alter table profiles add column if not exists facebook_url text;

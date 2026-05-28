@@ -100,7 +100,17 @@ function sortFriendProfilesByStats<T extends FriendProfile>(profiles: T[]) {
   });
 }
 
-function toUserProfile(row: Partial<UserProfile> & { user_id: string; display_name: string }): UserProfile {
+function toUserProfile(row: {
+  user_id: string;
+  display_name: string;
+  profile_photo_url?: string | null;
+  home_zip_code?: string | null;
+  facebook_url?: string | null;
+  is_public?: boolean | null;
+  is_placeholder?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}): UserProfile {
   const now = new Date().toISOString();
 
   return {

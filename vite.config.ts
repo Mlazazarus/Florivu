@@ -21,6 +21,8 @@ interface LocalObservationRecord {
   date_found: string;
   zip_code?: string | null;
   notes?: string;
+  is_favorite: boolean;
+  is_house_plant: boolean;
   created_at: string;
 }
 
@@ -286,11 +288,22 @@ function reverseGeocodePlugin(): Plugin {
 function localObservationStorePlugin(): Plugin {
   const storePath = resolve(process.cwd(), '.local-data', 'observations.json');
 
+  function normalizeObservationRecord(observation: LocalObservationRecord): LocalObservationRecord {
+    return {
+      ...observation,
+      zip_code: observation.zip_code ?? null,
+      is_favorite: Boolean(observation.is_favorite),
+      is_house_plant: Boolean(observation.is_house_plant),
+    };
+  }
+
   async function readObservations() {
     try {
       const contents = await readFile(storePath, 'utf8');
       const parsed = JSON.parse(contents);
-      return Array.isArray(parsed) ? (parsed as LocalObservationRecord[]) : [];
+      return Array.isArray(parsed)
+        ? (parsed as LocalObservationRecord[]).map((observation) => normalizeObservationRecord(observation))
+        : [];
     } catch (error: any) {
       if (error?.code === 'ENOENT') {
         return [];
@@ -313,7 +326,7 @@ function localObservationStorePlugin(): Plugin {
       duplex: 'half',
     } as RequestInit & { duplex: 'half' });
 
-    return (await request.json()) as Omit<LocalObservationRecord, 'id' | 'created_at'>;
+    return (await request.json()) as Record<string, unknown>;
   }
 
   const handler = async (
@@ -348,12 +361,12 @@ function localObservationStorePlugin(): Plugin {
       }
 
       if (req.method === 'POST' && requestUrl.pathname === '/api/local-observations') {
-        const observation = await readJsonBody(req);
-        const storedObservation: LocalObservationRecord = {
+        const observation = await readJsonBody(req) as Omit<LocalObservationRecord, 'id' | 'created_at'>;
+        const storedObservation = normalizeObservationRecord({
           ...observation,
           id: randomUUID(),
           created_at: new Date().toISOString(),
-        };
+        });
         const observations = await readObservations();
         observations.unshift(storedObservation);
         await writeObservations(observations);
@@ -373,7 +386,14 @@ function localObservationStorePlugin(): Plugin {
           requestUrl.pathname.slice('/api/local-observations/'.length),
         );
         const userId = requestUrl.searchParams.get('userId');
-        const body = (await readJsonBody(req)) as { zip_code?: unknown };
+        const body = await readJsonBody(req) as {
+          zip_code?: unknown;
+          is_favorite?: unknown;
+          is_house_plant?: unknown;
+        };
+        const hasZipCode = Object.prototype.hasOwnProperty.call(body, 'zip_code');
+        const hasFavorite = Object.prototype.hasOwnProperty.call(body, 'is_favorite');
+        const hasHousePlant = Object.prototype.hasOwnProperty.call(body, 'is_house_plant');
 
         if (!userId) {
           res.statusCode = 400;
@@ -381,34 +401,59 @@ function localObservationStorePlugin(): Plugin {
           return;
         }
 
-        if (!Object.prototype.hasOwnProperty.call(body, 'zip_code')) {
+        if (!hasZipCode && !hasFavorite && !hasHousePlant) {
           res.statusCode = 400;
-          res.end(JSON.stringify({ message: 'zip_code is required.' }));
+          res.end(JSON.stringify({ message: 'At least one editable observation field is required.' }));
+          return;
+        }
+
+        if (hasZipCode && typeof body.zip_code !== 'string' && body.zip_code !== null) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'zip_code must be a string or null.' }));
+          return;
+        }
+
+        if (hasFavorite && typeof body.is_favorite !== 'boolean') {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'is_favorite must be a boolean.' }));
+          return;
+        }
+
+        if (hasHousePlant && typeof body.is_house_plant !== 'boolean') {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'is_house_plant must be a boolean.' }));
           return;
         }
 
         const observations = await readObservations();
-        let updatedObservation: LocalObservationRecord | null = null;
         const nextObservations = observations.map((observation) => {
           if (observation.id !== id || observation.user_id !== userId) {
             return observation;
           }
 
-          const nextZipCode =
-            typeof body.zip_code === 'string'
+          const nextZipCode = hasZipCode
+            ? typeof body.zip_code === 'string'
               ? body.zip_code.trim() || null
-              : body.zip_code === null
-                ? null
-                : observation.zip_code ?? null;
+              : null
+            : observation.zip_code ?? null;
+          const nextFavorite = hasFavorite ? body.is_favorite as boolean : observation.is_favorite;
+          const nextHousePlant = hasHousePlant
+            ? body.is_house_plant as boolean
+            : observation.is_house_plant;
 
-          updatedObservation = {
+          return {
             ...observation,
             zip_code: nextZipCode,
+            is_favorite: nextFavorite,
+            is_house_plant: nextHousePlant,
           };
-          return updatedObservation;
         });
 
-        if (!updatedObservation) {
+        const finalUpdatedObservation = nextObservations.find(
+          (observation) => observation.id === id && observation.user_id === userId,
+        );
+
+        if (!finalUpdatedObservation) {
           res.statusCode = 404;
           res.end(JSON.stringify({ message: 'Observation not found.' }));
           return;
@@ -418,10 +463,12 @@ function localObservationStorePlugin(): Plugin {
         console.info('[LocalObservationStore] Updated observation.', {
           id,
           userId,
-          zipCode: updatedObservation.zip_code ?? null,
+          zipCode: finalUpdatedObservation.zip_code ?? null,
+          isFavorite: finalUpdatedObservation.is_favorite,
+          isHousePlant: finalUpdatedObservation.is_house_plant,
         });
         res.statusCode = 200;
-        res.end(JSON.stringify(updatedObservation));
+        res.end(JSON.stringify(finalUpdatedObservation));
         return;
       }
 
@@ -783,7 +830,11 @@ function localFriendsStorePlugin(): Plugin {
       duplex: 'half',
     } as RequestInit & { duplex: 'half' });
 
-    return (await request.json()) as { userId?: unknown; displayName?: unknown };
+    return (await request.json()) as {
+      userId?: unknown;
+      displayName?: unknown;
+      friendUserId?: unknown;
+    };
   }
 
   const handler = async (

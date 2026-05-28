@@ -1,4 +1,5 @@
 import { Observation } from '../types';
+import { ObservationLabelIcons } from './ObservationLabels';
 
 interface ObservationCardProps {
   observation: Observation;
@@ -25,7 +26,10 @@ export default function ObservationCard({
         </div>
         <div className="collection-caption">
           <span className="collection-overline">{observation.family}</span>
-          <h3>{observation.common_name}</h3>
+          <div className="collection-title-row">
+            <h3>{observation.common_name}</h3>
+            <ObservationLabelIcons observation={observation} />
+          </div>
         </div>
       </button>
       <div className="collection-card-meta">

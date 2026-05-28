@@ -20,6 +20,8 @@ import { formatError, logError, logInfo } from './lib/logger';
 import { Observation, OrganType, PlantNetResponse, PlantNetResult, UserProfile } from './types';
 
 type AppTab = 'identify' | 'collection' | 'taxonomy' | 'profile' | 'friends' | 'settings';
+type CollectionFilter = 'all' | 'favorites' | 'house-plants' | 'labeled';
+type CollectionSort = 'newest' | 'favorites-first' | 'house-plants-first' | 'common-name';
 
 const ACTIVE_TAB_STORAGE_KEY = 'plantdex.active-tab';
 
@@ -35,8 +37,79 @@ const organs: Array<{ label: string; value: OrganType }> = [
   { label: 'Bark', value: 'bark' },
 ];
 
+const collectionFilterOptions: Array<{ label: string; value: CollectionFilter }> = [
+  { label: 'All plants', value: 'all' },
+  { label: 'Favorites', value: 'favorites' },
+  { label: 'House Plants', value: 'house-plants' },
+  { label: 'Any label', value: 'labeled' },
+];
+
+const collectionSortOptions: Array<{ label: string; value: CollectionSort }> = [
+  { label: 'Newest first', value: 'newest' },
+  { label: 'Favorites first', value: 'favorites-first' },
+  { label: 'House plants first', value: 'house-plants-first' },
+  { label: 'Common name A-Z', value: 'common-name' },
+];
+
 function resultLabel(result: PlantNetResult) {
   return result.species.commonNames[0] ?? result.species.scientificNameWithoutAuthor;
+}
+
+function describeObservationLabels(observation: Pick<Observation, 'is_favorite' | 'is_house_plant'>) {
+  const labels: string[] = [];
+
+  if (observation.is_favorite) {
+    labels.push('Favorite');
+  }
+
+  if (observation.is_house_plant) {
+    labels.push('House Plant');
+  }
+
+  return labels;
+}
+
+function matchesCollectionFilter(observation: Observation, filter: CollectionFilter) {
+  switch (filter) {
+    case 'favorites':
+      return observation.is_favorite;
+    case 'house-plants':
+      return observation.is_house_plant;
+    case 'labeled':
+      return observation.is_favorite || observation.is_house_plant;
+    case 'all':
+    default:
+      return true;
+  }
+}
+
+function sortCollectionObservations(
+  observations: Observation[],
+  sort: CollectionSort,
+) {
+  const byCreatedAtDescending = (left: Observation, right: Observation) =>
+    new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
+
+  return [...observations].sort((left, right) => {
+    if (sort === 'favorites-first') {
+      const favoriteDelta = Number(right.is_favorite) - Number(left.is_favorite);
+      return favoriteDelta || byCreatedAtDescending(left, right);
+    }
+
+    if (sort === 'house-plants-first') {
+      const housePlantDelta = Number(right.is_house_plant) - Number(left.is_house_plant);
+      return housePlantDelta || byCreatedAtDescending(left, right);
+    }
+
+    if (sort === 'common-name') {
+      return (
+        left.common_name.localeCompare(right.common_name, undefined, { sensitivity: 'base' }) ||
+        byCreatedAtDescending(left, right)
+      );
+    }
+
+    return byCreatedAtDescending(left, right);
+  });
 }
 
 function isAppTab(value: string | null): value is AppTab {
@@ -78,6 +151,7 @@ export default function App() {
     error,
     fetchObservations,
     saveObservation,
+    updateObservationLabels,
     updateObservationZipCode,
     deleteObservation,
     getTaxonomyTree,
@@ -126,6 +200,8 @@ export default function App() {
   const [savingSpecies, setSavingSpecies] = useState<string | null>(null);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [taxonomyFocusScientificName, setTaxonomyFocusScientificName] = useState<string | null>(null);
+  const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>('all');
+  const [collectionSort, setCollectionSort] = useState<CollectionSort>('newest');
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
@@ -245,12 +321,18 @@ export default function App() {
   const uniqueSpeciesCount = new Set(
     observations.map((observation) => observation.species || observation.scientific_name),
   ).size;
+  const visibleObservations = sortCollectionObservations(
+    observations.filter((observation) => matchesCollectionFilter(observation, collectionFilter)),
+    collectionSort,
+  );
   const taxonomy = getTaxonomyTree();
   const userEmail = user?.email ?? 'Account';
   const userLabel = profile?.display_name?.trim() || userEmail;
   const userInitial = userLabel.charAt(0).toUpperCase();
   const activeAuthMode: AuthMode = passwordRecoveryActive ? 'reset-password' : authMode;
   const showAuthScreen = !session || passwordRecoveryActive;
+  const activeCollectionFilterLabel =
+    collectionFilterOptions.find((option) => option.value === collectionFilter)?.label ?? 'All plants';
 
   const handleAuthModeChange = (nextMode: AuthMode) => {
     setAuthMode(nextMode);
@@ -603,6 +685,8 @@ export default function App() {
         confidence: result.score,
         date_found: captureResult.dateFound,
         zip_code: captureResult.zipCode,
+        is_favorite: false,
+        is_house_plant: false,
       });
 
       setActiveTab('collection');
@@ -639,6 +723,32 @@ export default function App() {
       });
     } catch (updateError) {
       setBanner({ tone: 'error', message: formatError(updateError) });
+    }
+  };
+
+  const handleSaveObservationLabels = async (
+    observation: Observation,
+    labels: Pick<Observation, 'is_favorite' | 'is_house_plant'>,
+  ) => {
+    setBanner(null);
+
+    try {
+      const updatedObservation = await updateObservationLabels(observation.id, labels);
+      if (selectedObservation?.id === updatedObservation.id) {
+        setSelectedObservation(updatedObservation);
+      }
+
+      const activeLabels = describeObservationLabels(updatedObservation);
+      setBanner({
+        tone: 'success',
+        message:
+          activeLabels.length > 0
+            ? `${updatedObservation.common_name} labels updated: ${activeLabels.join(', ')}.`
+            : `${updatedObservation.common_name} labels cleared.`,
+      });
+    } catch (updateError) {
+      setBanner({ tone: 'error', message: formatError(updateError) });
+      throw updateError;
     }
   };
 
@@ -999,6 +1109,48 @@ export default function App() {
                 </div>
               </div>
 
+              {observations.length > 0 ? (
+                <div className="collection-controls">
+                  <div className="collection-filter-group" aria-label="Filter saved plants">
+                    {collectionFilterOptions.map((option) => (
+                      <button
+                        className={
+                          collectionFilter === option.value
+                            ? 'collection-filter-chip collection-filter-chip--active'
+                            : 'collection-filter-chip'
+                        }
+                        key={option.value}
+                        onClick={() => setCollectionFilter(option.value)}
+                        type="button"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="collection-sort-row">
+                    <span className="collection-results-summary">
+                      Showing {visibleObservations.length} of {observations.length} plants
+                      {collectionFilter !== 'all' ? ` in ${activeCollectionFilterLabel}` : ''}
+                    </span>
+
+                    <label className="field collection-sort-field">
+                      <span>Sort</span>
+                      <select
+                        onChange={(event) => setCollectionSort(event.target.value as CollectionSort)}
+                        value={collectionSort}
+                      >
+                        {collectionSortOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+
               {plantsLoading && observations.length === 0 ? (
                 <div className="empty-state">
                   <strong>Loading collection...</strong>
@@ -1008,9 +1160,17 @@ export default function App() {
                   <strong>No plants saved yet.</strong>
                   <span>Identify something first, then save the match into your collection.</span>
                 </div>
+              ) : visibleObservations.length === 0 ? (
+                <div className="empty-state">
+                  <strong>No plants match {activeCollectionFilterLabel.toLowerCase()}.</strong>
+                  <span>Try a different label filter or return to the full collection.</span>
+                  <button className="secondary-button" onClick={() => setCollectionFilter('all')} type="button">
+                    Show all plants
+                  </button>
+                </div>
               ) : (
                 <div className="collection-grid">
-                  {observations.map((observation) => (
+                  {visibleObservations.map((observation) => (
                     <ObservationCard
                       key={observation.id}
                       observation={observation}
@@ -1146,6 +1306,7 @@ export default function App() {
           onClose={() => setSelectedObservation(null)}
           onDelete={handleDeleteObservation}
           onOpenTaxonomy={openObservationTaxonomy}
+          onSaveLabels={handleSaveObservationLabels}
           onSaveZipCode={handleSaveObservationZipCode}
         />
       ) : null}

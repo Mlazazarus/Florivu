@@ -50,6 +50,8 @@ export interface Observation {
   date_found: string;
   zip_code?: string | null;
   notes?: string;
+  is_favorite: boolean;
+  is_house_plant: boolean;
   created_at: string;
 }
 
