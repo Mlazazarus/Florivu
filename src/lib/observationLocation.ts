@@ -9,6 +9,7 @@ interface Coordinates {
 
 export interface ObservationLocationResult {
   zipCode: string | null;
+  dateFound: string;
   source: LocationSource;
 }
 
@@ -18,6 +19,11 @@ interface ExifEntry {
   type: number;
 }
 
+interface ExifMetadata {
+  coordinates: Coordinates | null;
+  dateFound: string | null;
+}
+
 const JPEG_SOI_MARKER = 0xffd8;
 const JPEG_EXIF_MARKER = 0xffe1;
 const JPEG_SCAN_MARKER = 0xffda;
@@ -25,6 +31,10 @@ const JPEG_END_MARKER = 0xffd9;
 const TIFF_LITTLE_ENDIAN = 0x4949;
 const TIFF_BIG_ENDIAN = 0x4d4d;
 const TIFF_HEADER_MAGIC = 0x002a;
+const EXIF_TAG_EXIF_IFD = 0x8769;
+const EXIF_TAG_DATETIME = 0x0132;
+const EXIF_TAG_DATETIME_ORIGINAL = 0x9003;
+const EXIF_TAG_DATETIME_DIGITIZED = 0x9004;
 const EXIF_TAG_GPS_IFD = 0x8825;
 const GPS_TAG_LATITUDE_REF = 0x0001;
 const GPS_TAG_LATITUDE = 0x0002;
@@ -183,7 +193,29 @@ function decimalCoordinate(values: number[], reference: string) {
   return coordinate;
 }
 
-async function extractExifCoordinates(file: File): Promise<Coordinates | null> {
+function parseExifDateString(value: string) {
+  const match = value
+    .trim()
+    .match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day, hour, minute, second] = match;
+  const parsedDate = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+  );
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString();
+}
+
+async function extractExifMetadata(file: File): Promise<ExifMetadata | null> {
   const buffer = await file.arrayBuffer();
   const view = new DataView(buffer);
 
@@ -238,6 +270,9 @@ async function extractExifCoordinates(file: File): Promise<Coordinates | null> {
       }
 
       const firstIfdOffset = view.getUint32(tiffStart + 4, littleEndian);
+      let coordinates: Coordinates | null = null;
+      let dateFound: string | null = null;
+
       const gpsIfdEntry = findIfdEntry(
         view,
         tiffStart,
@@ -245,67 +280,121 @@ async function extractExifCoordinates(file: File): Promise<Coordinates | null> {
         EXIF_TAG_GPS_IFD,
         littleEndian,
       );
+      if (gpsIfdEntry && canRead(view, gpsIfdEntry.entryOffset + 8, 4)) {
+        const gpsIfdOffset = view.getUint32(gpsIfdEntry.entryOffset + 8, littleEndian);
+        const latitudeRefEntry = findIfdEntry(
+          view,
+          tiffStart,
+          gpsIfdOffset,
+          GPS_TAG_LATITUDE_REF,
+          littleEndian,
+        );
+        const latitudeEntry = findIfdEntry(
+          view,
+          tiffStart,
+          gpsIfdOffset,
+          GPS_TAG_LATITUDE,
+          littleEndian,
+        );
+        const longitudeRefEntry = findIfdEntry(
+          view,
+          tiffStart,
+          gpsIfdOffset,
+          GPS_TAG_LONGITUDE_REF,
+          littleEndian,
+        );
+        const longitudeEntry = findIfdEntry(
+          view,
+          tiffStart,
+          gpsIfdOffset,
+          GPS_TAG_LONGITUDE,
+          littleEndian,
+        );
 
-      if (!gpsIfdEntry || !canRead(view, gpsIfdEntry.entryOffset + 8, 4)) {
-        return null;
+        if (
+          latitudeRefEntry &&
+          latitudeEntry &&
+          longitudeRefEntry &&
+          longitudeEntry
+        ) {
+          const latitudeReference = readAsciiEntry(view, latitudeRefEntry, tiffStart, littleEndian);
+          const longitudeReference = readAsciiEntry(view, longitudeRefEntry, tiffStart, littleEndian);
+          const latitudeValues = readRationalArray(view, latitudeEntry, tiffStart, littleEndian);
+          const longitudeValues = readRationalArray(view, longitudeEntry, tiffStart, littleEndian);
+
+          if (
+            latitudeReference &&
+            longitudeReference &&
+            latitudeValues &&
+            longitudeValues
+          ) {
+            const latitude = decimalCoordinate(latitudeValues, latitudeReference);
+            const longitude = decimalCoordinate(longitudeValues, longitudeReference);
+
+            if (latitude !== null && longitude !== null) {
+              coordinates = { latitude, longitude };
+            }
+          }
+        }
       }
 
-      const gpsIfdOffset = view.getUint32(gpsIfdEntry.entryOffset + 8, littleEndian);
-      const latitudeRefEntry = findIfdEntry(
+      const exifIfdEntry = findIfdEntry(
         view,
         tiffStart,
-        gpsIfdOffset,
-        GPS_TAG_LATITUDE_REF,
+        firstIfdOffset,
+        EXIF_TAG_EXIF_IFD,
         littleEndian,
       );
-      const latitudeEntry = findIfdEntry(
-        view,
-        tiffStart,
-        gpsIfdOffset,
-        GPS_TAG_LATITUDE,
-        littleEndian,
-      );
-      const longitudeRefEntry = findIfdEntry(
-        view,
-        tiffStart,
-        gpsIfdOffset,
-        GPS_TAG_LONGITUDE_REF,
-        littleEndian,
-      );
-      const longitudeEntry = findIfdEntry(
-        view,
-        tiffStart,
-        gpsIfdOffset,
-        GPS_TAG_LONGITUDE,
-        littleEndian,
-      );
+      const dateEntries: ExifEntry[] = [];
 
-      if (!latitudeRefEntry || !latitudeEntry || !longitudeRefEntry || !longitudeEntry) {
-        return null;
+      if (exifIfdEntry && canRead(view, exifIfdEntry.entryOffset + 8, 4)) {
+        const exifIfdOffset = view.getUint32(exifIfdEntry.entryOffset + 8, littleEndian);
+        const dateOriginalEntry = findIfdEntry(
+          view,
+          tiffStart,
+          exifIfdOffset,
+          EXIF_TAG_DATETIME_ORIGINAL,
+          littleEndian,
+        );
+        const dateDigitizedEntry = findIfdEntry(
+          view,
+          tiffStart,
+          exifIfdOffset,
+          EXIF_TAG_DATETIME_DIGITIZED,
+          littleEndian,
+        );
+
+        if (dateOriginalEntry) {
+          dateEntries.push(dateOriginalEntry);
+        }
+
+        if (dateDigitizedEntry) {
+          dateEntries.push(dateDigitizedEntry);
+        }
       }
 
-      const latitudeReference = readAsciiEntry(view, latitudeRefEntry, tiffStart, littleEndian);
-      const longitudeReference = readAsciiEntry(view, longitudeRefEntry, tiffStart, littleEndian);
-      const latitudeValues = readRationalArray(view, latitudeEntry, tiffStart, littleEndian);
-      const longitudeValues = readRationalArray(view, longitudeEntry, tiffStart, littleEndian);
-
-      if (
-        !latitudeReference ||
-        !longitudeReference ||
-        !latitudeValues ||
-        !longitudeValues
-      ) {
-        return null;
+      const dateEntry = findIfdEntry(
+        view,
+        tiffStart,
+        firstIfdOffset,
+        EXIF_TAG_DATETIME,
+        littleEndian,
+      );
+      if (dateEntry) {
+        dateEntries.push(dateEntry);
       }
 
-      const latitude = decimalCoordinate(latitudeValues, latitudeReference);
-      const longitude = decimalCoordinate(longitudeValues, longitudeReference);
+      for (const entry of dateEntries) {
+        const rawDate = readAsciiEntry(view, entry, tiffStart, littleEndian);
+        const parsedDate = rawDate ? parseExifDateString(rawDate) : null;
 
-      if (latitude === null || longitude === null) {
-        return null;
+        if (parsedDate) {
+          dateFound = parsedDate;
+          break;
+        }
       }
 
-      return { latitude, longitude };
+      return { coordinates, dateFound };
     }
 
     segmentOffset += 2 + segmentLength;
@@ -366,10 +455,17 @@ async function reverseGeocodeZipCode(coordinates: Coordinates) {
 export async function resolveObservationLocation(
   file: File,
 ): Promise<ObservationLocationResult> {
+  const now = new Date().toISOString();
+  let dateFound = now;
+
   try {
-    const exifCoordinates = await extractExifCoordinates(file);
-    if (exifCoordinates) {
-      const zipCode = await reverseGeocodeZipCode(exifCoordinates);
+    const exifMetadata = await extractExifMetadata(file);
+    if (exifMetadata?.dateFound) {
+      dateFound = exifMetadata.dateFound;
+    }
+
+    if (exifMetadata?.coordinates) {
+      const zipCode = await reverseGeocodeZipCode(exifMetadata.coordinates);
       logInfo('ObservationLocation', 'Resolved ZIP code from photo metadata.', {
         fileName: file.name,
         zipCode,
@@ -378,17 +474,18 @@ export async function resolveObservationLocation(
       return {
         source: zipCode ? 'photo-metadata' : 'unavailable',
         zipCode,
+        dateFound,
       };
     }
   } catch (error) {
     logError('ObservationLocation', 'Failed to resolve location from photo metadata.', error);
-    return { source: 'unavailable', zipCode: null };
+    return { source: 'unavailable', zipCode: null, dateFound };
   }
 
   try {
     const deviceCoordinates = await getDeviceCoordinates();
     if (!deviceCoordinates) {
-      return { source: 'unavailable', zipCode: null };
+      return { source: 'unavailable', zipCode: null, dateFound };
     }
 
     const zipCode = await reverseGeocodeZipCode(deviceCoordinates);
@@ -399,9 +496,10 @@ export async function resolveObservationLocation(
     return {
       source: zipCode ? 'device-location' : 'unavailable',
       zipCode,
+      dateFound,
     };
   } catch (error) {
     logError('ObservationLocation', 'Failed to resolve location from current device position.', error);
-    return { source: 'unavailable', zipCode: null };
+    return { source: 'unavailable', zipCode: null, dateFound };
   }
 }

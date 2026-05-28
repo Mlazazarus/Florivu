@@ -281,29 +281,15 @@ export default function ProfilePanel({
         </div>
       </section>
 
-      <section className="profile-secondary-grid">
-        <div className="panel profile-placeholder-card">
-          <p className="eyebrow">Friends</p>
-          <h3>Friends list</h3>
-          <p className="profile-placeholder-copy">
-            This is reserved for the future social graph. Friend requests, shared collections, and discovery can live here later.
-          </p>
-          <div className="profile-friends-empty">
-            <strong>No friends connected yet</strong>
-            <span>Future feature</span>
-          </div>
-        </div>
-
-        <div className="panel profile-danger-card">
-          <p className="eyebrow">Danger zone</p>
-          <h3>Delete account</h3>
-          <p className="profile-placeholder-copy">
-            This permanently removes your Supabase auth user when the local server has a service-role key configured.
-          </p>
-          <button className="danger-button" disabled={deleteBusy} onClick={() => void onDeleteAccount()} type="button">
-            {deleteBusy ? 'Deleting account...' : 'Delete account'}
-          </button>
-        </div>
+      <section className="panel profile-danger-card">
+        <p className="eyebrow">Danger zone</p>
+        <h3>Delete account</h3>
+        <p className="profile-placeholder-copy">
+          This permanently removes your Supabase auth user when the local server has a service-role key configured.
+        </p>
+        <button className="danger-button" disabled={deleteBusy} onClick={() => void onDeleteAccount()} type="button">
+          {deleteBusy ? 'Deleting account...' : 'Delete account'}
+        </button>
       </section>
     </form>
   );

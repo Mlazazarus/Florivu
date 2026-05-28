@@ -3,6 +3,7 @@ import {
   deleteLocalObservation,
   fetchLocalObservations,
   saveLocalObservation,
+  updateLocalObservation,
 } from '../lib/localObservationApi';
 import { logError, logInfo } from '../lib/logger';
 import { supabase } from '../lib/supabase';
@@ -27,6 +28,11 @@ function isZipCodeColumnMissing(error: unknown) {
       : String(error ?? '').toLowerCase();
 
   return message.includes('zip_code') && (message.includes('column') || message.includes('schema cache'));
+}
+
+function normalizeZipCode(zipCode: string | null) {
+  const trimmed = zipCode?.trim();
+  return trimmed ? trimmed : null;
 }
 
 export function usePlants(userId: string | undefined) {
@@ -134,6 +140,59 @@ export function usePlants(userId: string | undefined) {
     return saved;
   };
 
+  const updateObservationZipCode = async (
+    id: string,
+    zipCode: string | null,
+  ): Promise<Observation> => {
+    if (!userId) {
+      throw new Error('No signed-in user.');
+    }
+
+    const normalizedZipCode = normalizeZipCode(zipCode);
+    logInfo('Plants', 'Updating observation ZIP code.', {
+      id,
+      userId,
+      zipCode: normalizedZipCode,
+    });
+
+    let { data, error } = await supabase
+      .from('observations')
+      .update({ zip_code: normalizedZipCode })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      if (shouldUseLocalObservationFallback(error)) {
+        const updated = await updateLocalObservation(id, userId, { zip_code: normalizedZipCode });
+        setObservations((previous) =>
+          previous.map((observation) => (observation.id === id ? updated : observation)),
+        );
+        setStorageMode('local');
+        logInfo('Plants', 'Updated local observation ZIP code.', {
+          id: updated.id,
+          zipCode: updated.zip_code ?? null,
+        });
+        return updated;
+      }
+
+      logError('Plants', 'Observation ZIP update failed.', error);
+      throw error;
+    }
+
+    const updated = data as Observation;
+    setObservations((previous) =>
+      previous.map((observation) => (observation.id === id ? updated : observation)),
+    );
+    setStorageMode('supabase');
+    logInfo('Plants', 'Observation ZIP code updated.', {
+      id: updated.id,
+      zipCode: updated.zip_code ?? null,
+    });
+    return updated;
+  };
+
   const deleteObservation = async (id: string) => {
     logInfo('Plants', 'Deleting observation.', { id });
     const { error } = await supabase.from('observations').delete().eq('id', id);
@@ -200,6 +259,7 @@ export function usePlants(userId: string | undefined) {
     error,
     fetchObservations,
     saveObservation,
+    updateObservationZipCode,
     deleteObservation,
     getTaxonomyTree,
     storageMode,

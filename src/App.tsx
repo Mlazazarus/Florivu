@@ -1,12 +1,14 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import plantDexLogo from '../plantdexLogo.png';
-import AuthPanel from './components/AuthPanel';
+import AuthPanel, { type AuthMode } from './components/AuthPanel';
 import DebugLogPanel from './components/DebugLogPanel';
+import FriendsPanel from './components/FriendsPanel';
 import ObservationCard from './components/ObservationCard';
 import ObservationModal from './components/ObservationModal';
 import ProfilePanel, { ProfilePanelSaveValues } from './components/ProfilePanel';
 import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
+import { useFriends } from './hooks/useFriends';
 import { usePlants } from './hooks/usePlants';
 import { useProfile } from './hooks/useProfile';
 import { deleteAccount } from './lib/accountApi';
@@ -15,9 +17,11 @@ import { resolveObservationLocation } from './lib/observationLocation';
 import { identifyPlant } from './lib/plantApi';
 import { uploadPlantPhoto, uploadProfilePhoto } from './lib/storageHelper';
 import { formatError, logError, logInfo } from './lib/logger';
-import { Observation, OrganType, PlantNetResponse, PlantNetResult } from './types';
+import { Observation, OrganType, PlantNetResponse, PlantNetResult, UserProfile } from './types';
 
-type AppTab = 'identify' | 'collection' | 'taxonomy' | 'profile' | 'settings';
+type AppTab = 'identify' | 'collection' | 'taxonomy' | 'profile' | 'friends' | 'settings';
+
+const ACTIVE_TAB_STORAGE_KEY = 'plantdex.active-tab';
 
 type BannerState =
   | { tone: 'error' | 'success'; message: string }
@@ -35,18 +39,66 @@ function resultLabel(result: PlantNetResult) {
   return result.species.commonNames[0] ?? result.species.scientificNameWithoutAuthor;
 }
 
+function isAppTab(value: string | null): value is AppTab {
+  return (
+    value === 'identify' ||
+    value === 'collection' ||
+    value === 'taxonomy' ||
+    value === 'profile' ||
+    value === 'friends' ||
+    value === 'settings'
+  );
+}
+
+function getStoredActiveTab(): AppTab {
+  if (typeof window === 'undefined') {
+    return 'identify';
+  }
+
+  const storedValue = window.localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+  return isAppTab(storedValue) ? storedValue : 'identify';
+}
+
 export default function App() {
-  const { session, user, loading, signIn, signOut, signUp } = useAuth();
+  const {
+    session,
+    user,
+    loading,
+    passwordRecoveryActive,
+    requestPasswordReset,
+    updatePassword,
+    clearPasswordRecovery,
+    signIn,
+    signOut,
+    signUp,
+  } = useAuth();
   const {
     observations,
     loading: plantsLoading,
     error,
     fetchObservations,
     saveObservation,
+    updateObservationZipCode,
     deleteObservation,
     getTaxonomyTree,
     storageMode: collectionMode,
   } = usePlants(user?.id);
+  const {
+    friends,
+    incomingRequests,
+    loading: friendsLoading,
+    adding: friendsAdding,
+    responding: friendsResponding,
+    searchResults,
+    searching: friendsSearching,
+    error: friendsError,
+    storageMode: friendsMode,
+    fetchFriends,
+    searchProfilesByDisplayName,
+    addFriendByDisplayName,
+    acceptFriendRequest,
+    rejectFriendRequest,
+  } = useFriends(user?.id);
   const {
     profile,
     loading: profileLoading,
@@ -57,10 +109,12 @@ export default function App() {
     saveProfile,
   } = useProfile(user?.id, user?.email);
 
-  const [activeTab, setActiveTab] = useState<AppTab>('identify');
+  const [activeTab, setActiveTab] = useState<AppTab>(() => getStoredActiveTab());
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('sign-in');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetPasswordConfirm, setResetPasswordConfirm] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
   const [banner, setBanner] = useState<BannerState>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
@@ -85,20 +139,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || passwordRecoveryActive) {
       return;
     }
 
     void fetchObservations();
-  }, [fetchObservations, user?.id]);
+  }, [fetchObservations, passwordRecoveryActive, user?.id]);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || passwordRecoveryActive) {
+      return;
+    }
+
+    void fetchFriends();
+  }, [fetchFriends, passwordRecoveryActive, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || passwordRecoveryActive) {
       return;
     }
 
     void fetchProfile();
-  }, [fetchProfile, user?.id]);
+  }, [fetchProfile, passwordRecoveryActive, user?.id]);
 
   useEffect(() => {
     if (!error) {
@@ -115,6 +177,14 @@ export default function App() {
 
     setBanner({ tone: 'error', message: profileError });
   }, [profileError]);
+
+  useEffect(() => {
+    if (!friendsError) {
+      return;
+    }
+
+    setBanner({ tone: 'error', message: friendsError });
+  }, [friendsError]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -154,6 +224,24 @@ export default function App() {
     };
   }, [accountMenuOpen]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!session) {
+      setAuthMode('sign-in');
+    }
+
+    setPassword('');
+    setResetPassword('');
+    setResetPasswordConfirm('');
+  }, [session]);
+
   const uniqueSpeciesCount = new Set(
     observations.map((observation) => observation.species || observation.scientific_name),
   ).size;
@@ -161,20 +249,79 @@ export default function App() {
   const userEmail = user?.email ?? 'Account';
   const userLabel = profile?.display_name?.trim() || userEmail;
   const userInitial = userLabel.charAt(0).toUpperCase();
+  const activeAuthMode: AuthMode = passwordRecoveryActive ? 'reset-password' : authMode;
+  const showAuthScreen = !session || passwordRecoveryActive;
+
+  const handleAuthModeChange = (nextMode: AuthMode) => {
+    setAuthMode(nextMode);
+    setBanner(null);
+
+    if (nextMode !== 'sign-in') {
+      setPassword('');
+    }
+
+    if (nextMode !== 'reset-password') {
+      setResetPassword('');
+      setResetPasswordConfirm('');
+    }
+  };
 
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!email.trim() || !password.trim()) {
-      setBanner({ tone: 'error', message: 'Enter both an email and password.' });
-      return;
-    }
-
-    setAuthBusy(true);
     setBanner(null);
 
     try {
-      if (isSignUp) {
+      if (activeAuthMode === 'forgot-password') {
+        if (!email.trim()) {
+          setBanner({ tone: 'error', message: 'Enter the email for your PlantDex account.' });
+          return;
+        }
+
+        setAuthBusy(true);
+        await requestPasswordReset(email.trim());
+        setBanner({
+          tone: 'success',
+          message: 'Reset link sent. Check your inbox and follow the email instructions.',
+        });
+        setAuthMode('sign-in');
+        setPassword('');
+        setResetPassword('');
+        setResetPasswordConfirm('');
+        return;
+      }
+
+      if (activeAuthMode === 'reset-password') {
+        if (!resetPassword || !resetPasswordConfirm) {
+          setBanner({ tone: 'error', message: 'Enter and confirm your new password.' });
+          return;
+        }
+
+        if (resetPassword !== resetPasswordConfirm) {
+          setBanner({ tone: 'error', message: 'The new passwords do not match.' });
+          return;
+        }
+
+        setAuthBusy(true);
+        await updatePassword(resetPassword);
+        clearPasswordRecovery();
+        setResetPassword('');
+        setResetPasswordConfirm('');
+        setBanner({
+          tone: 'success',
+          message: 'Password updated. You can continue using PlantDex.',
+        });
+        return;
+      }
+
+      if (!email.trim() || !password.trim()) {
+        setBanner({ tone: 'error', message: 'Enter both an email and password.' });
+        return;
+      }
+
+      setAuthBusy(true);
+
+      if (activeAuthMode === 'sign-up') {
         await signUp(email.trim(), password);
         setBanner({
           tone: 'success',
@@ -208,6 +355,75 @@ export default function App() {
     setActiveTab('profile');
     setAccountMenuOpen(false);
   };
+
+  const openFriends = () => {
+    setActiveTab('friends');
+    setAccountMenuOpen(false);
+  };
+
+  const handleAddFriend = async (displayName: string) => {
+    setBanner(null);
+
+    try {
+      const result = await addFriendByDisplayName(displayName);
+
+      if (result.isMutual) {
+        setBanner({
+          tone: 'success',
+          message: `${result.friend.display_name} is now in your friends list.`,
+        });
+        return;
+      }
+
+      setBanner({
+        tone: 'success',
+        message: result.alreadyAdded
+          ? `You already added ${result.friend.display_name}. They will appear here once they add you back.`
+          : `Friend request saved for ${result.friend.display_name}. They will appear here once they add you back.`,
+      });
+    } catch (addError) {
+      setBanner({ tone: 'error', message: formatError(addError) });
+    }
+  };
+
+  const handleAcceptRequest = async (request: UserProfile) => {
+    setBanner(null);
+
+    try {
+      const result = await acceptFriendRequest(request);
+
+      setBanner({
+        tone: 'success',
+        message: request.is_placeholder
+          ? 'Friend request accepted.'
+          : `${result.friend.display_name} is now in your friends list.`,
+      });
+    } catch (acceptError) {
+      setBanner({ tone: 'error', message: formatError(acceptError) });
+    }
+  };
+
+  const handleRejectRequest = async (friendUserId: string) => {
+    setBanner(null);
+
+    try {
+      await rejectFriendRequest(friendUserId);
+      setBanner({
+        tone: 'success',
+        message: 'Friend request rejected.',
+      });
+    } catch (rejectError) {
+      setBanner({ tone: 'error', message: formatError(rejectError) });
+    }
+  };
+
+  const handleSearchFriends = useCallback(async (query: string) => {
+    try {
+      await searchProfilesByDisplayName(query);
+    } catch {
+      return;
+    }
+  }, [searchProfilesByDisplayName]);
 
   const handleSaveProfile = async (values: ProfilePanelSaveValues) => {
     if (!user) {
@@ -371,8 +587,9 @@ export default function App() {
     });
 
     try {
-      const [locationResult, uploadResult] = await Promise.all([
-        resolveObservationLocation(originalFile ?? selectedFile),
+      const captureFile = originalFile ?? selectedFile;
+      const [captureResult, uploadResult] = await Promise.all([
+        resolveObservationLocation(captureFile),
         uploadPlantPhoto(user.id, selectedFile),
       ]);
       const savedObservation = await saveObservation({
@@ -384,8 +601,8 @@ export default function App() {
         genus: result.species.genus.scientificName,
         species: result.species.scientificNameWithoutAuthor,
         confidence: result.score,
-        date_found: new Date().toISOString(),
-        zip_code: locationResult.zipCode,
+        date_found: captureResult.dateFound,
+        zip_code: captureResult.zipCode,
       });
 
       setActiveTab('collection');
@@ -394,14 +611,34 @@ export default function App() {
         tone: 'success',
         message:
           uploadResult.storageMode === 'inline'
-            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.${savedObservation.zip_code ? ` Tagged with ZIP ${savedObservation.zip_code}.` : ''}`
-            : `${savedObservation.common_name} was added to your collection.${savedObservation.zip_code ? ` Tagged with ZIP ${savedObservation.zip_code}.` : ''}`,
+            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.${savedObservation.zip_code ? ` Tagged with zipcode found ${savedObservation.zip_code}.` : ''}`
+            : `${savedObservation.common_name} was added to your collection.${savedObservation.zip_code ? ` Tagged with zipcode found ${savedObservation.zip_code}.` : ''}`,
       });
     } catch (saveError) {
       logError('App', 'Save result failed.', saveError);
       setBanner({ tone: 'error', message: formatError(saveError) });
     } finally {
       setSavingSpecies(null);
+    }
+  };
+
+  const handleSaveObservationZipCode = async (observation: Observation, zipCode: string | null) => {
+    setBanner(null);
+
+    try {
+      const updatedObservation = await updateObservationZipCode(observation.id, zipCode);
+      if (selectedObservation?.id === updatedObservation.id) {
+        setSelectedObservation(updatedObservation);
+      }
+
+      setBanner({
+        tone: 'success',
+        message: updatedObservation.zip_code
+          ? `Zipcode found updated to ${updatedObservation.zip_code}.`
+          : 'Zipcode found cleared.',
+      });
+    } catch (updateError) {
+      setBanner({ tone: 'error', message: formatError(updateError) });
     }
   };
 
@@ -445,7 +682,7 @@ export default function App() {
     );
   }
 
-  if (!session) {
+  if (showAuthScreen) {
     return (
       <div className="page-shell">
         <div className="auth-layout">
@@ -479,12 +716,17 @@ export default function App() {
             <AuthPanel
               busy={authBusy}
               email={email}
-              isSignUp={isSignUp}
-              onEmailChange={setEmail}
-              onModeToggle={() => setIsSignUp((value) => !value)}
-              onPasswordChange={setPassword}
-              onSubmit={handleAuthSubmit}
+              mode={activeAuthMode}
               password={password}
+              recoveryEmail={user?.email ?? email}
+              resetPassword={resetPassword}
+              resetPasswordConfirm={resetPasswordConfirm}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onResetPasswordChange={setResetPassword}
+              onResetPasswordConfirmChange={setResetPasswordConfirm}
+              onModeChange={handleAuthModeChange}
+              onSubmit={handleAuthSubmit}
             />
           </div>
         </div>
@@ -572,6 +814,9 @@ export default function App() {
             <div className="account-dropdown" role="menu">
               <button className="account-dropdown__item" onClick={openProfile} type="button">
                 Profile
+              </button>
+              <button className="account-dropdown__item" onClick={openFriends} type="button">
+                Friends
               </button>
               <button className="account-dropdown__item" onClick={openSettings} type="button">
                 Settings
@@ -874,6 +1119,25 @@ export default function App() {
             )}
           </section>
         ) : null}
+
+        {activeTab === 'friends' ? (
+          <section className="panel-stack">
+            <FriendsPanel
+              addBusy={friendsAdding}
+              friends={friends}
+              incomingRequests={incomingRequests}
+              loading={friendsLoading}
+              requestBusy={friendsResponding}
+              onAddFriend={handleAddFriend}
+              onAcceptRequest={handleAcceptRequest}
+              onRejectRequest={handleRejectRequest}
+              onSearchQuery={handleSearchFriends}
+              searchBusy={friendsSearching}
+              searchResults={searchResults}
+              storageMode={friendsMode}
+            />
+          </section>
+        ) : null}
       </main>
 
       {selectedObservation ? (
@@ -882,6 +1146,7 @@ export default function App() {
           onClose={() => setSelectedObservation(null)}
           onDelete={handleDeleteObservation}
           onOpenTaxonomy={openObservationTaxonomy}
+          onSaveZipCode={handleSaveObservationZipCode}
         />
       ) : null}
       <DebugLogPanel />

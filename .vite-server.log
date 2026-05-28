@@ -168,3 +168,1016 @@ Re-optimizing dependencies because vite config has changed
 [LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
 [LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
 [LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:36:11 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:36:11 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[2m9:36:38 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+Re-optimizing dependencies because vite config has changed
+[2m9:36:38 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[2m9:37:09 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ProfilePanel.tsx[22m
+[2m9:37:29 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m9:37:46 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m9:38:02 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'lazazarus'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:43:35 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:44:57 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:45:53 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:46:04 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:46:32 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:46:32 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m9:47:09 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:47:09 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[2m9:47:14 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[2m9:47:31 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[2m9:47:45 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[2m9:47:54 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m9:52:20 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m9:52:28 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:53:22 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:55:16 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m9:55:39 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[2m9:55:46 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[2m9:56:03 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:56:04 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m9:56:30 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m9:56:44 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m9:56:48 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m9:57:15 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m9:57:21 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m9:57:31 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m9:57:35 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jen',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jen',
+  count: 0
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning search matches. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  query: 'm',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  query: 'myle',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  query: 'm',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  query: 'myle',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  query: 'myles',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenn',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jennifer',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferb',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbr',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbru',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrum',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrumle',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrumley',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrumley44',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrumley4',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jenniferbrumley44',
+  count: 0
+}
+[LocalProfileStore] Returning profile. { userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', count: 0 }
+[LocalFriendsStore] Returning search matches. {
+  userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426',
+  query: 'laza',
+  count: 1
+}
+[LocalFriendsStore] Added friend by display name. {
+  userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426',
+  friendUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  alreadyAdded: false,
+  isMutual: false
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426', count: 0 }
+[2m10:08:21 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m10:08:31 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthPanel.tsx[22m
+[2m10:08:43 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthPanel.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:08:52 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:08:59 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:09:16 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:09:33 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[2m10:09:48 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthPanel.tsx[22m
+[2m10:09:56 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m10:10:01 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m10:10:27 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:10:36 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m10:11:38 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthPanel.tsx[22m
+[2m10:12:47 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthPanel.tsx[22m
+[2m10:12:51 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'mlaz',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'mlaz',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'ml',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'm',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'a',
+  count: 0
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'l',
+  count: 0
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'lazazarus'
+}
+[2m10:39:11 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m10:39:14 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m10:39:29 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m10:39:38 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m10:39:49 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m10:40:07 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m10:40:08 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m10:40:41 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[2m10:40:44 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m10:40:44 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[2m10:56:37 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m10:56:45 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m10:56:45 AM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[2m10:57:08 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m10:57:24 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m10:57:36 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m10:57:42 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[2m10:57:47 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[2m11:00:16 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[2m6:12:44 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m6:12:56 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalProfileStore] Returning profile. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', found: false }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Returning profile. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', found: true }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[2m6:13:27 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:13:42 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:14:00 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalFriendsStore] Accepted friend request. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  friendUserId: 'ee6b71ff-483a-4681-bb72-cfdd9d66d426',
+  alreadyAdded: false,
+  isMutual: true
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Returning search matches. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  query: 'jen',
+  count: 1
+}
+[LocalFriendsStore] Added friend by display name. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  friendUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  alreadyAdded: false,
+  isMutual: false
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Accepted friend request. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  friendUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  alreadyAdded: false,
+  isMutual: true
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:17:44 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_6206.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 60867,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2169 }
+[LocalObservationStore] Stored observation. {
+  id: 'ff459778-a4d2-405a-997d-6a9fc0dc90c5',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Goeppertia insignis'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_6206.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 60867,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_7233.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 214081,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_7233.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 214081,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2056 }
+[LocalObservationStore] Stored observation. {
+  id: '1c2922f7-f2ed-4bf9-9134-e7bbb135b360',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Araucaria araucana'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_9469 (1).jpg',
+  fileType: 'image/jpeg',
+  fileSize: 158279,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 1403 }
+[LocalObservationStore] Stored observation. {
+  id: '2886fa78-f98a-4075-8471-005a8cd9bc16',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Maranta leuconeura'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_9472 (1).jpg',
+  fileType: 'image/jpeg',
+  fileSize: 205392,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3078 }
+[LocalObservationStore] Stored observation. {
+  id: 'aa831aba-3941-4d0e-af19-f09622c09ffb',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Epipremnum aureum'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_9472 (1).jpg',
+  fileType: 'image/jpeg',
+  fileSize: 205392,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0304.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 211439,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3052 }
+[2m6:26:32 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:26:37 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:26:50 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m6:26:50 PM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:27:02 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:27:12 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationModal.tsx[22m
+[2m6:27:17 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m6:27:28 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:27:39 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 4 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:28:15 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m6:28:22 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0304.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 211439,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3052 }
+[LocalObservationStore] Stored observation. {
+  id: 'e4e3c6b6-e7d1-4d97-b710-79c9bff418fe',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Asparagus densiflorus'
+}
+[2m6:29:09 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 5 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:29:29 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationModal.tsx[22m
+[2m6:30:23 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationModal.tsx[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:36:29 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ObservationCard.tsx[22m
+[2m6:36:37 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[2m6:43:34 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m6:43:34 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[2m6:43:34 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/FriendsPanel.tsx[22m
+[2m6:43:34 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m6:43:34 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m6:43:35 PM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 5 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:44:17 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m6:44:43 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx[22m
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 5 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:44:55 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m6:44:55 PM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 5 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[2m6:45:33 PM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m6:45:33 PM[22m [36m[1m[vite][22m[39m server restarted.
+[LocalObservationStore] Returning observations. { requestedUserId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 5 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 1 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jenniferbrumley44'
+}
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jennifer'
+}
+[LocalProfileStore] Stored profile. {
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  displayName: 'jennifer'
+}
+[LocalObservationStore] Returning observations. { requestedUserId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 3 }
+[LocalFriendsStore] Returning incoming friend requests. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 0 }
+[LocalFriendsStore] Returning mutual friends. { userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74', count: 2 }
+[LocalProfileStore] Stored profile. {
+  userId: 'a50ab688-a764-4b66-b322-aa77ffe75c74',
+  displayName: 'myles'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0463.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 105023,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2899 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0462.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 127997,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2922 }
+[LocalObservationStore] Stored observation. {
+  id: '109a56f2-f144-4876-90d9-fefaf42a8bca',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Monstera adansonii'
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0461.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 94169,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 2907 }
+[LocalObservationStore] Stored observation. {
+  id: 'fa441888-f92a-497c-b220-966fcf566a48',
+  userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
+  species: 'Monstera adansonii'
+}

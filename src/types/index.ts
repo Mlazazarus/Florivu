@@ -27,8 +27,14 @@ export interface UserProfile {
   home_zip_code?: string | null;
   facebook_url?: string | null;
   is_public: boolean;
+  is_placeholder?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface FriendProfile extends UserProfile {
+  observation_count: number;
+  species_count: number;
 }
 
 export interface Observation {

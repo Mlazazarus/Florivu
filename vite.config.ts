@@ -31,8 +31,20 @@ interface LocalProfileRecord {
   home_zip_code?: string | null;
   facebook_url?: string | null;
   is_public: boolean;
+  is_placeholder?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+interface LocalFriendProfileRecord extends LocalProfileRecord {
+  observation_count: number;
+  species_count: number;
+}
+
+interface LocalFriendshipRecord {
+  user_id: string;
+  friend_user_id: string;
+  created_at: string;
 }
 
 function plantNetProxyPlugin(mode: string): Plugin {
@@ -356,6 +368,63 @@ function localObservationStorePlugin(): Plugin {
         return;
       }
 
+      if (req.method === 'PATCH' && requestUrl.pathname.startsWith('/api/local-observations/')) {
+        const id = decodeURIComponent(
+          requestUrl.pathname.slice('/api/local-observations/'.length),
+        );
+        const userId = requestUrl.searchParams.get('userId');
+        const body = (await readJsonBody(req)) as { zip_code?: unknown };
+
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(body, 'zip_code')) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'zip_code is required.' }));
+          return;
+        }
+
+        const observations = await readObservations();
+        let updatedObservation: LocalObservationRecord | null = null;
+        const nextObservations = observations.map((observation) => {
+          if (observation.id !== id || observation.user_id !== userId) {
+            return observation;
+          }
+
+          const nextZipCode =
+            typeof body.zip_code === 'string'
+              ? body.zip_code.trim() || null
+              : body.zip_code === null
+                ? null
+                : observation.zip_code ?? null;
+
+          updatedObservation = {
+            ...observation,
+            zip_code: nextZipCode,
+          };
+          return updatedObservation;
+        });
+
+        if (!updatedObservation) {
+          res.statusCode = 404;
+          res.end(JSON.stringify({ message: 'Observation not found.' }));
+          return;
+        }
+
+        await writeObservations(nextObservations);
+        console.info('[LocalObservationStore] Updated observation.', {
+          id,
+          userId,
+          zipCode: updatedObservation.zip_code ?? null,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify(updatedObservation));
+        return;
+      }
+
       if (req.method === 'DELETE' && requestUrl.pathname.startsWith('/api/local-observations/')) {
         const id = decodeURIComponent(
           requestUrl.pathname.slice('/api/local-observations/'.length),
@@ -475,11 +544,32 @@ function localProfileStorePlugin(): Plugin {
       if (req.method === 'PUT' && requestUrl.pathname === '/api/local-profile') {
         const profile = await readJsonBody(req);
         const profiles = await readProfiles();
+        const normalizedDisplayName = profile.display_name.trim();
+
+        if (!normalizedDisplayName) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'display_name is required.' }));
+          return;
+        }
+
+        const duplicateProfile = profiles.find(
+          (entry) =>
+            entry.user_id !== profile.user_id &&
+            entry.display_name.trim().toLowerCase() === normalizedDisplayName.toLowerCase(),
+        );
+
+        if (duplicateProfile) {
+          res.statusCode = 409;
+          res.end(JSON.stringify({ message: 'Display name is already in use.' }));
+          return;
+        }
+
         const now = new Date().toISOString();
         const existingProfile = profiles.find((entry) => entry.user_id === profile.user_id);
         const storedProfile: LocalProfileRecord = {
           ...existingProfile,
           ...profile,
+          display_name: normalizedDisplayName,
           created_at: existingProfile?.created_at ?? profile.created_at ?? now,
           updated_at: now,
         };
@@ -520,6 +610,432 @@ function localProfileStorePlugin(): Plugin {
   };
 }
 
+function localFriendsStorePlugin(): Plugin {
+  const friendshipStorePath = resolve(process.cwd(), '.local-data', 'friendships.json');
+  const profileStorePath = resolve(process.cwd(), '.local-data', 'profiles.json');
+  const observationStorePath = resolve(process.cwd(), '.local-data', 'observations.json');
+
+  function rankProfilesByDisplayName(
+    profiles: LocalProfileRecord[],
+    userId: string,
+    query: string,
+  ) {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    return profiles
+      .filter((profile) => {
+        if (profile.user_id === userId) {
+          return false;
+        }
+
+        return profile.display_name.trim().toLowerCase().includes(normalizedQuery);
+      })
+      .sort((left, right) => {
+        const leftName = left.display_name.trim().toLowerCase();
+        const rightName = right.display_name.trim().toLowerCase();
+        const leftIndex = leftName.indexOf(normalizedQuery);
+        const rightIndex = rightName.indexOf(normalizedQuery);
+        const leftPrefixRank = leftIndex === 0 ? 0 : 1;
+        const rightPrefixRank = rightIndex === 0 ? 0 : 1;
+        const leftLengthDelta = Math.abs(leftName.length - normalizedQuery.length);
+        const rightLengthDelta = Math.abs(rightName.length - normalizedQuery.length);
+
+        return (
+          leftPrefixRank - rightPrefixRank ||
+          leftIndex - rightIndex ||
+          leftLengthDelta - rightLengthDelta ||
+          left.display_name.localeCompare(right.display_name, undefined, {
+            sensitivity: 'base',
+          })
+        );
+      })
+      .slice(0, 5);
+  }
+
+  function sortProfilesAlphabetically(profiles: LocalProfileRecord[]) {
+    return [...profiles].sort((left, right) =>
+      left.display_name.localeCompare(right.display_name, undefined, { sensitivity: 'base' }),
+    );
+  }
+
+  function sortFriendsByStats(profiles: LocalFriendProfileRecord[]) {
+    return [...profiles].sort((left, right) => {
+      const speciesDelta = right.species_count - left.species_count;
+      if (speciesDelta !== 0) {
+        return speciesDelta;
+      }
+
+      const observationDelta = right.observation_count - left.observation_count;
+      if (observationDelta !== 0) {
+        return observationDelta;
+      }
+
+      return left.display_name.localeCompare(right.display_name, undefined, {
+        sensitivity: 'base',
+      });
+    });
+  }
+
+  function buildFallbackProfile(userId: string): LocalProfileRecord {
+    const now = new Date().toISOString();
+
+    return {
+      user_id: userId,
+      display_name: `Friend ${userId.slice(0, 8)}`,
+      profile_photo_url: null,
+      home_zip_code: null,
+      facebook_url: null,
+      is_public: false,
+      is_placeholder: true,
+      created_at: now,
+      updated_at: now,
+    };
+  }
+
+  async function loadLocalFriendLists(userId: string) {
+    const [friendships, profiles, observations] = await Promise.all([
+      readLocalArray<LocalFriendshipRecord>(friendshipStorePath),
+      readLocalArray<LocalProfileRecord>(profileStorePath),
+      readLocalArray<LocalObservationRecord>(observationStorePath),
+    ]);
+
+    const outgoingIds = new Set(
+      friendships
+        .filter((friendship) => friendship.user_id === userId)
+        .map((friendship) => friendship.friend_user_id),
+    );
+    const incomingIds = Array.from(
+      new Set(
+        friendships
+          .filter((friendship) => friendship.friend_user_id === userId)
+          .map((friendship) => friendship.user_id),
+      ),
+    );
+    const mutualIds = incomingIds.filter((friendId) => outgoingIds.has(friendId));
+    const incomingRequestIds = incomingIds.filter((friendId) => !outgoingIds.has(friendId));
+
+    const profileMap = new Map(profiles.map((profile) => [profile.user_id, profile]));
+    const observationStats = new Map<
+      string,
+      { observationCount: number; speciesKeys: Set<string> }
+    >();
+
+    for (const observation of observations) {
+      const entry = observationStats.get(observation.user_id) ?? {
+        observationCount: 0,
+        speciesKeys: new Set<string>(),
+      };
+      entry.observationCount += 1;
+      const speciesKey = (observation.species?.trim() || observation.scientific_name.trim())
+        .toLowerCase();
+      if (speciesKey) {
+        entry.speciesKeys.add(speciesKey);
+      }
+      observationStats.set(observation.user_id, entry);
+    }
+
+    const toProfile = (friendId: string) => profileMap.get(friendId) ?? buildFallbackProfile(friendId);
+    const toFriendProfile = (friendId: string): LocalFriendProfileRecord => {
+      const profile = toProfile(friendId);
+      const stats = observationStats.get(friendId);
+
+      return {
+        ...profile,
+        observation_count: stats?.observationCount ?? 0,
+        species_count: stats?.speciesKeys.size ?? 0,
+      };
+    };
+
+    return {
+      mutualFriends: sortFriendsByStats(mutualIds.map(toFriendProfile)),
+      incomingRequests: sortProfilesAlphabetically(incomingRequestIds.map(toProfile)),
+    };
+  }
+
+  async function readLocalArray<T>(filePath: string): Promise<T[]> {
+    try {
+      const contents = await readFile(filePath, 'utf8');
+      const parsed = JSON.parse(contents);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async function writeLocalArray<T>(filePath: string, records: T[]) {
+    await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
+    await writeFile(filePath, JSON.stringify(records, null, 2), 'utf8');
+  }
+
+  async function readJsonBody(req: IncomingMessage) {
+    const request = new Request(`http://local${req.url ?? '/'}`, {
+      method: req.method,
+      headers: req.headers as HeadersInit,
+      body: Readable.toWeb(req as never) as BodyInit,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    return (await request.json()) as { userId?: unknown; displayName?: unknown };
+  }
+
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (!requestUrl.pathname.startsWith('/api/local-friends')) {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+      if (req.method === 'GET' && requestUrl.pathname === '/api/local-friends/search') {
+        const userId = requestUrl.searchParams.get('userId');
+        const query = requestUrl.searchParams.get('query')?.trim() ?? '';
+
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const profiles = await readLocalArray<LocalProfileRecord>(profileStorePath);
+        const matches = rankProfilesByDisplayName(profiles, userId, query);
+
+        console.info('[LocalFriendsStore] Returning search matches.', {
+          userId,
+          query,
+          count: matches.length,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify(matches));
+        return;
+      }
+
+      if (req.method === 'GET' && requestUrl.pathname === '/api/local-friends') {
+        const userId = requestUrl.searchParams.get('userId');
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const { mutualFriends } = await loadLocalFriendLists(userId);
+
+        console.info('[LocalFriendsStore] Returning mutual friends.', {
+          userId,
+          count: mutualFriends.length,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify(mutualFriends));
+        return;
+      }
+
+      if (req.method === 'GET' && requestUrl.pathname === '/api/local-friends/incoming') {
+        const userId = requestUrl.searchParams.get('userId');
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const { incomingRequests } = await loadLocalFriendLists(userId);
+
+        console.info('[LocalFriendsStore] Returning incoming friend requests.', {
+          userId,
+          count: incomingRequests.length,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify(incomingRequests));
+        return;
+      }
+
+      if (req.method === 'POST' && requestUrl.pathname === '/api/local-friends/accept') {
+        const body = await readJsonBody(req);
+        const userId = typeof body.userId === 'string' ? body.userId : '';
+        const friendUserId = typeof body.friendUserId === 'string' ? body.friendUserId : '';
+
+        if (!userId || !friendUserId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId and friendUserId are required.' }));
+          return;
+        }
+
+        const [friendships, profiles] = await Promise.all([
+          readLocalArray<LocalFriendshipRecord>(friendshipStorePath),
+          readLocalArray<LocalProfileRecord>(profileStorePath),
+        ]);
+
+        const targetProfile =
+          profiles.find((profile) => profile.user_id === friendUserId) ?? buildFallbackProfile(friendUserId);
+        const alreadyAdded = friendships.some(
+          (friendship) =>
+            friendship.user_id === userId && friendship.friend_user_id === friendUserId,
+        );
+
+        if (!alreadyAdded) {
+          friendships.push({
+            user_id: userId,
+            friend_user_id: friendUserId,
+            created_at: new Date().toISOString(),
+          });
+          await writeLocalArray(friendshipStorePath, friendships);
+        }
+
+        const isMutual = friendships.some(
+          (friendship) =>
+            friendship.user_id === friendUserId && friendship.friend_user_id === userId,
+        );
+
+        console.info('[LocalFriendsStore] Accepted friend request.', {
+          userId,
+          friendUserId,
+          alreadyAdded,
+          isMutual,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify({ alreadyAdded, friend: targetProfile, isMutual }));
+        return;
+      }
+
+      if (req.method === 'DELETE' && requestUrl.pathname === '/api/local-friends/request') {
+        const userId = requestUrl.searchParams.get('userId');
+        const friendUserId = requestUrl.searchParams.get('friendUserId');
+
+        if (!userId || !friendUserId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId and friendUserId are required.' }));
+          return;
+        }
+
+        const friendships = await readLocalArray<LocalFriendshipRecord>(friendshipStorePath);
+        const nextFriendships = friendships.filter(
+          (friendship) =>
+            !(
+              friendship.user_id === friendUserId &&
+              friendship.friend_user_id === userId
+            ),
+        );
+
+        if (nextFriendships.length === friendships.length) {
+          res.statusCode = 404;
+          res.end(JSON.stringify({ message: 'Friend request not found.' }));
+          return;
+        }
+
+        await writeLocalArray(friendshipStorePath, nextFriendships);
+        console.info('[LocalFriendsStore] Rejected friend request.', {
+          userId,
+          friendUserId,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify({ ok: true }));
+        return;
+      }
+
+      if (req.method === 'POST' && requestUrl.pathname === '/api/local-friends') {
+        const body = await readJsonBody(req);
+        const userId = typeof body.userId === 'string' ? body.userId : '';
+        const displayName =
+          typeof body.displayName === 'string' ? body.displayName.trim() : '';
+
+        if (!userId || !displayName) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId and displayName are required.' }));
+          return;
+        }
+
+        const [friendships, profiles] = await Promise.all([
+          readLocalArray<LocalFriendshipRecord>(friendshipStorePath),
+          readLocalArray<LocalProfileRecord>(profileStorePath),
+        ]);
+
+        const targetProfile =
+          profiles.find(
+            (profile) =>
+              profile.display_name.trim().toLowerCase() === displayName.toLowerCase(),
+          ) ?? null;
+
+        if (!targetProfile) {
+          res.statusCode = 404;
+          res.end(JSON.stringify({ message: 'No user found with that display name.' }));
+          return;
+        }
+
+        if (targetProfile.user_id === userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'You cannot add yourself as a friend.' }));
+          return;
+        }
+
+        const alreadyAdded = friendships.some(
+          (friendship) =>
+            friendship.user_id === userId &&
+            friendship.friend_user_id === targetProfile.user_id,
+        );
+
+        if (!alreadyAdded) {
+          friendships.push({
+            user_id: userId,
+            friend_user_id: targetProfile.user_id,
+            created_at: new Date().toISOString(),
+          });
+          await writeLocalArray(friendshipStorePath, friendships);
+        }
+
+        const isMutual = friendships.some(
+          (friendship) =>
+            friendship.user_id === targetProfile.user_id &&
+            friendship.friend_user_id === userId,
+        );
+
+        console.info('[LocalFriendsStore] Added friend by display name.', {
+          userId,
+          friendUserId: targetProfile.user_id,
+          alreadyAdded,
+          isMutual,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify({ alreadyAdded, friend: targetProfile, isMutual }));
+        return;
+      }
+
+      res.statusCode = 405;
+      res.end(JSON.stringify({ message: 'Method not allowed.' }));
+    } catch (error) {
+      console.error('[LocalFriendsStore] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message: error instanceof Error ? error.message : 'Unexpected local friends store error.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'local-friends-store',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
 function accountAdminPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '');
   const supabaseUrl =
@@ -543,6 +1059,7 @@ function accountAdminPlugin(mode: string): Plugin {
 
   const observationStorePath = resolve(process.cwd(), '.local-data', 'observations.json');
   const profileStorePath = resolve(process.cwd(), '.local-data', 'profiles.json');
+  const friendshipStorePath = resolve(process.cwd(), '.local-data', 'friendships.json');
 
   async function readLocalArray<T>(filePath: string): Promise<T[]> {
     try {
@@ -626,6 +1143,14 @@ function accountAdminPlugin(mode: string): Plugin {
         localProfiles.filter((record) => record.user_id !== userId),
       );
 
+      const localFriendships = await readLocalArray<LocalFriendshipRecord>(friendshipStorePath);
+      await writeLocalArray(
+        friendshipStorePath,
+        localFriendships.filter(
+          (record) => record.user_id !== userId && record.friend_user_id !== userId,
+        ),
+      );
+
       console.info('[AccountAdmin] Deleted account.', { userId });
       res.statusCode = 200;
       res.end(JSON.stringify({ ok: true }));
@@ -658,6 +1183,7 @@ export default defineConfig(({ mode }) => ({
     reverseGeocodePlugin(),
     localObservationStorePlugin(),
     localProfileStorePlugin(),
+    localFriendsStorePlugin(),
     accountAdminPlugin(mode),
   ],
   envPrefix: ['VITE_', 'EXPO_PUBLIC_'],

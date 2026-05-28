@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchLocalProfile, saveLocalProfile } from '../lib/localProfileApi';
+import { saveLocalProfile } from '../lib/localProfileApi';
 import { logError, logInfo } from '../lib/logger';
 import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
@@ -17,19 +17,43 @@ function shouldUseLocalProfileFallback(error: unknown) {
   );
 }
 
-function defaultDisplayName(userEmail: string | undefined) {
-  if (!userEmail) {
-    return 'PlantDex user';
-  }
+function isDuplicateDisplayNameError(error: unknown) {
+  const message =
+    error && typeof error === 'object' && 'message' in error
+      ? String((error as { message: unknown }).message).toLowerCase()
+      : String(error ?? '').toLowerCase();
 
-  return userEmail.split('@')[0] || 'PlantDex user';
+  return (
+    message.includes('duplicate key') ||
+    message.includes('display name is already in use') ||
+    (message.includes('display_name') && message.includes('unique'))
+  );
 }
 
-function createDefaultProfile(userId: string, userEmail: string | undefined): UserProfile {
+function defaultDisplayName(
+  userEmail: string | undefined,
+  userId?: string,
+  variant = 0,
+) {
+  const baseDisplayName = userEmail?.split('@')[0]?.trim() || 'PlantDex user';
+
+  if (variant <= 0 || !userId) {
+    return baseDisplayName;
+  }
+
+  const suffix = userId.slice(0, 6);
+  return variant === 1 ? `${baseDisplayName}-${suffix}` : `${baseDisplayName}-${suffix}-${variant}`;
+}
+
+function createDefaultProfile(
+  userId: string,
+  userEmail: string | undefined,
+  variant = 0,
+): UserProfile {
   const now = new Date().toISOString();
   return {
     user_id: userId,
-    display_name: defaultDisplayName(userEmail),
+    display_name: defaultDisplayName(userEmail, userId, variant),
     profile_photo_url: null,
     home_zip_code: null,
     facebook_url: null,
@@ -75,6 +99,51 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
     setError(null);
     logInfo('Profile', 'Fetching profile.', { userId });
 
+    const persistDefaultProfile = async (
+      variant = 0,
+    ): Promise<{ profile: UserProfile; storageMode: 'supabase' | 'local' }> => {
+      const candidateProfile = createDefaultProfile(userId, userEmail, variant);
+
+      try {
+        const { data: savedProfile, error: saveError } = await supabase
+          .from('profiles')
+          .upsert(candidateProfile, { onConflict: 'user_id' })
+          .select()
+          .single();
+
+        if (saveError) {
+          throw saveError;
+        }
+
+        return {
+          profile: savedProfile as UserProfile,
+          storageMode: 'supabase',
+        };
+      } catch (saveError: any) {
+        if (shouldUseLocalProfileFallback(saveError)) {
+          try {
+            const localSavedProfile = await saveLocalProfile(candidateProfile);
+            return {
+              profile: localSavedProfile,
+              storageMode: 'local',
+            };
+          } catch (localSaveError) {
+            if (variant === 0 && isDuplicateDisplayNameError(localSaveError)) {
+              return persistDefaultProfile(1);
+            }
+
+            throw localSaveError;
+          }
+        }
+
+        if (variant === 0 && isDuplicateDisplayNameError(saveError)) {
+          return persistDefaultProfile(1);
+        }
+
+        throw saveError;
+      }
+    };
+
     try {
       const { data, error: fetchError } = await supabase
         .from('profiles')
@@ -86,21 +155,37 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
         throw fetchError;
       }
 
-      setProfile((data as UserProfile | null) ?? createDefaultProfile(userId, userEmail));
-      setStorageMode('supabase');
-      logInfo('Profile', 'Profile fetch complete.', {
-        userId,
-        hasProfile: Boolean(data),
-      });
+      if (data) {
+        setProfile(data as UserProfile);
+        setStorageMode('supabase');
+        logInfo('Profile', 'Profile fetch complete.', {
+          userId,
+          hasProfile: true,
+        });
+      } else {
+        const { profile: savedProfile, storageMode: nextStorageMode } =
+          await persistDefaultProfile();
+
+        setProfile(savedProfile);
+        setStorageMode(nextStorageMode);
+        logInfo('Profile', 'Default profile created.', {
+          userId,
+          displayName: savedProfile.display_name,
+          storageMode: nextStorageMode,
+        });
+      }
     } catch (fetchError: any) {
       if (shouldUseLocalProfileFallback(fetchError)) {
-        const localProfile = await fetchLocalProfile(userId);
-        setProfile(localProfile ?? createDefaultProfile(userId, userEmail));
-        setStorageMode('local');
+        const { profile: localProfile, storageMode: nextStorageMode } =
+          await persistDefaultProfile();
+        setProfile(localProfile);
+        setStorageMode(nextStorageMode);
         setError(null);
         logInfo('Profile', 'Profiles table missing. Using local profile fallback.', {
           userId,
-          hasLocalProfile: Boolean(localProfile),
+          createdDefaultProfile: true,
+          displayName: localProfile.display_name,
+          storageMode: nextStorageMode,
         });
       } else {
         setError(fetchError.message ?? 'Unknown error');
@@ -121,7 +206,7 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
     const nextProfile: UserProfile = {
       ...existingProfile,
       user_id: userId,
-      display_name: input.display_name.trim() || defaultDisplayName(userEmail),
+      display_name: input.display_name.trim() || defaultDisplayName(userEmail, userId),
       profile_photo_url: input.profile_photo_url ?? null,
       home_zip_code: input.home_zip_code?.trim() || null,
       facebook_url: input.facebook_url?.trim() || null,
@@ -164,9 +249,14 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
         return savedProfile;
       }
 
-      setError(saveError instanceof Error ? saveError.message : 'Unknown error');
+      const nextError = isDuplicateDisplayNameError(saveError)
+        ? new Error('Display name is already in use. Choose another one.')
+        : saveError instanceof Error
+          ? saveError
+          : new Error('Unknown error');
+      setError(nextError.message);
       logError('Profile', 'Profile save failed.', saveError);
-      throw saveError;
+      throw nextError;
     } finally {
       setSaving(false);
     }

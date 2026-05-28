@@ -22,9 +22,6 @@ export default function ObservationCard({
             className="observation-image"
             src={observation.photo_url}
           />
-          {observation.zip_code ? (
-            <span className="collection-location-badge">ZIP {observation.zip_code}</span>
-          ) : null}
         </div>
         <div className="collection-caption">
           <span className="collection-overline">{observation.family}</span>

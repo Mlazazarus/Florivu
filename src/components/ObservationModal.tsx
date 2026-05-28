@@ -1,3 +1,4 @@
+import { FormEvent, useEffect, useState } from 'react';
 import { Observation } from '../types';
 
 const fullDateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -9,6 +10,7 @@ interface ObservationModalProps {
   onClose: () => void;
   onDelete: (observation: Observation) => void;
   onOpenTaxonomy: (observation: Observation) => void;
+  onSaveZipCode: (observation: Observation, zipCode: string | null) => Promise<void>;
 }
 
 export default function ObservationModal({
@@ -16,7 +18,27 @@ export default function ObservationModal({
   onClose,
   onDelete,
   onOpenTaxonomy,
+  onSaveZipCode,
 }: ObservationModalProps) {
+  const [zipCode, setZipCode] = useState(observation.zip_code ?? '');
+  const [savingZipCode, setSavingZipCode] = useState(false);
+
+  useEffect(() => {
+    setZipCode(observation.zip_code ?? '');
+    setSavingZipCode(false);
+  }, [observation]);
+
+  const handleZipCodeSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSavingZipCode(true);
+
+    try {
+      await onSaveZipCode(observation, zipCode);
+    } finally {
+      setSavingZipCode(false);
+    }
+  };
+
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
       <section
@@ -63,13 +85,28 @@ export default function ObservationModal({
               <strong>{observation.species}</strong>
             </div>
             <div>
-              <span>ZIP code</span>
-              <strong>{observation.zip_code ?? 'Not captured'}</strong>
-            </div>
-            <div>
               <span>Recorded</span>
               <strong>{fullDateFormatter.format(new Date(observation.created_at))}</strong>
             </div>
+            <form className="detail-grid__editable" onSubmit={handleZipCodeSubmit}>
+              <label className="field">
+                <span>Zipcode found</span>
+                <input
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(event) => setZipCode(event.target.value)}
+                  placeholder="Not captured"
+                  value={zipCode}
+                />
+              </label>
+              <button
+                className="secondary-button detail-grid__save"
+                disabled={savingZipCode}
+                type="submit"
+              >
+                {savingZipCode ? 'Saving...' : 'Save zipcode'}
+              </button>
+            </form>
           </div>
 
           {observation.notes ? (

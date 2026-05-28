@@ -43,6 +43,32 @@ export async function saveLocalObservation(
   }
 }
 
+export async function updateLocalObservation(
+  id: string,
+  userId: string,
+  updates: Pick<Observation, 'zip_code'>,
+): Promise<Observation> {
+  logInfo('LocalCollection', 'Updating observation in local fallback store.', {
+    id,
+    userId,
+  });
+
+  try {
+    const response = await fetch(
+      `/api/local-observations/${encodeURIComponent(id)}?userId=${encodeURIComponent(userId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      },
+    );
+    return await parseJsonResponse<Observation>(response);
+  } catch (error) {
+    logError('LocalCollection', 'Failed to update local fallback observation.', error);
+    throw error;
+  }
+}
+
 export async function deleteLocalObservation(id: string, userId: string): Promise<void> {
   logInfo('LocalCollection', 'Deleting observation from local fallback store.', {
     id,
