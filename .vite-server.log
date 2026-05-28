@@ -1181,3 +1181,25 @@ Re-optimizing dependencies because vite config has changed
   userId: 'c2495cb7-54b8-4a39-adba-52d1d513c81e',
   species: 'Monstera adansonii'
 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0460.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 93608,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0460.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 93608,
+  organ: 'auto',
+  timeoutMs: 120000
+}
+[PlantNetProxy] Upstream response received. { status: 200, bytes: 3018 }
+[PlantNetProxy] Forwarding identify request. {
+  fileName: 'IMG_0458.jpg',
+  fileType: 'image/jpeg',
+  fileSize: 188388,
+  organ: 'auto',
+  timeoutMs: 120000
+}
