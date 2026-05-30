@@ -15,6 +15,8 @@ create table if not exists observations (
   notes           text,
   is_favorite     boolean not null default false,
   is_house_plant  boolean not null default false,
+  catalog_plant_id text,
+  care_profile_id  text,
   created_at      timestamptz not null default now()
 );
 
@@ -23,7 +25,17 @@ create table if not exists profiles (
   display_name       text not null,
   profile_photo_url  text,
   home_zip_code      text,
+  marketplace_zip_code text,
   facebook_url       text,
+  facebook_user_id   text,
+  facebook_name      text,
+  facebook_connected_at timestamptz,
+  earned_achievement_ids text[] not null default '{}',
+  referred_by_user_id uuid references auth.users(id) on delete set null,
+  selected_avatar_border_id text,
+  selected_profile_title_id text,
+  featured_house_plant_observation_id uuid references observations(id) on delete set null,
+  featured_non_house_plant_observation_id uuid references observations(id) on delete set null,
   is_public          boolean not null default false,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
@@ -40,9 +52,21 @@ create table if not exists friendships (
 alter table observations add column if not exists zip_code text;
 alter table observations add column if not exists is_favorite boolean not null default false;
 alter table observations add column if not exists is_house_plant boolean not null default false;
+alter table observations add column if not exists catalog_plant_id text;
+alter table observations add column if not exists care_profile_id text;
 alter table profiles add column if not exists profile_photo_url text;
 alter table profiles add column if not exists home_zip_code text;
+alter table profiles add column if not exists marketplace_zip_code text;
 alter table profiles add column if not exists facebook_url text;
+alter table profiles add column if not exists facebook_user_id text;
+alter table profiles add column if not exists facebook_name text;
+alter table profiles add column if not exists facebook_connected_at timestamptz;
+alter table profiles add column if not exists earned_achievement_ids text[] not null default '{}';
+alter table profiles add column if not exists referred_by_user_id uuid references auth.users(id) on delete set null;
+alter table profiles add column if not exists selected_avatar_border_id text;
+alter table profiles add column if not exists selected_profile_title_id text;
+alter table profiles add column if not exists featured_house_plant_observation_id uuid references observations(id) on delete set null;
+alter table profiles add column if not exists featured_non_house_plant_observation_id uuid references observations(id) on delete set null;
 alter table profiles add column if not exists is_public boolean not null default false;
 alter table profiles add column if not exists updated_at timestamptz not null default now();
 
@@ -201,6 +225,55 @@ $$;
 revoke all on function public.get_mutual_friend_stats() from public;
 grant execute on function public.get_mutual_friend_stats() to authenticated, service_role;
 
+create or replace function public.get_completed_friend_referral_count()
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+  select count(*)::integer
+  from profiles as p
+  where auth.uid() is not null
+    and p.referred_by_user_id = auth.uid()
+    and exists (
+      select 1
+      from friendships as sent
+      where sent.user_id = auth.uid()
+        and sent.friend_user_id = p.user_id
+    )
+    and exists (
+      select 1
+      from friendships as received
+      where received.user_id = p.user_id
+        and received.friend_user_id = auth.uid()
+    )
+$$;
+
+revoke all on function public.get_completed_friend_referral_count() from public;
+grant execute on function public.get_completed_friend_referral_count() to authenticated, service_role;
+
+create or replace function public.handle_referred_profile_friend_invite()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.referred_by_user_id is not null and new.referred_by_user_id <> new.user_id then
+    insert into friendships (user_id, friend_user_id)
+    values (new.referred_by_user_id, new.user_id)
+    on conflict (user_id, friend_user_id) do nothing;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profile_referral_saved on profiles;
+create trigger on_profile_referral_saved
+after insert or update of referred_by_user_id on profiles
+for each row execute function public.handle_referred_profile_friend_invite();
+
 alter table observations enable row level security;
 alter table profiles enable row level security;
 alter table friendships enable row level security;
@@ -244,9 +317,20 @@ as $$
 declare
   base_display_name text := coalesce(
     nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
-    'PlantDex user'
+    'Florivu user'
   );
   next_display_name text := base_display_name;
+  raw_referred_by_user_id text := nullif(
+    btrim(coalesce(new.raw_user_meta_data ->> 'referred_by_user_id', '')),
+    ''
+  );
+  next_referred_by_user_id uuid := case
+    when raw_referred_by_user_id is not null
+      and raw_referred_by_user_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+      and raw_referred_by_user_id <> new.id::text
+    then raw_referred_by_user_id::uuid
+    else null
+  end;
 begin
   if exists (
     select 1
@@ -256,8 +340,8 @@ begin
     next_display_name := base_display_name || '-' || left(replace(new.id::text, '-', ''), 6);
   end if;
 
-  insert into profiles (user_id, display_name)
-  values (new.id, next_display_name)
+  insert into profiles (user_id, display_name, referred_by_user_id)
+  values (new.id, next_display_name, next_referred_by_user_id)
   on conflict (user_id) do nothing;
 
   return new;

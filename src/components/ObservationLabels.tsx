@@ -90,7 +90,7 @@ export const observationLabelOptions: ObservationLabelOption[] = [
   {
     field: 'is_house_plant',
     label: 'House Plant',
-    description: 'Mark plants that live indoors.',
+    description: 'Mark plants that live inside your home.',
     Icon: HousePlantIcon,
   },
 ];

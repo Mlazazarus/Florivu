@@ -1,58 +1,164 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import plantDexLogo from '../plantdexLogo.png';
+import appLogo from '../florivuLogo.png';
+import AchievementsPanel from './components/AchievementsPanel';
 import AuthPanel, { type AuthMode } from './components/AuthPanel';
+import CollectionMapView from './components/CollectionMapView';
 import DebugLogPanel from './components/DebugLogPanel';
 import FriendsPanel from './components/FriendsPanel';
+import MarketplacePanel from './components/MarketplacePanel';
 import ObservationCard from './components/ObservationCard';
 import ObservationModal from './components/ObservationModal';
-import ProfilePanel, { ProfilePanelSaveValues } from './components/ProfilePanel';
+import ProfilePanel, {
+  type ProfilePanelSaveOptions,
+  ProfilePanelSaveValues,
+} from './components/ProfilePanel';
 import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
 import { useFriends } from './hooks/useFriends';
 import { usePlants } from './hooks/usePlants';
 import { useProfile } from './hooks/useProfile';
+import {
+  type AchievementMetrics,
+  getEarnedAchievements,
+  getAchievementStatuses,
+  getAvatarBorderClassName,
+  getEarnedAchievementIds,
+  getUnlockedProfileTitles,
+  getUnlockedAvatarBorders,
+  isAvatarBorderUnlocked,
+  isProfileTitleUnlocked,
+} from './lib/achievements';
 import { deleteAccount } from './lib/accountApi';
 import { IMAGE_FILE_ACCEPT, prepareImageFile } from './lib/imageFile';
 import { resolveObservationLocation } from './lib/observationLocation';
+import { findPlantCatalogMatch } from './lib/plantCatalog';
 import { identifyPlant } from './lib/plantApi';
+import {
+  buildObservationGeoMetrics,
+  emptyObservationGeoMetrics,
+} from './lib/locationMetrics';
+import { fetchZipCodeMapLocations, normalizeZipCodeForMap } from './lib/zipCodeMap';
 import { uploadPlantPhoto, uploadProfilePhoto } from './lib/storageHelper';
 import { formatError, logError, logInfo } from './lib/logger';
-import { Observation, OrganType, PlantNetResponse, PlantNetResult, UserProfile } from './types';
+import { observationLabelOptions } from './components/ObservationLabels';
+import {
+  Observation,
+  OrganType,
+  PlantNetResponse,
+  PlantNetResult,
+  TaxonomyFamily,
+  UserProfile,
+} from './types';
 
-type AppTab = 'identify' | 'collection' | 'taxonomy' | 'profile' | 'friends' | 'settings';
-type CollectionFilter = 'all' | 'favorites' | 'house-plants' | 'labeled';
+type AppTab =
+  | 'identify'
+  | 'collection'
+  | 'marketplace'
+  | 'profile'
+  | 'friends'
+  | 'achievements'
+  | 'settings';
+type CollectionLabelFilter = 'is_favorite' | 'is_house_plant';
 type CollectionSort = 'newest' | 'favorites-first' | 'house-plants-first' | 'common-name';
+type CollectionView = 'gallery' | 'taxonomy' | 'map';
 
-const ACTIVE_TAB_STORAGE_KEY = 'plantdex.active-tab';
+const ACTIVE_TAB_STORAGE_KEY = 'florivu.active-tab';
+const SIGNUP_REFERRAL_STORAGE_KEY = 'florivu.signup-referral';
+const INVITE_QUERY_KEY = 'invite';
+const INVITE_NAME_QUERY_KEY = 'invite_name';
 
 type BannerState =
   | { tone: 'error' | 'success'; message: string }
   | null;
 
+interface PendingSignupReferral {
+  referredByUserId: string;
+  inviterName: string;
+  signupEmail?: string;
+}
+
 const organs: Array<{ label: string; value: OrganType }> = [
-  { label: 'Auto detect', value: 'auto' },
+  { label: 'Auto choose', value: 'auto' },
   { label: 'Leaf', value: 'leaf' },
   { label: 'Flower', value: 'flower' },
   { label: 'Fruit', value: 'fruit' },
   { label: 'Bark', value: 'bark' },
 ];
 
-const collectionFilterOptions: Array<{ label: string; value: CollectionFilter }> = [
-  { label: 'All plants', value: 'all' },
-  { label: 'Favorites', value: 'favorites' },
-  { label: 'House Plants', value: 'house-plants' },
-  { label: 'Any label', value: 'labeled' },
-];
+const collectionFilterOptions: Array<{ label: string; value: CollectionLabelFilter }> =
+  observationLabelOptions.map((option) => ({
+    label: option.field === 'is_favorite' ? 'Favorites' : 'House plants',
+    value: option.field,
+  }));
 
 const collectionSortOptions: Array<{ label: string; value: CollectionSort }> = [
-  { label: 'Newest first', value: 'newest' },
+  { label: 'Newest', value: 'newest' },
   { label: 'Favorites first', value: 'favorites-first' },
   { label: 'House plants first', value: 'house-plants-first' },
-  { label: 'Common name A-Z', value: 'common-name' },
+  { label: 'Name A-Z', value: 'common-name' },
 ];
+
+const collectionViewOptions: Array<{ label: string; value: CollectionView }> = [
+  { label: 'Gallery', value: 'gallery' },
+  { label: 'Taxonomy', value: 'taxonomy' },
+  { label: 'Map', value: 'map' },
+];
+
+const tabHeroContent: Record<AppTab, { eyebrow: string; title: string; description: string }> = {
+  identify: {
+    eyebrow: 'Discover',
+    title: 'Find a plant from a photo',
+    description:
+      'Snap a leaf, bloom, or full plant and Florivu will suggest likely matches with easy-to-read care tips.',
+  },
+  collection: {
+    eyebrow: 'My Plants',
+    title: 'Browse your collection your way',
+    description:
+      'Switch between a gallery of observations, a taxonomy view, and a map built from saved ZIP codes.',
+  },
+  marketplace: {
+    eyebrow: 'Marketplace',
+    title: 'Turn house plants into ready-to-post listings',
+    description:
+      'Choose a house plant, set a price, and build a listing draft with Florivu notes before you hand it off to Facebook Marketplace or OfferUp.',
+  },
+  profile: {
+    eyebrow: 'Profile',
+    title: 'Make your Florivu profile feel like yours',
+    description:
+      'Update your photo, name, and sharing settings so friends can recognize you and your collection.',
+  },
+  friends: {
+    eyebrow: 'Plant Friends',
+    title: 'Connect with fellow plant people',
+    description:
+      'Send invites, accept requests, and keep an eye on how the people in your circle are growing their collections.',
+  },
+  achievements: {
+    eyebrow: 'Achievements',
+    title: 'Unlock profile cosmetics as you grow',
+    description:
+      'Turn collection progress into cosmetic rewards like avatar borders and titles, then use them to personalize your Florivu profile.',
+  },
+  settings: {
+    eyebrow: 'Account',
+    title: 'Check your account and sync status',
+    description:
+      'Review where your plants are saved and keep your account details organized in one place.',
+  },
+};
 
 function resultLabel(result: PlantNetResult) {
   return result.species.commonNames[0] ?? result.species.scientificNameWithoutAuthor;
+}
+
+function getResultCatalogMatch(result: PlantNetResult) {
+  return findPlantCatalogMatch({
+    commonName: resultLabel(result),
+    scientificName: result.species.scientificName,
+    species: result.species.scientificNameWithoutAuthor,
+  });
 }
 
 function describeObservationLabels(observation: Pick<Observation, 'is_favorite' | 'is_house_plant'>) {
@@ -69,18 +175,23 @@ function describeObservationLabels(observation: Pick<Observation, 'is_favorite' 
   return labels;
 }
 
-function matchesCollectionFilter(observation: Observation, filter: CollectionFilter) {
-  switch (filter) {
-    case 'favorites':
-      return observation.is_favorite;
-    case 'house-plants':
-      return observation.is_house_plant;
-    case 'labeled':
-      return observation.is_favorite || observation.is_house_plant;
-    case 'all':
-    default:
-      return true;
+function matchesCollectionFilters(
+  observation: Observation,
+  filters: CollectionLabelFilter[],
+) {
+  return filters.every((filter) => observation[filter]);
+}
+
+function formatCollectionFilterSummary(filters: CollectionLabelFilter[]) {
+  if (filters.length === 0) {
+    return 'All plants';
   }
+
+  const labels = collectionFilterOptions
+    .filter((option) => filters.includes(option.value))
+    .map((option) => option.label);
+
+  return labels.join(' and ');
 }
 
 function sortCollectionObservations(
@@ -112,13 +223,93 @@ function sortCollectionObservations(
   });
 }
 
+function getNormalizedObservationZipCodes(observations: Observation[]) {
+  const zipCodes = new Set<string>();
+
+  for (const observation of observations) {
+    const normalizedZipCode = normalizeZipCodeForMap(observation.zip_code);
+    if (normalizedZipCode) {
+      zipCodes.add(normalizedZipCode);
+    }
+  }
+
+  return zipCodes;
+}
+
+function normalizeObservationValue(value: string | null | undefined) {
+  const trimmed = value?.trim().toLowerCase();
+  return trimmed ? trimmed : null;
+}
+
+function getObservationSpeciesKey(
+  observation: Pick<Observation, 'species' | 'scientific_name'>,
+) {
+  return (
+    normalizeObservationValue(observation.species) ??
+    normalizeObservationValue(observation.scientific_name)
+  );
+}
+
+function getObservationFamilyKey(observation: Pick<Observation, 'family'>) {
+  return normalizeObservationValue(observation.family);
+}
+
+function buildTaxonomyTree(observations: Observation[]): TaxonomyFamily[] {
+  const familyMap = new Map<string, Map<string, Map<string, Observation[]>>>();
+
+  for (const observation of observations) {
+    if (!familyMap.has(observation.family)) {
+      familyMap.set(observation.family, new Map());
+    }
+
+    const genusMap = familyMap.get(observation.family)!;
+    if (!genusMap.has(observation.genus)) {
+      genusMap.set(observation.genus, new Map());
+    }
+
+    const speciesMap = genusMap.get(observation.genus)!;
+    const key = observation.species || observation.scientific_name;
+
+    if (!speciesMap.has(key)) {
+      speciesMap.set(key, []);
+    }
+
+    speciesMap.get(key)!.push(observation);
+  }
+
+  return Array.from(familyMap.entries())
+    .sort(([left], [right]) => left.localeCompare(right, undefined, { sensitivity: 'base' }))
+    .map(([family, genusMap]) => ({
+      family,
+      genera: Array.from(genusMap.entries())
+        .sort(([left], [right]) => left.localeCompare(right, undefined, { sensitivity: 'base' }))
+        .map(([genus, speciesMap]) => ({
+          genus,
+          species: Array.from(speciesMap.entries())
+            .map(([species, items]) => ({
+              species,
+              scientificName: items[0].scientific_name,
+              observations: items,
+            }))
+            .sort(
+              (left, right) =>
+                right.observations.length - left.observations.length ||
+                left.scientificName.localeCompare(right.scientificName, undefined, {
+                  sensitivity: 'base',
+                }),
+            ),
+        })),
+    }));
+}
+
 function isAppTab(value: string | null): value is AppTab {
   return (
     value === 'identify' ||
     value === 'collection' ||
-    value === 'taxonomy' ||
+    value === 'marketplace' ||
     value === 'profile' ||
     value === 'friends' ||
+    value === 'achievements' ||
     value === 'settings'
   );
 }
@@ -129,7 +320,83 @@ function getStoredActiveTab(): AppTab {
   }
 
   const storedValue = window.localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+  if (storedValue === 'taxonomy') {
+    return 'collection';
+  }
+
   return isAppTab(storedValue) ? storedValue : 'identify';
+}
+
+function haveSameItems(left: string[], right: string[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const leftSet = new Set(left);
+  return right.every((value) => leftSet.has(value));
+}
+
+function normalizePendingSignupReferral(value: unknown): PendingSignupReferral | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const referredByUserId =
+    typeof candidate.referredByUserId === 'string' ? candidate.referredByUserId.trim() : '';
+  const inviterName = typeof candidate.inviterName === 'string' ? candidate.inviterName.trim() : '';
+  const signupEmail = typeof candidate.signupEmail === 'string' ? candidate.signupEmail.trim() : '';
+
+  if (!referredByUserId) {
+    return null;
+  }
+
+  return {
+    referredByUserId,
+    inviterName,
+    signupEmail,
+  };
+}
+
+function readInviteReferralFromUrl(): PendingSignupReferral | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  return normalizePendingSignupReferral({
+    referredByUserId: searchParams.get(INVITE_QUERY_KEY),
+    inviterName: searchParams.get(INVITE_NAME_QUERY_KEY),
+  });
+}
+
+function readStoredSignupReferral(): PendingSignupReferral | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(SIGNUP_REFERRAL_STORAGE_KEY);
+    return storedValue ? normalizePendingSignupReferral(JSON.parse(storedValue)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSignupReferral(referral: PendingSignupReferral) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(SIGNUP_REFERRAL_STORAGE_KEY, JSON.stringify(referral));
+}
+
+function clearStoredSignupReferral() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(SIGNUP_REFERRAL_STORAGE_KEY);
 }
 
 export default function App() {
@@ -167,6 +434,7 @@ export default function App() {
     searching: friendsSearching,
     error: friendsError,
     storageMode: friendsMode,
+    completedReferralCount,
     fetchFriends,
     searchProfilesByDisplayName,
     addFriendByDisplayName,
@@ -200,18 +468,24 @@ export default function App() {
   const [savingSpecies, setSavingSpecies] = useState<string | null>(null);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [taxonomyFocusScientificName, setTaxonomyFocusScientificName] = useState<string | null>(null);
-  const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>('all');
+  const [collectionFilters, setCollectionFilters] = useState<CollectionLabelFilter[]>([]);
   const [collectionSort, setCollectionSort] = useState<CollectionSort>('newest');
+  const [collectionView, setCollectionView] = useState<CollectionView>('gallery');
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [observationGeoMetrics, setObservationGeoMetrics] = useState(
+    emptyObservationGeoMetrics,
+  );
 
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const identifyInFlightRef = useRef(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const achievementSyncInFlightRef = useRef(false);
+  const referralSyncInFlightRef = useRef(false);
 
   useEffect(() => {
-    logInfo('App', 'PlantDex web app mounted.', { origin: window.location.origin });
+    logInfo('App', 'Florivu web app mounted.', { origin: window.location.origin });
   }, []);
 
   useEffect(() => {
@@ -237,6 +511,42 @@ export default function App() {
 
     void fetchProfile();
   }, [fetchProfile, passwordRecoveryActive, user?.id]);
+
+  const collectionZipCodes = getNormalizedObservationZipCodes(observations);
+  const collectionZipCodeKey = Array.from(collectionZipCodes)
+    .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }))
+    .join('|');
+
+  useEffect(() => {
+    if (!collectionZipCodeKey) {
+      setObservationGeoMetrics(emptyObservationGeoMetrics);
+      return;
+    }
+
+    let cancelled = false;
+    const zipCodes = collectionZipCodeKey.split('|');
+
+    void fetchZipCodeMapLocations(zipCodes)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+
+        setObservationGeoMetrics(buildObservationGeoMetrics(result.locations));
+      })
+      .catch((geoMetricsError) => {
+        if (cancelled) {
+          return;
+        }
+
+        setObservationGeoMetrics(emptyObservationGeoMetrics);
+        logError('App', 'Failed to resolve achievement geography metrics.', geoMetricsError);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collectionZipCodeKey]);
 
   useEffect(() => {
     if (!error) {
@@ -318,21 +628,203 @@ export default function App() {
     setResetPasswordConfirm('');
   }, [session]);
 
-  const uniqueSpeciesCount = new Set(
-    observations.map((observation) => observation.species || observation.scientific_name),
-  ).size;
-  const visibleObservations = sortCollectionObservations(
-    observations.filter((observation) => matchesCollectionFilter(observation, collectionFilter)),
-    collectionSort,
+  const speciesCounts = new Map<string, number>();
+  const familyKeys = new Set<string>();
+
+  for (const observation of observations) {
+    const speciesKey = getObservationSpeciesKey(observation);
+    if (speciesKey) {
+      speciesCounts.set(speciesKey, (speciesCounts.get(speciesKey) ?? 0) + 1);
+    }
+
+    const familyKey = getObservationFamilyKey(observation);
+    if (familyKey) {
+      familyKeys.add(familyKey);
+    }
+  }
+
+  const uniqueSpeciesCount = speciesCounts.size;
+  const uniqueFamilyCount = familyKeys.size;
+  const repeatSpeciesCount = Array.from(speciesCounts.values()).reduce(
+    (highestCount, speciesCount) => Math.max(highestCount, speciesCount),
+    0,
   );
+  const favoriteCount = observations.filter((observation) => observation.is_favorite).length;
+  const housePlantCount = observations.filter((observation) => observation.is_house_plant).length;
+  const achievementMetrics: AchievementMetrics = {
+    observationCount: observations.length,
+    speciesCount: uniqueSpeciesCount,
+    familyCount: uniqueFamilyCount,
+    repeatSpeciesCount,
+    friendCount: friends.length,
+    completedReferralCount,
+    housePlantCount,
+    cityCount: observationGeoMetrics.cityCount,
+    countryCount: observationGeoMetrics.countryCount,
+    continentCount: observationGeoMetrics.continentCount,
+  };
+  const earnedAchievementIds = getEarnedAchievementIds(
+    achievementMetrics,
+    profile?.earned_achievement_ids,
+  );
+  const earnedAchievements = getEarnedAchievements(earnedAchievementIds);
+  const achievements = getAchievementStatuses(
+    achievementMetrics,
+    profile?.earned_achievement_ids,
+  );
+  const unlockedAvatarBorders = getUnlockedAvatarBorders(achievements);
+  const unlockedProfileTitles = getUnlockedProfileTitles(achievements);
+  const equippedAvatarBorderId =
+    profile?.selected_avatar_border_id &&
+    isAvatarBorderUnlocked(profile.selected_avatar_border_id, achievements)
+      ? profile.selected_avatar_border_id
+      : null;
+  const equippedProfileTitleId =
+    profile?.selected_profile_title_id &&
+    isProfileTitleUnlocked(profile.selected_profile_title_id, achievements)
+      ? profile.selected_profile_title_id
+      : null;
+  const filteredObservations = observations.filter((observation) =>
+    matchesCollectionFilters(observation, collectionFilters),
+  );
+  const visibleObservations = sortCollectionObservations(filteredObservations, collectionSort);
   const taxonomy = getTaxonomyTree();
+  const collectionTaxonomy = buildTaxonomyTree(filteredObservations);
+  const filteredZipCodes = getNormalizedObservationZipCodes(filteredObservations);
+  const filteredSpeciesCount = new Set(
+    filteredObservations.map((observation) => observation.species || observation.scientific_name),
+  ).size;
+  let mapReadyObservationCount = 0;
+
+  for (const observation of filteredObservations) {
+    if (!normalizeZipCodeForMap(observation.zip_code)) {
+      continue;
+    }
+
+    mapReadyObservationCount += 1;
+  }
+
+  const mapReadyLocationCount = filteredZipCodes.size;
   const userEmail = user?.email ?? 'Account';
   const userLabel = profile?.display_name?.trim() || userEmail;
   const userInitial = userLabel.charAt(0).toUpperCase();
   const activeAuthMode: AuthMode = passwordRecoveryActive ? 'reset-password' : authMode;
   const showAuthScreen = !session || passwordRecoveryActive;
-  const activeCollectionFilterLabel =
-    collectionFilterOptions.find((option) => option.value === collectionFilter)?.label ?? 'All plants';
+  const activeCollectionFilterLabel = formatCollectionFilterSummary(collectionFilters);
+  const inviteReferral = readInviteReferralFromUrl();
+  const inviteReferralName = inviteReferral?.inviterName || 'a Florivu friend';
+
+  useEffect(() => {
+    if (
+      !user ||
+      !profile ||
+      profileSaving ||
+      achievementSyncInFlightRef.current ||
+      referralSyncInFlightRef.current
+    ) {
+      return;
+    }
+
+    const currentEarnedAchievementIds = profile.earned_achievement_ids ?? [];
+    if (haveSameItems(earnedAchievementIds, currentEarnedAchievementIds)) {
+      return;
+    }
+
+    achievementSyncInFlightRef.current = true;
+
+    void saveProfile({
+      display_name: profile.display_name,
+      profile_photo_url: profile.profile_photo_url ?? null,
+      home_zip_code: profile.home_zip_code ?? null,
+      marketplace_zip_code: null,
+      facebook_url: profile.facebook_url ?? null,
+      facebook_user_id: profile.facebook_user_id ?? null,
+      facebook_name: profile.facebook_name ?? null,
+      facebook_connected_at: profile.facebook_connected_at ?? null,
+      earned_achievement_ids: earnedAchievementIds,
+      referred_by_user_id: profile.referred_by_user_id ?? null,
+      selected_avatar_border_id: profile.selected_avatar_border_id ?? null,
+      selected_profile_title_id: profile.selected_profile_title_id ?? null,
+      is_public: profile.is_public,
+    })
+      .catch((achievementError) => {
+        logError('App', 'Failed to sync earned achievements.', achievementError);
+      })
+      .finally(() => {
+        achievementSyncInFlightRef.current = false;
+      });
+  }, [earnedAchievementIds, profile, profileSaving, saveProfile, user]);
+
+  useEffect(() => {
+    if (
+      !user ||
+      !profile ||
+      profileSaving ||
+      achievementSyncInFlightRef.current ||
+      referralSyncInFlightRef.current
+    ) {
+      return;
+    }
+
+    const storedSignupReferral = readStoredSignupReferral();
+    if (!storedSignupReferral) {
+      return;
+    }
+
+    if (
+      storedSignupReferral.signupEmail &&
+      storedSignupReferral.signupEmail.toLowerCase() !==
+        (user.email ? user.email.trim().toLowerCase() : '')
+    ) {
+      return;
+    }
+
+    if (storedSignupReferral.referredByUserId === user.id) {
+      clearStoredSignupReferral();
+      return;
+    }
+
+    if (profile.referred_by_user_id === storedSignupReferral.referredByUserId) {
+      clearStoredSignupReferral();
+      return;
+    }
+
+    if (profile.referred_by_user_id) {
+      clearStoredSignupReferral();
+      return;
+    }
+
+    referralSyncInFlightRef.current = true;
+
+    void saveProfile({
+      display_name: profile.display_name,
+      profile_photo_url: profile.profile_photo_url ?? null,
+      home_zip_code: profile.home_zip_code ?? null,
+      marketplace_zip_code: null,
+      facebook_url: profile.facebook_url ?? null,
+      facebook_user_id: profile.facebook_user_id ?? null,
+      facebook_name: profile.facebook_name ?? null,
+      facebook_connected_at: profile.facebook_connected_at ?? null,
+      earned_achievement_ids: profile.earned_achievement_ids ?? [],
+      referred_by_user_id: storedSignupReferral.referredByUserId,
+      selected_avatar_border_id: profile.selected_avatar_border_id ?? null,
+      selected_profile_title_id: profile.selected_profile_title_id ?? null,
+      is_public: profile.is_public,
+    })
+      .then(() => {
+        clearStoredSignupReferral();
+        setBanner({
+          tone: 'success',
+          message: `Invite linked. Add ${storedSignupReferral.inviterName || 'your inviter'} back in Friends to complete the connection.`,
+        });
+      })
+      .catch((referralError) => {
+        logError('App', 'Failed to sync signup referral.', referralError);
+      })
+      .finally(() => {
+        referralSyncInFlightRef.current = false;
+      });
+  }, [profile, profileSaving, saveProfile, user]);
 
   const handleAuthModeChange = (nextMode: AuthMode) => {
     setAuthMode(nextMode);
@@ -356,7 +848,7 @@ export default function App() {
     try {
       if (activeAuthMode === 'forgot-password') {
         if (!email.trim()) {
-          setBanner({ tone: 'error', message: 'Enter the email for your PlantDex account.' });
+          setBanner({ tone: 'error', message: 'Enter the email for your Florivu account.' });
           return;
         }
 
@@ -391,7 +883,7 @@ export default function App() {
         setResetPasswordConfirm('');
         setBanner({
           tone: 'success',
-          message: 'Password updated. You can continue using PlantDex.',
+          message: 'Password updated. You are ready to keep going.',
         });
         return;
       }
@@ -404,10 +896,18 @@ export default function App() {
       setAuthBusy(true);
 
       if (activeAuthMode === 'sign-up') {
-        await signUp(email.trim(), password);
+        await signUp(email.trim(), password, inviteReferral?.referredByUserId ?? null);
+        if (inviteReferral) {
+          writeStoredSignupReferral({
+            ...inviteReferral,
+            signupEmail: email.trim().toLowerCase(),
+          });
+        }
         setBanner({
           tone: 'success',
-          message: 'Account created. Check your inbox if email confirmation is enabled.',
+          message: inviteReferral
+            ? `Your account is ready. Check your inbox if email confirmation is turned on, then add ${inviteReferralName} back in Friends.`
+            : 'Your account is ready. Check your inbox if email confirmation is turned on.',
         });
       } else {
         await signIn(email.trim(), password);
@@ -422,7 +922,7 @@ export default function App() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      setBanner({ tone: 'success', message: 'Signed out.' });
+      setBanner({ tone: 'success', message: 'You are signed out.' });
     } catch (signOutError) {
       setBanner({ tone: 'error', message: formatError(signOutError) });
     }
@@ -438,8 +938,8 @@ export default function App() {
     setAccountMenuOpen(false);
   };
 
-  const openFriends = () => {
-    setActiveTab('friends');
+  const openAchievements = () => {
+    setActiveTab('achievements');
     setAccountMenuOpen(false);
   };
 
@@ -452,7 +952,7 @@ export default function App() {
       if (result.isMutual) {
         setBanner({
           tone: 'success',
-          message: `${result.friend.display_name} is now in your friends list.`,
+          message: `You are now connected with ${result.friend.display_name}.`,
         });
         return;
       }
@@ -460,8 +960,8 @@ export default function App() {
       setBanner({
         tone: 'success',
         message: result.alreadyAdded
-          ? `You already added ${result.friend.display_name}. They will appear here once they add you back.`
-          : `Friend request saved for ${result.friend.display_name}. They will appear here once they add you back.`,
+          ? `Your invite to ${result.friend.display_name} is still waiting for them to add you back.`
+          : `Invite sent to ${result.friend.display_name}. They will appear here once they add you back.`,
       });
     } catch (addError) {
       setBanner({ tone: 'error', message: formatError(addError) });
@@ -477,8 +977,8 @@ export default function App() {
       setBanner({
         tone: 'success',
         message: request.is_placeholder
-          ? 'Friend request accepted.'
-          : `${result.friend.display_name} is now in your friends list.`,
+          ? 'Invite accepted.'
+          : `You are now connected with ${result.friend.display_name}.`,
       });
     } catch (acceptError) {
       setBanner({ tone: 'error', message: formatError(acceptError) });
@@ -492,7 +992,7 @@ export default function App() {
       await rejectFriendRequest(friendUserId);
       setBanner({
         tone: 'success',
-        message: 'Friend request rejected.',
+        message: 'Invite ignored.',
       });
     } catch (rejectError) {
       setBanner({ tone: 'error', message: formatError(rejectError) });
@@ -507,16 +1007,50 @@ export default function App() {
     }
   }, [searchProfilesByDisplayName]);
 
-  const handleSaveProfile = async (values: ProfilePanelSaveValues) => {
+  const handleSaveProfile = async (
+    values: ProfilePanelSaveValues,
+    options: ProfilePanelSaveOptions = {},
+  ) => {
     if (!user) {
-      setBanner({ tone: 'error', message: 'Sign in before editing your profile.' });
-      return;
+      const missingUserError = new Error('Sign in before editing your profile.');
+      setBanner({ tone: 'error', message: missingUserError.message });
+      throw missingUserError;
     }
 
-    setBanner(null);
+    if (!options.silent) {
+      setBanner(null);
+    }
 
     try {
       let nextProfilePhotoUrl = values.profilePhotoUrl;
+      const housePlantObservationIds = new Set(
+        observations.filter((observation) => observation.is_house_plant).map((observation) => observation.id),
+      );
+      const nonHousePlantObservationIds = new Set(
+        observations
+          .filter((observation) => !observation.is_house_plant)
+          .map((observation) => observation.id),
+      );
+      const nextFeaturedHousePlantObservationId =
+        values.featuredHousePlantObservationId &&
+        housePlantObservationIds.has(values.featuredHousePlantObservationId)
+          ? values.featuredHousePlantObservationId
+          : null;
+      const nextFeaturedNonHousePlantObservationId =
+        values.featuredNonHousePlantObservationId &&
+        nonHousePlantObservationIds.has(values.featuredNonHousePlantObservationId)
+          ? values.featuredNonHousePlantObservationId
+          : null;
+      const nextSelectedAvatarBorderId =
+        values.selectedAvatarBorderId &&
+        isAvatarBorderUnlocked(values.selectedAvatarBorderId, achievements)
+          ? values.selectedAvatarBorderId
+          : null;
+      const nextSelectedProfileTitleId =
+        values.selectedProfileTitleId &&
+        isProfileTitleUnlocked(values.selectedProfileTitleId, achievements)
+          ? values.selectedProfileTitleId
+          : null;
 
       if (values.profilePhotoFile) {
         const uploadResult = await uploadProfilePhoto(user.id, values.profilePhotoFile);
@@ -527,29 +1061,33 @@ export default function App() {
         display_name: values.displayName,
         profile_photo_url: nextProfilePhotoUrl,
         home_zip_code: values.homeZipCode,
+        marketplace_zip_code: null,
         facebook_url: values.facebookUrl,
+        facebook_user_id: values.facebookUserId,
+        facebook_name: values.facebookName,
+        facebook_connected_at: values.facebookConnectedAt,
+        earned_achievement_ids: earnedAchievementIds,
+        selected_avatar_border_id: nextSelectedAvatarBorderId,
+        selected_profile_title_id: nextSelectedProfileTitleId,
+        featured_house_plant_observation_id: nextFeaturedHousePlantObservationId,
+        featured_non_house_plant_observation_id: nextFeaturedNonHousePlantObservationId,
         is_public: values.isPublic,
       });
 
-      setBanner({
-        tone: 'success',
-        message: 'Profile updated.',
-      });
+      if (!options.silent) {
+        setBanner({
+          tone: 'success',
+          message: 'Profile updated.',
+        });
+      }
     } catch (saveError) {
       setBanner({ tone: 'error', message: formatError(saveError) });
+      throw saveError;
     }
   };
 
   const handleDeleteAccount = async () => {
     if (!user) {
-      return;
-    }
-
-    const confirmed = window.confirm(
-      'Delete your PlantDex account and associated data? This cannot be undone.',
-    );
-
-    if (!confirmed) {
       return;
     }
 
@@ -643,7 +1181,7 @@ export default function App() {
       setResults(nextResults);
       setBanner({
         tone: 'success',
-        message: `PlantNet returned ${nextResults.results.length} likely matches.`,
+        message: `We found ${nextResults.results.length} likely matches.`,
       });
     } catch (identifyError) {
       logError('App', 'Identify action failed.', identifyError);
@@ -661,11 +1199,14 @@ export default function App() {
     }
 
     const speciesName = result.species.scientificNameWithoutAuthor;
+    const catalogMatch = getResultCatalogMatch(result);
     setSavingSpecies(speciesName);
     setBanner(null);
     logInfo('App', 'Saving result to collection.', {
       species: speciesName,
       commonName: resultLabel(result),
+      catalogPlantId: catalogMatch?.plant.id ?? null,
+      careProfileId: catalogMatch?.plant.care_profile_id ?? null,
     });
 
     try {
@@ -687,16 +1228,24 @@ export default function App() {
         zip_code: captureResult.zipCode,
         is_favorite: false,
         is_house_plant: false,
+        catalog_plant_id: catalogMatch?.plant.id ?? null,
+        care_profile_id: catalogMatch?.plant.care_profile_id ?? null,
       });
+
+      const zipCodeMessage = savedObservation.zip_code
+        ? ` Saved with ZIP ${savedObservation.zip_code}.`
+        : '';
+      const catalogMessage = catalogMatch?.careProfile
+        ? ' A care guide is ready to view.'
+        : catalogMatch?.plant
+          ? ' Plant notes are ready to view.'
+          : '';
 
       setActiveTab('collection');
       setSelectedObservation(savedObservation);
       setBanner({
         tone: 'success',
-        message:
-          uploadResult.storageMode === 'inline'
-            ? `${savedObservation.common_name} was added to your collection. Storage bucket missing, so the image was saved inline.${savedObservation.zip_code ? ` Tagged with zipcode found ${savedObservation.zip_code}.` : ''}`
-            : `${savedObservation.common_name} was added to your collection.${savedObservation.zip_code ? ` Tagged with zipcode found ${savedObservation.zip_code}.` : ''}`,
+        message: `${savedObservation.common_name} was added to My Plants.${zipCodeMessage}${catalogMessage}`,
       });
     } catch (saveError) {
       logError('App', 'Save result failed.', saveError);
@@ -718,8 +1267,8 @@ export default function App() {
       setBanner({
         tone: 'success',
         message: updatedObservation.zip_code
-          ? `Zipcode found updated to ${updatedObservation.zip_code}.`
-          : 'Zipcode found cleared.',
+          ? `Location note updated to ZIP ${updatedObservation.zip_code}.`
+          : 'Location note cleared.',
       });
     } catch (updateError) {
       setBanner({ tone: 'error', message: formatError(updateError) });
@@ -755,11 +1304,12 @@ export default function App() {
   const openObservationTaxonomy = (observation: Observation) => {
     setTaxonomyFocusScientificName(observation.scientific_name);
     setSelectedObservation(null);
-    setActiveTab('taxonomy');
+    setCollectionView('taxonomy');
+    setActiveTab('collection');
   };
 
   const handleDeleteObservation = async (observation: Observation) => {
-    const confirmed = window.confirm(`Remove ${observation.common_name} from your collection?`);
+    const confirmed = window.confirm(`Remove ${observation.common_name} from My Plants?`);
 
     if (!confirmed) {
       logInfo('App', 'Observation delete canceled by user.', { id: observation.id });
@@ -775,7 +1325,7 @@ export default function App() {
 
       setBanner({
         tone: 'success',
-        message: `${observation.common_name} was removed from your collection.`,
+        message: `${observation.common_name} was removed from My Plants.`,
       });
     } catch (deleteError) {
       logError('App', 'Delete observation failed.', deleteError);
@@ -787,7 +1337,7 @@ export default function App() {
     return (
       <div className="page-shell page-shell--loading">
         <div className="loading-orb" />
-        <p>Loading PlantDex...</p>
+        <p>Loading Florivu...</p>
       </div>
     );
   }
@@ -797,24 +1347,24 @@ export default function App() {
       <div className="page-shell">
         <div className="auth-layout">
           <aside className="auth-hero">
-            <p className="eyebrow">Browser-first field notes</p>
-            <h1>Plant identification that behaves like a real website.</h1>
+            <p className="eyebrow">Your plant companion</p>
+            <h1>Identify plants, save favorites, and revisit care tips anytime.</h1>
             <p className="lead">
-              Use your phone browser or desktop to upload a plant photo, inspect likely matches,
-              and keep a living collection without Expo Go in the loop.
+              Use your phone or desktop to snap a plant, check likely matches, and build a collection
+              that feels simple enough to use every day.
             </p>
             <div className="feature-stack">
               <div className="feature-card">
-                <strong>Upload from camera or gallery</strong>
-                <span>Works from a normal file input, including mobile capture.</span>
+                <strong>Snap or upload in seconds</strong>
+                <span>Use your camera roll or take a fresh photo when a new plant catches your eye.</span>
               </div>
               <div className="feature-card">
-                <strong>Save to Supabase</strong>
-                <span>Observations and photo URLs stay in your existing backend.</span>
+                <strong>Save care tips with each plant</strong>
+                <span>Keep an easy reference for light, watering, and other basics right in your collection.</span>
               </div>
               <div className="feature-card">
-                <strong>Browse your taxonomy tree</strong>
-                <span>Collection and classification are readable on any screen size.</span>
+                <strong>Browse your collection your way</strong>
+                <span>See favorites, house plants, and your taxonomy groups without digging through menus.</span>
               </div>
             </div>
           </aside>
@@ -822,6 +1372,11 @@ export default function App() {
           <div>
             {banner ? (
               <div className={`banner banner--${banner.tone}`}>{banner.message}</div>
+            ) : null}
+            {inviteReferral ? (
+              <div className="banner banner--success">
+                {`You were invited by ${inviteReferralName}. Create your account, then add them back in Friends to help them earn Seed Spreader and Dandilion.`}
+              </div>
             ) : null}
             <AuthPanel
               busy={authBusy}
@@ -849,23 +1404,8 @@ export default function App() {
       <div className="app-backdrop" />
       <header className="site-header">
         <div className="header-brand">
-          <img alt="PlantDex" className="header-brand__logo" src={plantDexLogo} />
-          <h1 className="header-brand__wordmark">plantdex</h1>
-        </div>
-
-        <div className="header-stats" aria-label="Collection stats">
-          <div className="header-stat">
-            <span>Observations</span>
-            <strong>{observations.length}</strong>
-          </div>
-          <div className="header-stat">
-            <span>Species</span>
-            <strong>{uniqueSpeciesCount}</strong>
-          </div>
-          <div className="header-stat">
-            <span>Families</span>
-            <strong>{taxonomy.length}</strong>
-          </div>
+          <img alt="Florivu" className="header-brand__logo" src={appLogo} />
+          <h1 className="header-brand__wordmark">Florivu</h1>
         </div>
 
         <div className="header-actions">
@@ -875,71 +1415,99 @@ export default function App() {
               onClick={() => setActiveTab('identify')}
               type="button"
             >
-              Identify
+              Discover
+            </button>
+            <button
+              className={activeTab === 'marketplace' ? 'tab-button active' : 'tab-button'}
+              onClick={() => setActiveTab('marketplace')}
+              type="button"
+            >
+              Marketplace
             </button>
             <button
               className={activeTab === 'collection' ? 'tab-button active' : 'tab-button'}
               onClick={() => setActiveTab('collection')}
               type="button"
             >
-              Collection
+              My Plants
             </button>
             <button
-              className={activeTab === 'taxonomy' ? 'tab-button active' : 'tab-button'}
-              onClick={() => setActiveTab('taxonomy')}
+              className={activeTab === 'friends' ? 'tab-button active' : 'tab-button'}
+              onClick={() => setActiveTab('friends')}
               type="button"
             >
-              Taxonomy
+              Friends
             </button>
           </nav>
         </div>
 
-        <div className="account-menu" ref={accountMenuRef}>
-          <button
-            aria-expanded={accountMenuOpen}
-            aria-haspopup="menu"
-            className="account-trigger"
-            onClick={() => setAccountMenuOpen((value) => !value)}
-            type="button"
-          >
-            <span className="account-trigger__avatar">
-              {profile?.profile_photo_url ? (
-                <img
-                  alt={userLabel}
-                  className="account-trigger__avatar-image"
-                  src={profile.profile_photo_url}
-                />
-              ) : (
-                userInitial
-              )}
-            </span>
-            <span className="account-trigger__label">
-              <strong>{userLabel}</strong>
-              <span>{userEmail}</span>
-            </span>
-            <span className="account-trigger__chevron">{accountMenuOpen ? '^' : 'v'}</span>
-          </button>
-
-          {accountMenuOpen ? (
-            <div className="account-dropdown" role="menu">
-              <button className="account-dropdown__item" onClick={openProfile} type="button">
-                Profile
-              </button>
-              <button className="account-dropdown__item" onClick={openFriends} type="button">
-                Friends
-              </button>
-              <button className="account-dropdown__item" onClick={openSettings} type="button">
-                Settings
-              </button>
-              <button
-                className="account-dropdown__item account-dropdown__item--danger"
-                onClick={handleSignOut}
-                type="button"
-              >
-                Logout
-              </button>
+        <div className="header-controls">
+          <div className="header-stats" aria-label="Collection stats">
+            <div className="header-stat">
+              <span>Observations</span>
+              <strong>{observations.length}</strong>
             </div>
-          ) : null}
+            <div className="header-stat">
+              <span>Species</span>
+              <strong>{uniqueSpeciesCount}</strong>
+            </div>
+            <div className="header-stat">
+              <span>Families</span>
+              <strong>{taxonomy.length}</strong>
+            </div>
+          </div>
+
+          <div className="account-menu" ref={accountMenuRef}>
+            <button
+              aria-expanded={accountMenuOpen}
+              aria-haspopup="menu"
+              className="account-trigger"
+              onClick={() => setAccountMenuOpen((value) => !value)}
+              type="button"
+            >
+              <span
+                className={`account-trigger__avatar ${getAvatarBorderClassName(
+                  equippedAvatarBorderId,
+                )}`.trim()}
+              >
+                {profile?.profile_photo_url ? (
+                  <img
+                    alt={userLabel}
+                    className="account-trigger__avatar-image"
+                    src={profile.profile_photo_url}
+                  />
+                ) : (
+                  userInitial
+                )}
+              </span>
+              <span className="account-trigger__label">
+                <strong>{userLabel}</strong>
+                <span>{userEmail}</span>
+              </span>
+              <span className="account-trigger__chevron">{accountMenuOpen ? '^' : 'v'}</span>
+            </button>
+
+            {accountMenuOpen ? (
+              <div className="account-dropdown" role="menu">
+                <button className="account-dropdown__item" onClick={openProfile} type="button">
+                  My profile
+                </button>
+                <button className="account-dropdown__item" onClick={openAchievements} type="button">
+                  Achievements
+                </button>
+                <button className="account-dropdown__item" onClick={openSettings} type="button">
+                  App settings
+                </button>
+                <button
+                  className="account-dropdown__item account-dropdown__item--danger"
+                  onClick={handleSignOut}
+                  type="button"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -953,17 +1521,39 @@ export default function App() {
       ) : null}
 
       <main className="workspace">
+        <section className="hero-strip">
+          <div className="hero-copy">
+            <p className="eyebrow">{tabHeroContent[activeTab].eyebrow}</p>
+            <h2>{tabHeroContent[activeTab].title}</h2>
+            <p>{tabHeroContent[activeTab].description}</p>
+          </div>
+          <div className="hero-metrics" aria-label="Quick collection overview">
+            <div className="metric-card">
+              <span>Observations</span>
+              <strong>{observations.length}</strong>
+            </div>
+            <div className="metric-card">
+              <span>Favorites</span>
+              <strong>{favoriteCount}</strong>
+            </div>
+            <div className="metric-card">
+              <span>My plants</span>
+              <strong>{housePlantCount}</strong>
+            </div>
+          </div>
+        </section>
+
         {activeTab === 'identify' ? (
           <section className="panel-stack panel-stack--identify">
             <div className="panel panel--identify-input">
               <div className="panel-header">
                 <div>
-                  <p className="eyebrow">Step 1</p>
-                  <h2>Choose a plant photo</h2>
+                  <p className="eyebrow">Photo</p>
+                  <h2>Choose a clear plant photo</h2>
                 </div>
                 {selectedFile ? (
                   <button className="ghost-link" onClick={clearSelection} type="button">
-                    Clear selection
+                    Start over
                   </button>
                 ) : null}
               </div>
@@ -978,8 +1568,8 @@ export default function App() {
                     />
                   ) : (
                     <div className="preview-placeholder preview-placeholder--compact">
-                      <strong>No photo selected yet.</strong>
-                      <span>Use the camera button on your phone or choose a file from your library.</span>
+                      <strong>No photo yet.</strong>
+                      <span>Use your camera or choose a picture from your library to get started.</span>
                     </div>
                   )}
                 </div>
@@ -1007,19 +1597,19 @@ export default function App() {
                       onClick={() => libraryInputRef.current?.click()}
                       type="button"
                     >
-                      Upload from gallery
+                      Choose photo
                     </button>
                     <button
                       className="secondary-button"
                       onClick={() => cameraInputRef.current?.click()}
                       type="button"
                     >
-                      Use camera
+                      Take photo
                     </button>
                   </div>
 
                   <label className="field">
-                    <span>Plant organ to emphasize</span>
+                    <span>Focus on</span>
                     <select
                       value={organ}
                       onChange={(event) => setOrgan(event.target.value as OrganType)}
@@ -1038,11 +1628,11 @@ export default function App() {
                     onClick={handleIdentify}
                     type="button"
                   >
-                    {identifying ? 'Identifying...' : 'Identify plant'}
+                    {identifying ? 'Finding matches...' : 'Find my plant'}
                   </button>
 
                   <p className="field-hint">
-                    Best results usually come from a clear single-subject photo in natural light. JPG, PNG, WebP, HEIC, HEIF, GIF, BMP, and AVIF are accepted.
+                    Clear close-up photos in natural light usually work best. JPG, PNG, WebP, HEIC, HEIF, GIF, BMP, and AVIF are accepted.
                   </p>
                 </div>
               </div>
@@ -1051,48 +1641,65 @@ export default function App() {
             <div className="panel panel--results">
               <div className="panel-header">
                 <div>
-                  <p className="eyebrow">Step 2</p>
-                  <h2>Review likely matches</h2>
+                  <p className="eyebrow">Matches</p>
+                  <h2>Review your best matches</h2>
                 </div>
               </div>
 
               {results ? (
                 <div className="result-stack">
-                  {results.results.map((result, index) => (
-                    <article
-                      className={index === 0 ? 'result-card result-card--lead' : 'result-card'}
-                      key={result.species.scientificName}
-                    >
-                      <div className="result-heading">
-                        <div>
-                          <span className="result-rank">{index === 0 ? 'Top match' : `Option ${index + 1}`}</span>
-                          <h3>{resultLabel(result)}</h3>
-                          <p>{result.species.scientificName}</p>
-                        </div>
-                        <strong>{Math.round(result.score * 100)}%</strong>
-                      </div>
+                  {results.results.map((result, index) => {
+                    const catalogMatch = getResultCatalogMatch(result);
 
-                      <div className="tag-row">
-                        <span className="tag">{result.species.family.scientificName}</span>
-                        <span className="tag">{result.species.genus.scientificName}</span>
-                        <span className="tag">{result.species.scientificNameWithoutAuthor}</span>
-                      </div>
-
-                      <button
-                        className="secondary-button"
-                        disabled={savingSpecies === result.species.scientificNameWithoutAuthor}
-                        onClick={() => handleSaveResult(result)}
-                        type="button"
+                    return (
+                      <article
+                        className={index === 0 ? 'result-card result-card--lead' : 'result-card'}
+                        key={result.species.scientificName}
                       >
-                        {savingSpecies === result.species.scientificNameWithoutAuthor ? 'Saving...' : 'Save to collection'}
-                      </button>
-                    </article>
-                  ))}
+                        <div className="result-heading">
+                          <div>
+                            <span className="result-rank">{index === 0 ? 'Top match' : `Option ${index + 1}`}</span>
+                            <h3>{resultLabel(result)}</h3>
+                            <p>{result.species.scientificName}</p>
+                          </div>
+                          <strong>{Math.round(result.score * 100)}%</strong>
+                        </div>
+
+                        <div className="tag-row">
+                          <span className="tag">{result.species.family.scientificName}</span>
+                          <span className="tag">{result.species.genus.scientificName}</span>
+                          <span className="tag">{result.species.scientificNameWithoutAuthor}</span>
+                        </div>
+
+                        <div className={catalogMatch ? 'result-catalog-preview' : 'result-catalog-preview result-catalog-preview--muted'}>
+                          <span className="result-catalog-preview__eyebrow">
+                            {catalogMatch ? 'Care overview included' : 'Care overview'}
+                          </span>
+                          <strong>
+                            {catalogMatch?.careProfile?.name ?? 'No saved care guide yet'}
+                          </strong>
+                          <p>
+                            {catalogMatch?.plant.care_summary ??
+                              'You can still save this plant, but Florivu does not have a bundled care guide for it yet.'}
+                          </p>
+                        </div>
+
+                        <button
+                          className="secondary-button"
+                          disabled={savingSpecies === result.species.scientificNameWithoutAuthor}
+                          onClick={() => handleSaveResult(result)}
+                          type="button"
+                        >
+                          {savingSpecies === result.species.scientificNameWithoutAuthor ? 'Saving...' : 'Add to My Plants'}
+                        </button>
+                      </article>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="empty-state">
-                  <strong>No results yet.</strong>
-                  <span>Identify a photo to populate likely matches here.</span>
+                  <strong>No matches yet.</strong>
+                  <span>Add a photo and Florivu will show likely matches here.</span>
                 </div>
               )}
             </div>
@@ -1105,8 +1712,33 @@ export default function App() {
               <div className="panel-header">
                 <div>
                   <p className="eyebrow">Collection</p>
-                  <h2>Your saved plants</h2>
+                  <h2>
+                    {collectionView === 'gallery'
+                      ? 'Browse your saved observations'
+                      : collectionView === 'taxonomy'
+                        ? 'Browse your collection by taxonomy'
+                        : 'See your plants on the map'}
+                  </h2>
                 </div>
+                {observations.length > 0 ? (
+                  <div className="collection-view-toggle" aria-label="Collection view">
+                    {collectionViewOptions.map((option) => (
+                      <button
+                        aria-pressed={collectionView === option.value}
+                        className={
+                          collectionView === option.value
+                            ? 'collection-view-button collection-view-button--active'
+                            : 'collection-view-button'
+                        }
+                        key={option.value}
+                        onClick={() => setCollectionView(option.value)}
+                        type="button"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               {observations.length > 0 ? (
@@ -1115,12 +1747,18 @@ export default function App() {
                     {collectionFilterOptions.map((option) => (
                       <button
                         className={
-                          collectionFilter === option.value
+                          collectionFilters.includes(option.value)
                             ? 'collection-filter-chip collection-filter-chip--active'
                             : 'collection-filter-chip'
                         }
                         key={option.value}
-                        onClick={() => setCollectionFilter(option.value)}
+                        onClick={() =>
+                          setCollectionFilters((currentFilters) =>
+                            currentFilters.includes(option.value)
+                              ? currentFilters.filter((filter) => filter !== option.value)
+                              : [...currentFilters, option.value]
+                          )
+                        }
                         type="button"
                       >
                         {option.label}
@@ -1130,45 +1768,53 @@ export default function App() {
 
                   <div className="collection-sort-row">
                     <span className="collection-results-summary">
-                      Showing {visibleObservations.length} of {observations.length} plants
-                      {collectionFilter !== 'all' ? ` in ${activeCollectionFilterLabel}` : ''}
+                      {collectionView === 'gallery'
+                        ? `Showing ${visibleObservations.length} of ${observations.length} observations`
+                        : collectionView === 'taxonomy'
+                          ? `Showing ${filteredObservations.length} observations across ${filteredSpeciesCount} species`
+                          : `Showing ${mapReadyObservationCount} of ${filteredObservations.length} observations with ZIP codes across ${mapReadyLocationCount} locations`}
+                      {collectionFilters.length > 0 ? ` with ${activeCollectionFilterLabel}` : ''}
                     </span>
 
-                    <label className="field collection-sort-field">
-                      <span>Sort</span>
-                      <select
-                        onChange={(event) => setCollectionSort(event.target.value as CollectionSort)}
-                        value={collectionSort}
-                      >
-                        {collectionSortOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    {collectionView === 'gallery' ? (
+                      <label className="field collection-sort-field">
+                        <span>Sort</span>
+                        <select
+                          onChange={(event) => setCollectionSort(event.target.value as CollectionSort)}
+                          value={collectionSort}
+                        >
+                          {collectionSortOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
                   </div>
                 </div>
               ) : null}
 
               {plantsLoading && observations.length === 0 ? (
                 <div className="empty-state">
-                  <strong>Loading collection...</strong>
+                  <strong>Loading your plants...</strong>
                 </div>
               ) : observations.length === 0 ? (
                 <div className="empty-state">
-                  <strong>No plants saved yet.</strong>
-                  <span>Identify something first, then save the match into your collection.</span>
+                  <strong>Your plant shelf is empty.</strong>
+                  <span>Discover a plant first, then save it to My Plants.</span>
                 </div>
-              ) : visibleObservations.length === 0 ? (
+              ) : filteredObservations.length === 0 ? (
                 <div className="empty-state">
                   <strong>No plants match {activeCollectionFilterLabel.toLowerCase()}.</strong>
-                  <span>Try a different label filter or return to the full collection.</span>
-                  <button className="secondary-button" onClick={() => setCollectionFilter('all')} type="button">
-                    Show all plants
-                  </button>
+                  <span>Try a different filter or head back to all of your saved plants.</span>
+                  {collectionFilters.length > 0 ? (
+                    <button className="secondary-button" onClick={() => setCollectionFilters([])} type="button">
+                      Show all plants
+                    </button>
+                  ) : null}
                 </div>
-              ) : (
+              ) : collectionView === 'gallery' ? (
                 <div className="collection-grid">
                   {visibleObservations.map((observation) => (
                     <ObservationCard
@@ -1180,34 +1826,25 @@ export default function App() {
                     />
                   ))}
                 </div>
+              ) : collectionView === 'taxonomy' ? (
+                <TaxonomyTree
+                  activeScientificName={taxonomyFocusScientificName}
+                  families={collectionTaxonomy}
+                  onSelectObservation={setSelectedObservation}
+                />
+              ) : (
+                <CollectionMapView
+                  observations={filteredObservations}
+                  onSelectObservation={setSelectedObservation}
+                />
               )}
             </div>
           </section>
         ) : null}
 
-        {activeTab === 'taxonomy' ? (
+        {activeTab === 'marketplace' ? (
           <section className="panel-stack">
-            <div className="panel">
-              <div className="panel-header">
-                <div>
-                  <p className="eyebrow">Classification</p>
-                  <h2>Taxonomy browser</h2>
-                </div>
-              </div>
-
-              {taxonomy.length === 0 ? (
-                <div className="empty-state">
-                  <strong>Your taxonomy tree is empty.</strong>
-                  <span>Save an identified plant and the families, genera, and species will appear here.</span>
-                </div>
-              ) : (
-                <TaxonomyTree
-                  activeScientificName={taxonomyFocusScientificName}
-                  families={taxonomy}
-                  onSelectObservation={setSelectedObservation}
-                />
-              )}
-            </div>
+            <MarketplacePanel observations={observations} onOpenProfile={openProfile} profile={profile} />
           </section>
         ) : null}
 
@@ -1217,34 +1854,49 @@ export default function App() {
               <div className="panel-header">
                 <div>
                   <p className="eyebrow">Settings</p>
-                  <h2>Account and app status</h2>
+                  <h2>Account overview</h2>
                 </div>
               </div>
 
               <div className="settings-grid">
                 <div className="settings-card">
-                  <span>Signed in account</span>
+                  <span>Signed in as</span>
                   <strong>{userLabel}</strong>
-                  <p>Use the account menu in the header for quick settings access and logout.</p>
+                  <p>
+                    Use the header tabs for discovery, marketplace, your collection, and friends.
+                    The account menu keeps profile, achievements, and settings in one place.
+                  </p>
                 </div>
                 <div className="settings-card">
-                  <span>Collection backend</span>
-                  <strong>{collectionMode === 'local' ? 'Local fallback store' : 'Supabase'}</strong>
+                  <span>Sync status</span>
+                  <strong>{collectionMode === 'local' ? 'Saved on this device' : 'Synced to your account'}</strong>
                   <p>
                     {collectionMode === 'local'
-                      ? 'The observations table is missing in Supabase, so collection data is being stored on this local Vite server.'
-                      : 'Observations are being read from and written to your Supabase project.'}
+                      ? 'Your plants are currently being stored on this device while account syncing is unavailable.'
+                      : 'Your plants are being saved with your Florivu account so they travel with you.'}
                   </p>
                 </div>
                 <div className="settings-card">
                   <span>Collection summary</span>
-                  <strong>{observations.length} saved observations</strong>
+                  <strong>{observations.length} saved plants</strong>
                   <p>
-                    {uniqueSpeciesCount} species across {taxonomy.length} families.
+                    {uniqueSpeciesCount} unique plants across {taxonomy.length} families.
                   </p>
                 </div>
               </div>
             </div>
+          </section>
+        ) : null}
+
+        {activeTab === 'achievements' ? (
+          <section className="panel-stack">
+            <AchievementsPanel
+              achievements={achievements}
+              profileInitial={userInitial}
+              profilePhotoUrl={profile?.profile_photo_url ?? null}
+              selectedAvatarBorderId={equippedAvatarBorderId}
+              selectedProfileTitleId={equippedProfileTitleId}
+            />
           </section>
         ) : null}
 
@@ -1259,11 +1911,14 @@ export default function App() {
             ) : profile && user ? (
               <ProfilePanel
                 deleteBusy={deletingAccount}
+                earnedAchievements={earnedAchievements}
                 observationCount={observations.length}
                 observations={observations}
                 profile={profile}
                 saveBusy={profileSaving}
                 storageMode={profileMode}
+                unlockedAvatarBorders={unlockedAvatarBorders}
+                unlockedProfileTitles={unlockedProfileTitles}
                 uniqueSpeciesCount={uniqueSpeciesCount}
                 user={user}
                 onDeleteAccount={handleDeleteAccount}
@@ -1284,8 +1939,11 @@ export default function App() {
           <section className="panel-stack">
             <FriendsPanel
               addBusy={friendsAdding}
+              completedReferralCount={completedReferralCount}
               friends={friends}
               incomingRequests={incomingRequests}
+              inviteSenderName={userLabel}
+              inviteSenderUserId={user?.id ?? ''}
               loading={friendsLoading}
               requestBusy={friendsResponding}
               onAddFriend={handleAddFriend}

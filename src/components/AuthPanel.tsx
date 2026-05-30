@@ -43,14 +43,14 @@ export default function AuthPanel({
     : isForgotPassword
       ? 'Reset your password.'
       : isSignUp
-        ? 'Start your field journal.'
-        : 'Welcome back to PlantDex.';
+        ? 'Start your plant collection.'
+        : 'Welcome back.';
 
   const lead = isResetPassword
-    ? `Set a new password for ${recoveryEmail?.trim() || 'your account'} and return to PlantDex.`
+    ? `Set a new password for ${recoveryEmail?.trim() || 'your account'} and head back into Florivu.`
     : isForgotPassword
-      ? 'Enter the email tied to your PlantDex account and we will send a reset link.'
-      : 'Capture a plant, identify it in the browser, and keep a searchable collection tied to your Supabase account.';
+      ? 'Enter the email tied to your Florivu account and we will send a reset link.'
+      : 'Keep a simple plant collection, revisit care tips, and save the plants you love in one place.';
 
   const primaryLabel = isResetPassword
     ? 'Update password'
@@ -62,7 +62,7 @@ export default function AuthPanel({
 
   return (
     <section className="auth-panel">
-      <p className="eyebrow">Plant archive</p>
+      <p className="eyebrow">Florivu account</p>
       <h1>{title}</h1>
       <p className="lead">{lead}</p>
 

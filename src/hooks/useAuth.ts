@@ -74,16 +74,36 @@ export function useAuth() {
     }
     logInfo('Auth', 'Sign in succeeded.', { email });
   };
-  const signUp  = async (email: string, password: string) => {
-    logInfo('Auth', 'Attempting sign up.', { email });
+  const signUp  = async (
+    email: string,
+    password: string,
+    referredByUserId?: string | null,
+  ) => {
+    const normalizedReferredByUserId = referredByUserId?.trim() || null;
+    logInfo('Auth', 'Attempting sign up.', {
+      email,
+      hasReferralInvite: Boolean(normalizedReferredByUserId),
+    });
     const options =
-      typeof window === 'undefined' ? undefined : { emailRedirectTo: window.location.origin };
+      typeof window === 'undefined'
+        ? undefined
+        : {
+            emailRedirectTo: window.location.href,
+            data: normalizedReferredByUserId
+              ? {
+                  referred_by_user_id: normalizedReferredByUserId,
+                }
+              : undefined,
+          };
     const { error } = await supabase.auth.signUp({ email, password, options });
     if (error) {
       logError('Auth', 'Sign up failed.', error);
       throw error;
     }
-    logInfo('Auth', 'Sign up succeeded.', { email });
+    logInfo('Auth', 'Sign up succeeded.', {
+      email,
+      hasReferralInvite: Boolean(normalizedReferredByUserId),
+    });
   };
   const signOut = async () => {
     logInfo('Auth', 'Attempting sign out.');

@@ -1,4 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
+import {
+  formatCatalogLabel,
+  formatCatalogMatchSource,
+  resolveObservationCatalogMatch,
+} from '../lib/plantCatalog';
 import { Observation } from '../types';
 import { observationLabelOptions } from './ObservationLabels';
 
@@ -31,6 +36,41 @@ export default function ObservationModal({
   const [housePlant, setHousePlant] = useState(observation.is_house_plant);
   const [savingLabels, setSavingLabels] = useState(false);
   const [savingZipCode, setSavingZipCode] = useState(false);
+  const catalogMatch = resolveObservationCatalogMatch(observation);
+  const catalogCareDetails = catalogMatch
+    ? [
+        {
+          label: 'Light',
+          value: catalogMatch.careProfile?.light,
+        },
+        {
+          label: 'Water',
+          value: catalogMatch.careProfile?.water,
+        },
+        {
+          label: 'Humidity',
+          value: catalogMatch.careProfile?.humidity,
+        },
+        {
+          label: 'Soil',
+          value: catalogMatch.careProfile?.soil,
+        },
+        {
+          label: 'Airflow',
+          value: catalogMatch.careProfile?.airflow ?? catalogMatch.plant.airflow_notes,
+        },
+        {
+          label: 'Difficulty',
+          value: formatCatalogLabel(
+            catalogMatch.careProfile?.difficulty ?? catalogMatch.plant.difficulty,
+          ),
+        },
+        {
+          label: 'Pet safety',
+          value: formatCatalogLabel(catalogMatch.plant.pet_safety),
+        },
+      ].filter((item): item is { label: string; value: string } => Boolean(item.value))
+    : [];
 
   useEffect(() => {
     setZipCode(observation.zip_code ?? '');
@@ -97,7 +137,7 @@ export default function ObservationModal({
         />
 
         <div className="modal-content">
-          <p className="eyebrow">Saved observation</p>
+          <p className="eyebrow">Plant details</p>
           <h2>{observation.common_name}</h2>
           <button className="latin-link latin-name" onClick={() => onOpenTaxonomy(observation)} type="button">
             {observation.scientific_name}
@@ -105,9 +145,9 @@ export default function ObservationModal({
 
           <section className="detail-grid__editable detail-grid__editable--labels" aria-label="Collection labels">
             <div className="detail-grid__editable-header">
-              <span className="detail-grid__editable-title">Collection labels</span>
+              <span className="detail-grid__editable-title">Quick tags</span>
               <span className="detail-grid__editable-status">
-                {savingLabels ? 'Saving labels...' : 'Saved automatically'}
+                {savingLabels ? 'Saving tags...' : 'Saved automatically'}
               </span>
             </div>
             <div className="collection-label-toggle-row">
@@ -134,17 +174,53 @@ export default function ObservationModal({
             </div>
           </section>
 
+          {catalogMatch ? (
+            <section className="detail-grid__editable detail-grid__editable--catalog" aria-label="Generic plant profile">
+              <div className="detail-grid__editable-header">
+                <span className="detail-grid__editable-title">Care overview</span>
+                <span className="detail-grid__editable-status">
+                  {catalogMatch.matchedOn === 'catalog-id'
+                    ? 'Saved care match'
+                    : `Matched from ${formatCatalogMatchSource(catalogMatch.matchedOn)}`}
+                </span>
+              </div>
+
+              <div className="catalog-summary-card">
+                <div className="catalog-summary-card__header">
+                  <div>
+                    <strong>{catalogMatch.plant.common_name}</strong>
+                    <span>{catalogMatch.careProfile?.name ?? 'Bundled care profile'}</span>
+                  </div>
+                  <span className="catalog-source-pill">
+                    {formatCatalogLabel(catalogMatch.plant.retail_group)}
+                  </span>
+                </div>
+                <p>{catalogMatch.plant.description}</p>
+                <p className="catalog-summary-card__care">{catalogMatch.plant.care_summary}</p>
+              </div>
+
+              <div className="catalog-care-grid">
+                {catalogCareDetails.map((detail) => (
+                  <div className="catalog-care-card" key={detail.label}>
+                    <span>{detail.label}</span>
+                    <p>{detail.value}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <div className="detail-grid">
             <div>
-              <span>Confidence</span>
+              <span>Match confidence</span>
               <strong>{Math.round(observation.confidence * 100)}%</strong>
             </div>
             <div>
-              <span>Date found</span>
+              <span>Date spotted</span>
               <strong>{fullDateFormatter.format(new Date(observation.date_found))}</strong>
             </div>
             <div>
-              <span>Family</span>
+              <span>Plant family</span>
               <strong>{observation.family}</strong>
             </div>
             <div>
@@ -152,21 +228,20 @@ export default function ObservationModal({
               <strong>{observation.genus}</strong>
             </div>
             <div>
-              <span>Species</span>
+              <span>Matched species</span>
               <strong>{observation.species}</strong>
             </div>
             <div>
-              <span>Recorded</span>
+              <span>Added to My Plants</span>
               <strong>{fullDateFormatter.format(new Date(observation.created_at))}</strong>
             </div>
             <form className="detail-grid__editable" onSubmit={handleZipCodeSubmit}>
               <label className="field">
-                <span>Zipcode found</span>
+                <span>Location note</span>
                 <input
-                  inputMode="numeric"
-                  maxLength={10}
+                  maxLength={16}
                   onChange={(event) => setZipCode(event.target.value)}
-                  placeholder="Not captured"
+                  placeholder="ZIP or postal code"
                   value={zipCode}
                 />
               </label>
@@ -175,7 +250,7 @@ export default function ObservationModal({
                 disabled={savingZipCode}
                 type="submit"
               >
-                {savingZipCode ? 'Saving...' : 'Save zipcode'}
+                {savingZipCode ? 'Saving...' : 'Save location note'}
               </button>
             </form>
           </div>
@@ -189,10 +264,10 @@ export default function ObservationModal({
 
           <div className="modal-actions">
             <button className="secondary-button" onClick={onClose} type="button">
-              Back
+              Close
             </button>
             <button className="danger-button" onClick={() => onDelete(observation)} type="button">
-              Delete observation
+              Remove from My Plants
             </button>
           </div>
         </div>

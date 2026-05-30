@@ -1,4 +1,5 @@
 import { Observation } from '../types';
+import { resolveObservationCatalogMatch } from '../lib/plantCatalog';
 import { ObservationLabelIcons } from './ObservationLabels';
 
 interface ObservationCardProps {
@@ -14,6 +15,8 @@ export default function ObservationCard({
   onOpen,
   onOpenTaxonomy,
 }: ObservationCardProps) {
+  const catalogMatch = resolveObservationCatalogMatch(observation);
+
   return (
     <article className="observation-card">
       <button className="card-hitbox card-hitbox--tile" onClick={() => onOpen(observation)} type="button">
@@ -34,22 +37,25 @@ export default function ObservationCard({
       </button>
       <div className="collection-card-meta">
         <button
-          aria-label={`Open ${observation.scientific_name} in taxonomy`}
+          aria-label={`See related plants for ${observation.scientific_name}`}
           className="latin-link collection-latin-link"
           onClick={() => onOpenTaxonomy(observation)}
           type="button"
         >
           {observation.scientific_name}
         </button>
+        {catalogMatch?.careProfile ? (
+          <span className="collection-care-chip">{catalogMatch.careProfile.name}</span>
+        ) : null}
       </div>
       <div className="collection-card-footer">
         <button
-          aria-label={`Remove ${observation.common_name} from collection`}
+          aria-label={`Remove ${observation.common_name} from My Plants`}
           className="tile-remove"
           onClick={() => onDelete(observation)}
           type="button"
         >
-          Remove
+          Remove plant
         </button>
       </div>
     </article>

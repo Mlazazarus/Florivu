@@ -28,6 +28,10 @@ export async function saveLocalProfile(profile: Omit<UserProfile, 'created_at' |
   logInfo('LocalProfile', 'Saving profile to local fallback store.', {
     userId: profile.user_id,
     displayName: profile.display_name,
+    hasProfilePhoto: Boolean(profile.profile_photo_url),
+    homeZipCode: profile.home_zip_code ?? null,
+    selectedAvatarBorderId: profile.selected_avatar_border_id ?? null,
+    selectedProfileTitleId: profile.selected_profile_title_id ?? null,
   });
 
   try {

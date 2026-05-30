@@ -25,6 +25,14 @@ function isZipCodeColumnMissing(error: unknown) {
   return isObservationColumnMissing(error, 'zip_code');
 }
 
+function isCatalogPlantIdColumnMissing(error: unknown) {
+  return isObservationColumnMissing(error, 'catalog_plant_id');
+}
+
+function isCareProfileIdColumnMissing(error: unknown) {
+  return isObservationColumnMissing(error, 'care_profile_id');
+}
+
 function isObservationColumnMissing(error: unknown, columnName: string) {
   const message =
     error && typeof error === 'object' && 'message' in error
@@ -53,6 +61,8 @@ function normalizeObservation(observation: Observation): Observation {
     zip_code: observation.zip_code ?? null,
     is_favorite: Boolean(observation.is_favorite),
     is_house_plant: Boolean(observation.is_house_plant),
+    catalog_plant_id: observation.catalog_plant_id ?? null,
+    care_profile_id: observation.care_profile_id ?? null,
   };
 }
 
@@ -76,6 +86,16 @@ function stripUnsupportedObservationFields(
   if (isObservationColumnMissing(error, 'is_house_plant')) {
     delete nextObservation.is_house_plant;
     removedFields.push('is_house_plant');
+  }
+
+  if (isCatalogPlantIdColumnMissing(error)) {
+    delete nextObservation.catalog_plant_id;
+    removedFields.push('catalog_plant_id');
+  }
+
+  if (isCareProfileIdColumnMissing(error)) {
+    delete nextObservation.care_profile_id;
+    removedFields.push('care_profile_id');
   }
 
   return {
@@ -220,7 +240,7 @@ export function usePlants(userId: string | undefined) {
 
       if (areEnhancedObservationColumnsMissing(error)) {
         throw new Error(
-          'Your Supabase observations table is missing newer PlantDex columns. Run supabase/schema.sql, then try again.',
+          'Your Supabase observations table is missing newer Florivu columns. Run supabase/schema.sql, then try again.',
         );
       }
 

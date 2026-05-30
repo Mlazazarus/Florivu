@@ -2,7 +2,7 @@
 set -e
 
 cat <<'EOF'
-PlantDex is now a browser-first Vite app.
+Florivu is now a browser-first Vite app.
 
 The old Expo/mobile scaffold generator has been intentionally removed so it does not overwrite the web refactor.
 

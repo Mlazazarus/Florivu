@@ -25,7 +25,17 @@ export interface UserProfile {
   display_name: string;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
+  marketplace_zip_code?: string | null;
   facebook_url?: string | null;
+  facebook_user_id?: string | null;
+  facebook_name?: string | null;
+  facebook_connected_at?: string | null;
+  earned_achievement_ids?: string[] | null;
+  referred_by_user_id?: string | null;
+  selected_avatar_border_id?: string | null;
+  selected_profile_title_id?: string | null;
+  featured_house_plant_observation_id?: string | null;
+  featured_non_house_plant_observation_id?: string | null;
   is_public: boolean;
   is_placeholder?: boolean;
   created_at: string;
@@ -35,6 +45,56 @@ export interface UserProfile {
 export interface FriendProfile extends UserProfile {
   observation_count: number;
   species_count: number;
+}
+
+export interface CareProfile {
+  id: string;
+  name: string;
+  light_category: string;
+  water_category: string;
+  humidity_category: string;
+  soil_category: string;
+  light: string;
+  water: string;
+  humidity: string;
+  soil: string;
+  airflow: string;
+  difficulty: string;
+}
+
+export interface CatalogPlant {
+  id: string;
+  common_name: string;
+  scientific_name: string;
+  aliases: string[];
+  retail_group: string;
+  care_profile_id: string;
+  description: string;
+  care_summary: string;
+  light_category: string;
+  water_category: string;
+  humidity_category: string;
+  soil_category: string;
+  airflow_notes: string;
+  difficulty: string;
+  pet_safety: string;
+  data_quality: string;
+  listing_keywords: string;
+}
+
+export type PlantCatalogMatchSource =
+  | 'catalog-id'
+  | 'scientific-name'
+  | 'species'
+  | 'common-name'
+  | 'alias'
+  | 'fuzzy';
+
+export interface PlantCatalogMatch {
+  plant: CatalogPlant;
+  careProfile: CareProfile | null;
+  matchedOn: PlantCatalogMatchSource;
+  score: number;
 }
 
 export interface Observation {
@@ -52,7 +112,24 @@ export interface Observation {
   notes?: string;
   is_favorite: boolean;
   is_house_plant: boolean;
+  catalog_plant_id?: string | null;
+  care_profile_id?: string | null;
   created_at: string;
+}
+
+export interface ZipCodeMapLocation {
+  zipCode: string;
+  latitude: number;
+  longitude: number;
+  city?: string | null;
+  state?: string | null;
+  countryCode?: string | null;
+  label: string;
+}
+
+export interface ZipCodeMapResponse {
+  locations: ZipCodeMapLocation[];
+  unresolvedZipCodes: string[];
 }
 
 export interface SpeciesGroup {

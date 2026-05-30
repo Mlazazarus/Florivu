@@ -28,6 +28,23 @@ export async function fetchLocalFriends(userId: string): Promise<FriendProfile[]
   }
 }
 
+export async function fetchLocalCompletedFriendReferralCount(userId: string): Promise<number> {
+  logInfo('LocalFriends', 'Fetching completed friend referral count from local fallback store.', {
+    userId,
+  });
+
+  try {
+    const response = await fetch(
+      `/api/local-friends/referrals/count?userId=${encodeURIComponent(userId)}`,
+    );
+    const payload = await parseJsonResponse<{ count?: number }>(response);
+    return Number(payload.count ?? 0);
+  } catch (error) {
+    logError('LocalFriends', 'Failed to fetch local fallback completed referral count.', error);
+    throw error;
+  }
+}
+
 export async function acceptLocalFriendRequest(
   userId: string,
   friendUserId: string,

@@ -3,6 +3,7 @@ import {
   AddFriendResult,
   acceptLocalFriendRequest,
   addLocalFriendByDisplayName,
+  fetchLocalCompletedFriendReferralCount,
   fetchLocalFriends,
   fetchLocalIncomingFriendRequests,
   rejectLocalFriendRequest,
@@ -22,7 +23,17 @@ interface FriendStatsRow {
   display_name: string;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
+  marketplace_zip_code?: string | null;
   facebook_url?: string | null;
+  facebook_user_id?: string | null;
+  facebook_name?: string | null;
+  facebook_connected_at?: string | null;
+  earned_achievement_ids?: string[] | null;
+  referred_by_user_id?: string | null;
+  selected_avatar_border_id?: string | null;
+  selected_profile_title_id?: string | null;
+  featured_house_plant_observation_id?: string | null;
+  featured_non_house_plant_observation_id?: string | null;
   is_public?: boolean | null;
   is_placeholder?: boolean | null;
   created_at?: string | null;
@@ -48,6 +59,7 @@ function shouldUseLocalFriendsFallback(error: unknown) {
     message.includes('find_profile_by_display_name') ||
     message.includes('search_profiles_by_display_name') ||
     message.includes('get_mutual_friend_stats') ||
+    message.includes('get_completed_friend_referral_count') ||
     message.includes('reject_friend_request')
   );
 }
@@ -60,7 +72,17 @@ function buildFallbackProfile(userId: string): UserProfile {
     display_name: `Friend ${userId.slice(0, 8)}`,
     profile_photo_url: null,
     home_zip_code: null,
+    marketplace_zip_code: null,
     facebook_url: null,
+    facebook_user_id: null,
+    facebook_name: null,
+    facebook_connected_at: null,
+    earned_achievement_ids: [],
+    referred_by_user_id: null,
+    selected_avatar_border_id: null,
+    selected_profile_title_id: null,
+    featured_house_plant_observation_id: null,
+    featured_non_house_plant_observation_id: null,
     is_public: false,
     is_placeholder: true,
     created_at: now,
@@ -105,7 +127,17 @@ function toUserProfile(row: {
   display_name: string;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
+  marketplace_zip_code?: string | null;
   facebook_url?: string | null;
+  facebook_user_id?: string | null;
+  facebook_name?: string | null;
+  facebook_connected_at?: string | null;
+  earned_achievement_ids?: string[] | null;
+  referred_by_user_id?: string | null;
+  selected_avatar_border_id?: string | null;
+  selected_profile_title_id?: string | null;
+  featured_house_plant_observation_id?: string | null;
+  featured_non_house_plant_observation_id?: string | null;
   is_public?: boolean | null;
   is_placeholder?: boolean | null;
   created_at?: string | null;
@@ -118,7 +150,18 @@ function toUserProfile(row: {
     display_name: row.display_name,
     profile_photo_url: row.profile_photo_url ?? null,
     home_zip_code: row.home_zip_code ?? null,
+    marketplace_zip_code: row.marketplace_zip_code ?? null,
     facebook_url: row.facebook_url ?? null,
+    facebook_user_id: row.facebook_user_id ?? null,
+    facebook_name: row.facebook_name ?? null,
+    facebook_connected_at: row.facebook_connected_at ?? null,
+    earned_achievement_ids: row.earned_achievement_ids ?? [],
+    referred_by_user_id: row.referred_by_user_id ?? null,
+    selected_avatar_border_id: row.selected_avatar_border_id ?? null,
+    selected_profile_title_id: row.selected_profile_title_id ?? null,
+    featured_house_plant_observation_id: row.featured_house_plant_observation_id ?? null,
+    featured_non_house_plant_observation_id:
+      row.featured_non_house_plant_observation_id ?? null,
     is_public: row.is_public ?? false,
     is_placeholder: row.is_placeholder ?? false,
     created_at: row.created_at ?? now,
@@ -139,6 +182,25 @@ function toFriendProfile(row: FriendStatsRow): FriendProfile {
   };
 }
 
+function mergeFriendProfile(friend: FriendProfile, profile: UserProfile | undefined) {
+  if (!profile) {
+    return friend;
+  }
+
+  return {
+    ...friend,
+    ...profile,
+    earned_achievement_ids: profile.earned_achievement_ids ?? friend.earned_achievement_ids ?? [],
+    selected_avatar_border_id:
+      profile.selected_avatar_border_id ?? friend.selected_avatar_border_id ?? null,
+    selected_profile_title_id:
+      profile.selected_profile_title_id ?? friend.selected_profile_title_id ?? null,
+    observation_count: friend.observation_count,
+    species_count: friend.species_count,
+    is_placeholder: friend.is_placeholder ?? profile.is_placeholder ?? false,
+  };
+}
+
 export function useFriends(userId: string | undefined) {
   const [friends, setFriends] = useState<FriendProfile[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<UserProfile[]>([]);
@@ -149,6 +211,7 @@ export function useFriends(userId: string | undefined) {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storageMode, setStorageMode] = useState<'supabase' | 'local'>('supabase');
+  const [completedReferralCount, setCompletedReferralCount] = useState(0);
   const latestSearchRequestRef = useRef(0);
 
   useEffect(() => {
@@ -162,6 +225,7 @@ export function useFriends(userId: string | undefined) {
     setError(null);
     setSearching(false);
     setResponding(false);
+    setCompletedReferralCount(0);
     setStorageMode('supabase');
   }, [userId]);
 
@@ -169,6 +233,7 @@ export function useFriends(userId: string | undefined) {
     if (!userId) {
       setFriends([]);
       setIncomingRequests([]);
+      setCompletedReferralCount(0);
       setError(null);
       return;
     }
@@ -178,9 +243,10 @@ export function useFriends(userId: string | undefined) {
     logInfo('Friends', 'Fetching mutual friends.', { userId });
 
     try {
-      const [mutualFriendsResponse, incomingResponse] = await Promise.all([
+      const [mutualFriendsResponse, incomingResponse, referralCountResponse] = await Promise.all([
         supabase.rpc('get_mutual_friend_stats'),
         supabase.from('friendships').select('user_id').eq('friend_user_id', userId),
+        supabase.rpc('get_completed_friend_referral_count'),
       ]);
 
       if (mutualFriendsResponse.error) {
@@ -191,6 +257,10 @@ export function useFriends(userId: string | undefined) {
         throw incomingResponse.error;
       }
 
+      if (referralCountResponse.error) {
+        throw referralCountResponse.error;
+      }
+
       const incomingIds = Array.from(
         new Set(
           ((incomingResponse.data ?? []) as Pick<FriendshipRow, 'user_id'>[]).map(
@@ -198,8 +268,9 @@ export function useFriends(userId: string | undefined) {
           ),
         ),
       );
-      const mutualFriends = sortFriendProfilesByStats(
-        ((mutualFriendsResponse.data ?? []) as FriendStatsRow[]).map((row) => toFriendProfile(row)),
+      const nextCompletedReferralCount = Number(referralCountResponse.data ?? 0);
+      const mutualFriends = ((mutualFriendsResponse.data ?? []) as FriendStatsRow[]).map((row) =>
+        toFriendProfile(row),
       );
       const mutualIds = new Set(mutualFriends.map((friend) => friend.user_id));
       const incomingOnlyIds = incomingIds.filter((candidateId) => !mutualIds.has(candidateId));
@@ -228,32 +299,44 @@ export function useFriends(userId: string | undefined) {
         incomingOnlyIds.map(toProfile),
       );
 
-      setFriends(mutualFriends);
+      const resolvedMutualFriends = sortFriendProfilesByStats(
+        mutualFriends.map((friend) => mergeFriendProfile(friend, profileMap.get(friend.user_id))),
+      );
+
+      setFriends(resolvedMutualFriends);
       setIncomingRequests(incomingFriendRequests);
-      setStorageMode('supabase');
-      logInfo('Friends', 'Friend lists fetch complete.', {
-        userId,
-        count: mutualFriends.length,
-        incomingCount: incomingFriendRequests.length,
-      });
+      setCompletedReferralCount(
+        Number.isFinite(nextCompletedReferralCount) ? nextCompletedReferralCount : 0,
+      );
+        setStorageMode('supabase');
+        logInfo('Friends', 'Friend lists fetch complete.', {
+          userId,
+          count: resolvedMutualFriends.length,
+          incomingCount: incomingFriendRequests.length,
+          completedReferralCount: nextCompletedReferralCount,
+        });
     } catch (fetchError: any) {
       if (shouldUseLocalFriendsFallback(fetchError)) {
-        const [localFriends, localIncomingRequests] = await Promise.all([
-          fetchLocalFriends(userId),
-          fetchLocalIncomingFriendRequests(userId),
-        ]);
+        const [localFriends, localIncomingRequests, localCompletedReferralCount] =
+          await Promise.all([
+            fetchLocalFriends(userId),
+            fetchLocalIncomingFriendRequests(userId),
+            fetchLocalCompletedFriendReferralCount(userId),
+          ]);
         const sortedFriends = sortFriendProfilesByStats(
           localFriends.map((friend) => toFriendProfile(friend as FriendStatsRow)),
         );
         const sortedIncomingRequests = sortProfilesAlphabetically(localIncomingRequests);
         setFriends(sortedFriends);
         setIncomingRequests(sortedIncomingRequests);
+        setCompletedReferralCount(localCompletedReferralCount);
         setStorageMode('local');
         setError(null);
         logInfo('Friends', 'Using local fallback friend store.', {
           userId,
           count: sortedFriends.length,
           incomingCount: sortedIncomingRequests.length,
+          completedReferralCount: localCompletedReferralCount,
         });
       } else {
         setError(fetchError.message ?? 'Unknown error');
@@ -586,6 +669,7 @@ export function useFriends(userId: string | undefined) {
     searching,
     error,
     storageMode,
+    completedReferralCount,
     fetchFriends,
     searchProfilesByDisplayName,
     addFriendByDisplayName,

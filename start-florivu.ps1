@@ -14,7 +14,7 @@ $url = "http://localhost:$port"
 
 New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
 
-function Get-PlantDexListener {
+function Get-FlorivuListener {
   $connection = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue |
     Select-Object -First 1
 
@@ -31,7 +31,7 @@ function Get-PlantDexListener {
   }
 }
 
-function Open-PlantDexBrowser {
+function Open-FlorivuBrowser {
   if ($OpenBrowser) {
     Start-Process $url | Out-Null
   }
@@ -62,18 +62,18 @@ function Get-NpmCommandPath {
   throw 'Unable to locate npm. Install Node.js globally or keep the project-local toolchain in .tools.'
 }
 
-$listener = Get-PlantDexListener
+$listener = Get-FlorivuListener
 if ($listener) {
   $commandLine = if ($listener.CommandLine) { $listener.CommandLine } else { '' }
   $projectPattern = [Regex]::Escape($projectRoot)
-  $isPlantDexProcess =
+  $isFlorivuProcess =
     ($commandLine -match $projectPattern) -or
     (($commandLine -match 'vite') -and ($commandLine -match '\b8081\b'))
 
-  if ($isPlantDexProcess) {
-    Write-Host "PlantDex is already running at $url (PID $($listener.ProcessId))."
+  if ($isFlorivuProcess) {
+    Write-Host "Florivu is already running at $url (PID $($listener.ProcessId))."
     Write-Host "Logs: $stdoutLog"
-    Open-PlantDexBrowser
+    Open-FlorivuBrowser
     exit 0
   }
 
@@ -91,7 +91,7 @@ $deadline = (Get-Date).AddSeconds(30)
 
 do {
   Start-Sleep -Milliseconds 500
-  $listener = Get-PlantDexListener
+  $listener = Get-FlorivuListener
 } while (-not $listener -and -not $starter.HasExited -and (Get-Date) -lt $deadline)
 
 if (-not $listener) {
@@ -104,9 +104,9 @@ if (-not $listener) {
     $errorTail = (Get-Content $stderrLog -Tail 20 -ErrorAction SilentlyContinue) -join [Environment]::NewLine
   }
 
-  throw "PlantDex did not start within 30 seconds.`nError log: $stderrLog`n$errorTail"
+  throw "Florivu did not start within 30 seconds.`nError log: $stderrLog`n$errorTail"
 }
 
-Write-Host "PlantDex started at $url (PID $($listener.ProcessId))."
+Write-Host "Florivu started at $url (PID $($listener.ProcessId))."
 Write-Host "Logs: $stdoutLog"
-Open-PlantDexBrowser
+Open-FlorivuBrowser

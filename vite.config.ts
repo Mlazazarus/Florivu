@@ -23,6 +23,8 @@ interface LocalObservationRecord {
   notes?: string;
   is_favorite: boolean;
   is_house_plant: boolean;
+  catalog_plant_id?: string | null;
+  care_profile_id?: string | null;
   created_at: string;
 }
 
@@ -31,7 +33,17 @@ interface LocalProfileRecord {
   display_name: string;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
+  marketplace_zip_code?: string | null;
   facebook_url?: string | null;
+  facebook_user_id?: string | null;
+  facebook_name?: string | null;
+  facebook_connected_at?: string | null;
+  earned_achievement_ids?: string[] | null;
+  referred_by_user_id?: string | null;
+  selected_avatar_border_id?: string | null;
+  selected_profile_title_id?: string | null;
+  featured_house_plant_observation_id?: string | null;
+  featured_non_house_plant_observation_id?: string | null;
   is_public: boolean;
   is_placeholder?: boolean;
   created_at: string;
@@ -49,6 +61,17 @@ interface LocalFriendshipRecord {
   created_at: string;
 }
 
+interface ZipCodeMapLocationRecord {
+  zipCode: string;
+  latitude: number;
+  longitude: number;
+  city?: string | null;
+  state?: string | null;
+  countryCode?: string | null;
+  label: string;
+  updated_at: string;
+}
+
 function plantNetProxyPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '');
   const apiKey =
@@ -60,7 +83,7 @@ function plantNetProxyPlugin(mode: string): Plugin {
   const upstreamTimeoutMs = 120000;
 
   const sendPlantNetRequest = async (image: File, organ: string) => {
-    const boundary = `----PlantDexBoundary${Date.now().toString(16)}`;
+    const boundary = `----FlorivuBoundary${Date.now().toString(16)}`;
     const fileBuffer = Buffer.from(await image.arrayBuffer());
     const bodyParts = [
       Buffer.from(
@@ -233,7 +256,7 @@ function reverseGeocodePlugin(): Plugin {
       const upstreamResponse = await fetch(upstreamUrl, {
         headers: {
           Accept: 'application/json',
-          'User-Agent': 'PlantDex/1.0 (local reverse geocoding)',
+          'User-Agent': 'Florivu/1.0 (local reverse geocoding)',
         },
       });
       const responseText = await upstreamResponse.text();
@@ -285,6 +308,290 @@ function reverseGeocodePlugin(): Plugin {
   };
 }
 
+function zipCodeMapPlugin(): Plugin {
+  const cachePath = resolve(process.cwd(), '.local-data', 'zip-code-map-cache.json');
+
+  function normalizeZipCode(zipCode: string | null) {
+    const trimmed = zipCode?.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const usZipCodeMatch = trimmed.match(/^(\d{5})(?:-\d{4})?$/);
+    if (usZipCodeMatch) {
+      return usZipCodeMatch[1];
+    }
+
+    return trimmed;
+  }
+
+  function normalizeOptionalString(value: unknown) {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  }
+
+  function isZipCodeMapLocationRecord(value: unknown): value is ZipCodeMapLocationRecord {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    return (
+      typeof candidate.zipCode === 'string' &&
+      typeof candidate.latitude === 'number' &&
+      Number.isFinite(candidate.latitude) &&
+      typeof candidate.longitude === 'number' &&
+      Number.isFinite(candidate.longitude) &&
+      typeof candidate.label === 'string' &&
+      typeof candidate.updated_at === 'string'
+    );
+  }
+
+  async function readCache() {
+    try {
+      const contents = await readFile(cachePath, 'utf8');
+      const parsed = JSON.parse(contents);
+
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return {} as Record<string, ZipCodeMapLocationRecord>;
+      }
+
+      return Object.fromEntries(
+        Object.entries(parsed as Record<string, unknown>).filter(([, value]) =>
+          isZipCodeMapLocationRecord(value),
+        ),
+      ) as Record<string, ZipCodeMapLocationRecord>;
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        return {} as Record<string, ZipCodeMapLocationRecord>;
+      }
+
+      throw error;
+    }
+  }
+
+  async function writeCache(cache: Record<string, ZipCodeMapLocationRecord>) {
+    await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
+    await writeFile(cachePath, JSON.stringify(cache, null, 2), 'utf8');
+  }
+
+  async function fetchZipCodeLookup(url: URL) {
+    const upstreamResponse = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Florivu/1.0 (local ZIP code map lookup)',
+      },
+    });
+    const responseText = await upstreamResponse.text();
+
+    if (!upstreamResponse.ok) {
+      throw new Error(`ZIP code lookup failed with ${upstreamResponse.status}: ${responseText}`);
+    }
+
+    return JSON.parse(responseText) as Array<{
+      lat?: unknown;
+      lon?: unknown;
+      display_name?: unknown;
+      address?: {
+        city?: unknown;
+        town?: unknown;
+        village?: unknown;
+        hamlet?: unknown;
+        municipality?: unknown;
+        county?: unknown;
+        state?: unknown;
+        postcode?: unknown;
+        country_code?: unknown;
+      };
+    }>;
+  }
+
+  function toLocationRecord(
+    zipCode: string,
+    payload: Array<{
+      lat?: unknown;
+      lon?: unknown;
+      display_name?: unknown;
+      address?: {
+        city?: unknown;
+        town?: unknown;
+        village?: unknown;
+        hamlet?: unknown;
+        municipality?: unknown;
+        county?: unknown;
+        state?: unknown;
+        postcode?: unknown;
+        country_code?: unknown;
+      };
+    }>,
+  ) {
+    const firstResult = payload[0];
+    if (!firstResult) {
+      return null;
+    }
+
+    const latitude = Number(firstResult.lat);
+    const longitude = Number(firstResult.lon);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return null;
+    }
+
+    const city =
+      normalizeOptionalString(firstResult.address?.city) ??
+      normalizeOptionalString(firstResult.address?.town) ??
+      normalizeOptionalString(firstResult.address?.village) ??
+      normalizeOptionalString(firstResult.address?.hamlet) ??
+      normalizeOptionalString(firstResult.address?.municipality) ??
+      normalizeOptionalString(firstResult.address?.county);
+    const state = normalizeOptionalString(firstResult.address?.state);
+    const displayName = normalizeOptionalString(firstResult.display_name);
+
+    return {
+      zipCode,
+      latitude,
+      longitude,
+      city,
+      state,
+      countryCode: normalizeOptionalString(firstResult.address?.country_code),
+      label: city && state ? `${city}, ${state}` : displayName ?? `ZIP ${zipCode}`,
+      updated_at: new Date().toISOString(),
+    } satisfies ZipCodeMapLocationRecord;
+  }
+
+  async function lookupZipCode(zipCode: string) {
+    const searchRequests: URL[] = [];
+    const isUsZipCode = /^\d{5}$/.test(zipCode);
+
+    if (isUsZipCode) {
+      const postalLookupUrl = new URL('https://nominatim.openstreetmap.org/search');
+      postalLookupUrl.searchParams.set('format', 'jsonv2');
+      postalLookupUrl.searchParams.set('postalcode', zipCode);
+      postalLookupUrl.searchParams.set('countrycodes', 'us,pr,vi,gu,mp,as');
+      postalLookupUrl.searchParams.set('addressdetails', '1');
+      postalLookupUrl.searchParams.set('limit', '1');
+      searchRequests.push(postalLookupUrl);
+
+      const textLookupUrl = new URL('https://nominatim.openstreetmap.org/search');
+      textLookupUrl.searchParams.set('format', 'jsonv2');
+      textLookupUrl.searchParams.set('q', `${zipCode}, United States`);
+      textLookupUrl.searchParams.set('addressdetails', '1');
+      textLookupUrl.searchParams.set('limit', '1');
+      searchRequests.push(textLookupUrl);
+    } else {
+      const genericLookupUrl = new URL('https://nominatim.openstreetmap.org/search');
+      genericLookupUrl.searchParams.set('format', 'jsonv2');
+      genericLookupUrl.searchParams.set('q', zipCode);
+      genericLookupUrl.searchParams.set('addressdetails', '1');
+      genericLookupUrl.searchParams.set('limit', '1');
+      searchRequests.push(genericLookupUrl);
+    }
+
+    for (const requestUrl of searchRequests) {
+      const payload = await fetchZipCodeLookup(requestUrl);
+      const location = toLocationRecord(zipCode, payload);
+
+      if (location) {
+        return location;
+      }
+    }
+
+    return null;
+  }
+
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (req.method !== 'GET' || requestUrl.pathname !== '/api/zip-code-map') {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+      const zipCodes = Array.from(
+        new Set(
+          (requestUrl.searchParams.get('zipCodes') ?? '')
+            .split(',')
+            .map((zipCode) => normalizeZipCode(zipCode))
+            .filter((zipCode): zipCode is string => Boolean(zipCode)),
+        ),
+      ).slice(0, 100);
+
+      if (zipCodes.length === 0) {
+        res.statusCode = 200;
+        res.end(JSON.stringify({ locations: [], unresolvedZipCodes: [] }));
+        return;
+      }
+
+      const cache = await readCache();
+      const locations: ZipCodeMapLocationRecord[] = [];
+      const unresolvedZipCodes: string[] = [];
+      let cacheChanged = false;
+
+      for (const zipCode of zipCodes) {
+        const cachedLocation = cache[zipCode];
+        if (cachedLocation) {
+          locations.push(cachedLocation);
+          continue;
+        }
+
+        try {
+          const lookedUpLocation = await lookupZipCode(zipCode);
+          if (!lookedUpLocation) {
+            unresolvedZipCodes.push(zipCode);
+            continue;
+          }
+
+          cache[zipCode] = lookedUpLocation;
+          locations.push(lookedUpLocation);
+          cacheChanged = true;
+        } catch (lookupError) {
+          console.warn('[ZipCodeMap] ZIP lookup failed.', {
+            zipCode,
+            message: lookupError instanceof Error ? lookupError.message : String(lookupError),
+          });
+          unresolvedZipCodes.push(zipCode);
+        }
+      }
+
+      if (cacheChanged) {
+        await writeCache(cache);
+      }
+
+      console.info('[ZipCodeMap] ZIP code map lookup complete.', {
+        requested: zipCodes.length,
+        resolved: locations.length,
+        unresolved: unresolvedZipCodes.length,
+      });
+
+      res.statusCode = 200;
+      res.end(JSON.stringify({ locations, unresolvedZipCodes }));
+    } catch (error) {
+      console.error('[ZipCodeMap] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message: error instanceof Error ? error.message : 'Unexpected ZIP code map failure.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'zip-code-map',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
 function localObservationStorePlugin(): Plugin {
   const storePath = resolve(process.cwd(), '.local-data', 'observations.json');
 
@@ -294,6 +601,8 @@ function localObservationStorePlugin(): Plugin {
       zip_code: observation.zip_code ?? null,
       is_favorite: Boolean(observation.is_favorite),
       is_house_plant: Boolean(observation.is_house_plant),
+      catalog_plant_id: observation.catalog_plant_id ?? null,
+      care_profile_id: observation.care_profile_id ?? null,
     };
   }
 
@@ -521,6 +830,7 @@ function localObservationStorePlugin(): Plugin {
 
 function localProfileStorePlugin(): Plugin {
   const storePath = resolve(process.cwd(), '.local-data', 'profiles.json');
+  const friendshipStorePath = resolve(process.cwd(), '.local-data', 'friendships.json');
 
   async function readProfiles() {
     try {
@@ -539,6 +849,25 @@ function localProfileStorePlugin(): Plugin {
   async function writeProfiles(profiles: LocalProfileRecord[]) {
     await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
     await writeFile(storePath, JSON.stringify(profiles, null, 2), 'utf8');
+  }
+
+  async function readFriendships() {
+    try {
+      const contents = await readFile(friendshipStorePath, 'utf8');
+      const parsed = JSON.parse(contents);
+      return Array.isArray(parsed) ? (parsed as LocalFriendshipRecord[]) : [];
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async function writeFriendships(friendships: LocalFriendshipRecord[]) {
+    await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
+    await writeFile(friendshipStorePath, JSON.stringify(friendships, null, 2), 'utf8');
   }
 
   async function readJsonBody(req: IncomingMessage) {
@@ -624,9 +953,34 @@ function localProfileStorePlugin(): Plugin {
         nextProfiles.unshift(storedProfile);
         await writeProfiles(nextProfiles);
 
+        if (
+          storedProfile.referred_by_user_id &&
+          storedProfile.referred_by_user_id !== storedProfile.user_id
+        ) {
+          const friendships = await readFriendships();
+          const hasInviteEdge = friendships.some(
+            (entry) =>
+              entry.user_id === storedProfile.referred_by_user_id &&
+              entry.friend_user_id === storedProfile.user_id,
+          );
+
+          if (!hasInviteEdge) {
+            friendships.push({
+              user_id: storedProfile.referred_by_user_id,
+              friend_user_id: storedProfile.user_id,
+              created_at: now,
+            });
+            await writeFriendships(friendships);
+          }
+        }
+
         console.info('[LocalProfileStore] Stored profile.', {
           userId: storedProfile.user_id,
           displayName: storedProfile.display_name,
+          hasProfilePhoto: Boolean(storedProfile.profile_photo_url),
+          homeZipCode: storedProfile.home_zip_code ?? null,
+          selectedAvatarBorderId: storedProfile.selected_avatar_border_id ?? null,
+          selectedProfileTitleId: storedProfile.selected_profile_title_id ?? null,
         });
         res.statusCode = 200;
         res.end(JSON.stringify(storedProfile));
@@ -735,7 +1089,17 @@ function localFriendsStorePlugin(): Plugin {
       display_name: `Friend ${userId.slice(0, 8)}`,
       profile_photo_url: null,
       home_zip_code: null,
+      marketplace_zip_code: null,
       facebook_url: null,
+      facebook_user_id: null,
+      facebook_name: null,
+      facebook_connected_at: null,
+      earned_achievement_ids: [],
+      referred_by_user_id: null,
+      selected_avatar_border_id: null,
+      selected_profile_title_id: null,
+      featured_house_plant_observation_id: null,
+      featured_non_house_plant_observation_id: null,
       is_public: false,
       is_placeholder: true,
       created_at: now,
@@ -800,6 +1164,10 @@ function localFriendsStorePlugin(): Plugin {
     return {
       mutualFriends: sortFriendsByStats(mutualIds.map(toFriendProfile)),
       incomingRequests: sortProfilesAlphabetically(incomingRequestIds.map(toProfile)),
+      completedReferralCount: profiles.filter(
+        (profile) =>
+          profile.referred_by_user_id === userId && mutualIds.includes(profile.user_id),
+      ).length,
     };
   }
 
@@ -910,6 +1278,25 @@ function localFriendsStorePlugin(): Plugin {
         });
         res.statusCode = 200;
         res.end(JSON.stringify(incomingRequests));
+        return;
+      }
+
+      if (req.method === 'GET' && requestUrl.pathname === '/api/local-friends/referrals/count') {
+        const userId = requestUrl.searchParams.get('userId');
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const { completedReferralCount } = await loadLocalFriendLists(userId);
+
+        console.info('[LocalFriendsStore] Returning completed referral count.', {
+          userId,
+          completedReferralCount,
+        });
+        res.statusCode = 200;
+        res.end(JSON.stringify({ count: completedReferralCount }));
         return;
       }
 
@@ -1232,6 +1619,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     plantNetProxyPlugin(mode),
     reverseGeocodePlugin(),
+    zipCodeMapPlugin(),
     localObservationStorePlugin(),
     localProfileStorePlugin(),
     localFriendsStorePlugin(),

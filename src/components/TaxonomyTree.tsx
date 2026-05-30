@@ -30,10 +30,10 @@ export default function TaxonomyTree({
   return (
     <div className="taxonomy-map">
       <div className="taxonomy-map__hint">
-        Scroll across the map to explore your observed branches. Species nodes are filled with your saved plants.
+        Scroll sideways to browse your collection by family and genus. Matching observations stay grouped together on each card.
       </div>
 
-      <div className="taxonomy-map__viewport" role="region" aria-label="Scrollable taxonomy map">
+      <div className="taxonomy-map__viewport" role="region" aria-label="Scrollable taxonomy view">
         <div className="taxonomy-map__canvas" role="tree">
           {families.map((family) => {
             const familyCount = family.genera.reduce(
