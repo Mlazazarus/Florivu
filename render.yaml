@@ -1,0 +1,25 @@
+services:
+  - type: web
+    runtime: node
+    name: florivu
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: EXPO_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: PLANTNET_API_KEY
+        sync: false
+      - key: VITE_PUBLIC_APP_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CARE_ALERT_FROM_EMAIL
+        sync: false
+      - key: CARE_ALERT_APP_URL
+        sync: false
