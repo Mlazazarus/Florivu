@@ -176,6 +176,13 @@ h3 {
   font-size: 0.88rem;
 }
 
+.auth-panel__note--warning {
+  margin: 0;
+  background: rgba(210, 169, 99, 0.14);
+  border-color: rgba(115, 83, 37, 0.18);
+  color: #6f5421;
+}
+
 .feature-stack {
   display: grid;
   gap: 0.75rem;
@@ -208,6 +215,28 @@ h3 {
   display: grid;
   gap: 0.8rem;
   margin-top: 1.25rem;
+}
+
+.auth-captcha {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(22, 52, 38, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.auth-captcha > span {
+  font-size: 0.85rem;
+  color: #516559;
+}
+
+.auth-captcha__widget {
+  overflow-x: auto;
+}
+
+.auth-captcha .field-hint {
+  margin: 0;
 }
 
 .auth-panel__links {

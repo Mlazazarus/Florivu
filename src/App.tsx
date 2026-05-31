@@ -77,6 +77,10 @@ const ACTIVE_TAB_STORAGE_KEY = 'florivu.active-tab';
 const SIGNUP_REFERRAL_STORAGE_KEY = 'florivu.signup-referral';
 const INVITE_QUERY_KEY = 'invite';
 const INVITE_NAME_QUERY_KEY = 'invite_name';
+const AUTH_HCAPTCHA_SITE_KEY =
+  import.meta.env.EXPO_PUBLIC_HCAPTCHA_SITE_KEY?.trim() ||
+  import.meta.env.VITE_HCAPTCHA_SITE_KEY?.trim() ||
+  '';
 
 type BannerState =
   | { tone: 'error' | 'success'; message: string }
@@ -484,6 +488,8 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authMode, setAuthMode] = useState<AuthMode>('sign-in');
+  const [authCaptchaToken, setAuthCaptchaToken] = useState<string | null>(null);
+  const [authCaptchaWidgetKey, setAuthCaptchaWidgetKey] = useState(0);
   const [resetPassword, setResetPassword] = useState('');
   const [resetPasswordConfirm, setResetPasswordConfirm] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
@@ -521,6 +527,11 @@ export default function App() {
 
   useEffect(() => {
     logInfo('App', 'Florivu web app mounted.', { origin: window.location.origin });
+  }, []);
+
+  const resetAuthCaptcha = useCallback(() => {
+    setAuthCaptchaToken(null);
+    setAuthCaptchaWidgetKey((currentKey) => currentKey + 1);
   }, []);
 
   useEffect(() => {
@@ -1084,6 +1095,7 @@ export default function App() {
   const handleAuthModeChange = (nextMode: AuthMode) => {
     setAuthMode(nextMode);
     setBanner(null);
+    resetAuthCaptcha();
 
     if (nextMode !== 'sign-in') {
       setPassword('');
@@ -1099,6 +1111,7 @@ export default function App() {
     event.preventDefault();
 
     setBanner(null);
+    let resetCaptchaAfterSubmit = false;
 
     try {
       if (activeAuthMode === 'forgot-password') {
@@ -1151,7 +1164,29 @@ export default function App() {
       setAuthBusy(true);
 
       if (activeAuthMode === 'sign-up') {
-        await signUp(email.trim(), password, inviteReferral?.referredByUserId ?? null);
+        if (!AUTH_HCAPTCHA_SITE_KEY) {
+          setBanner({
+            tone: 'error',
+            message: 'Account creation is unavailable until hCaptcha is configured for Florivu.',
+          });
+          return;
+        }
+
+        if (!authCaptchaToken) {
+          setBanner({
+            tone: 'error',
+            message: 'Complete the hCaptcha challenge before creating your account.',
+          });
+          return;
+        }
+
+        resetCaptchaAfterSubmit = true;
+        await signUp(
+          email.trim(),
+          password,
+          inviteReferral?.referredByUserId ?? null,
+          authCaptchaToken,
+        );
         if (inviteReferral) {
           writeStoredSignupReferral({
             ...inviteReferral,
@@ -1164,12 +1199,17 @@ export default function App() {
             ? `Your account is ready. Check your inbox if email confirmation is turned on, then add ${inviteReferralName} back in Friends.`
             : 'Your account is ready. Check your inbox if email confirmation is turned on.',
         });
+        setPassword('');
       } else {
         await signIn(email.trim(), password);
       }
     } catch (submitError) {
       setBanner({ tone: 'error', message: formatError(submitError) });
     } finally {
+      if (resetCaptchaAfterSubmit) {
+        resetAuthCaptcha();
+      }
+
       setAuthBusy(false);
     }
   };
@@ -1675,12 +1715,27 @@ export default function App() {
             ) : null}
             <AuthPanel
               busy={authBusy}
+              captchaSiteKey={AUTH_HCAPTCHA_SITE_KEY}
+              captchaToken={authCaptchaToken}
+              captchaWidgetKey={authCaptchaWidgetKey}
               email={email}
               mode={activeAuthMode}
               password={password}
               recoveryEmail={user?.email ?? email}
               resetPassword={resetPassword}
               resetPasswordConfirm={resetPasswordConfirm}
+              onCaptchaError={() => {
+                setAuthCaptchaToken(null);
+                setBanner({
+                  tone: 'error',
+                  message: 'hCaptcha failed to load. Refresh and try creating your account again.',
+                });
+              }}
+              onCaptchaExpire={() => setAuthCaptchaToken(null)}
+              onCaptchaVerify={(token) => {
+                setAuthCaptchaToken(token);
+                setBanner(null);
+              }}
               onEmailChange={setEmail}
               onPasswordChange={setPassword}
               onResetPasswordChange={setResetPassword}

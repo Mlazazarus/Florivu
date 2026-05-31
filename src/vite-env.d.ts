@@ -41,7 +41,9 @@ interface Window {
 }
 
 interface ImportMetaEnv {
+  readonly EXPO_PUBLIC_HCAPTCHA_SITE_KEY?: string;
   readonly VITE_FACEBOOK_APP_ID?: string;
   readonly VITE_FACEBOOK_API_VERSION?: string;
   readonly VITE_PUBLIC_APP_URL?: string;
+  readonly VITE_HCAPTCHA_SITE_KEY?: string;
 }

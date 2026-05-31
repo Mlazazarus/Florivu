@@ -1,8 +1,12 @@
 import { FormEvent } from 'react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export type AuthMode = 'sign-in' | 'sign-up' | 'forgot-password' | 'reset-password';
 
 interface AuthPanelProps {
+  captchaSiteKey?: string;
+  captchaToken?: string | null;
+  captchaWidgetKey?: number;
   mode: AuthMode;
   email: string;
   password: string;
@@ -14,11 +18,17 @@ interface AuthPanelProps {
   onPasswordChange: (value: string) => void;
   onResetPasswordChange: (value: string) => void;
   onResetPasswordConfirmChange: (value: string) => void;
+  onCaptchaError?: () => void;
+  onCaptchaExpire?: () => void;
+  onCaptchaVerify?: (token: string) => void;
   onModeChange: (mode: AuthMode) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
 export default function AuthPanel({
+  captchaSiteKey,
+  captchaToken,
+  captchaWidgetKey = 0,
   mode,
   email,
   password,
@@ -30,6 +40,9 @@ export default function AuthPanel({
   onPasswordChange,
   onResetPasswordChange,
   onResetPasswordConfirmChange,
+  onCaptchaError,
+  onCaptchaExpire,
+  onCaptchaVerify,
   onModeChange,
   onSubmit,
 }: AuthPanelProps) {
@@ -37,6 +50,8 @@ export default function AuthPanel({
   const isForgotPassword = mode === 'forgot-password';
   const isResetPassword = mode === 'reset-password';
   const isSignIn = mode === 'sign-in';
+  const hasCaptchaSiteKey = Boolean(captchaSiteKey?.trim());
+  const submitDisabled = busy || (isSignUp && !hasCaptchaSiteKey);
 
   const title = isResetPassword
     ? 'Create a new password.'
@@ -141,7 +156,35 @@ export default function AuthPanel({
           </>
         ) : null}
 
-        <button className="primary-button" disabled={busy} type="submit">
+        {isSignUp ? (
+          <div className="auth-captcha">
+            <span>Human check</span>
+            {hasCaptchaSiteKey ? (
+              <>
+                <div className="auth-captcha__widget">
+                  <HCaptcha
+                    key={`signup-hcaptcha-${captchaWidgetKey}`}
+                    onError={() => onCaptchaError?.()}
+                    onExpire={() => onCaptchaExpire?.()}
+                    onVerify={(token) => onCaptchaVerify?.(token)}
+                    sitekey={captchaSiteKey!}
+                  />
+                </div>
+                <p className="field-hint">
+                  {captchaToken
+                    ? 'Verification complete. You can create your account now.'
+                    : 'Complete the hCaptcha challenge before creating your account.'}
+                </p>
+              </>
+            ) : (
+              <p className="auth-panel__note auth-panel__note--warning">
+                Account creation is unavailable until the public hCaptcha site key is configured.
+              </p>
+            )}
+          </div>
+        ) : null}
+
+        <button className="primary-button" disabled={submitDisabled} type="submit">
           {busy ? 'Working...' : primaryLabel}
         </button>
       </form>

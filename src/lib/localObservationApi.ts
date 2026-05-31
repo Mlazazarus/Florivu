@@ -1,21 +1,17 @@
 import { Observation } from '../types';
+import {
+  deleteLocalObservationFromStore,
+  fetchLocalObservationsFromStore,
+  saveLocalObservationToStore,
+  updateLocalObservationInStore,
+} from './localFallbackStore';
 import { logError, logInfo } from './logger';
-
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const bodyText = await response.text();
-    throw new Error(`Local collection API ${response.status}: ${bodyText}`);
-  }
-
-  return (await response.json()) as T;
-}
 
 export async function fetchLocalObservations(userId: string): Promise<Observation[]> {
   logInfo('LocalCollection', 'Fetching observations from local fallback store.', { userId });
 
   try {
-    const response = await fetch(`/api/local-observations?userId=${encodeURIComponent(userId)}`);
-    return await parseJsonResponse<Observation[]>(response);
+    return await fetchLocalObservationsFromStore(userId);
   } catch (error) {
     logError('LocalCollection', 'Failed to fetch local fallback observations.', error);
     throw error;
@@ -31,12 +27,7 @@ export async function saveLocalObservation(
   });
 
   try {
-    const response = await fetch('/api/local-observations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(observation),
-    });
-    return await parseJsonResponse<Observation>(response);
+    return await saveLocalObservationToStore(observation);
   } catch (error) {
     logError('LocalCollection', 'Failed to save local fallback observation.', error);
     throw error;
@@ -54,15 +45,7 @@ export async function updateLocalObservation(
   });
 
   try {
-    const response = await fetch(
-      `/api/local-observations/${encodeURIComponent(id)}?userId=${encodeURIComponent(userId)}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      },
-    );
-    return await parseJsonResponse<Observation>(response);
+    return await updateLocalObservationInStore(id, userId, updates);
   } catch (error) {
     logError('LocalCollection', 'Failed to update local fallback observation.', error);
     throw error;
@@ -76,11 +59,7 @@ export async function deleteLocalObservation(id: string, userId: string): Promis
   });
 
   try {
-    const response = await fetch(
-      `/api/local-observations/${encodeURIComponent(id)}?userId=${encodeURIComponent(userId)}`,
-      { method: 'DELETE' },
-    );
-    await parseJsonResponse<{ ok: true }>(response);
+    await deleteLocalObservationFromStore(id, userId);
   } catch (error) {
     logError('LocalCollection', 'Failed to delete local fallback observation.', error);
     throw error;

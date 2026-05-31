@@ -1,4 +1,5 @@
 import { CareTaskSchedule, Observation } from '../types';
+import { supabase } from './supabase';
 
 export interface CareAlertEmailDeliveryResult {
   configured: boolean;
@@ -18,9 +19,21 @@ export interface SendCareAlertEmailPayload {
 export async function sendCareAlertEmail(
   payload: SendCareAlertEmailPayload,
 ): Promise<CareAlertEmailDeliveryResult> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token?.trim();
+
+  if (!accessToken) {
+    throw new Error('You must be signed in to send care reminder emails.');
+  }
+
   const response = await fetch('/api/care-alerts/send-email', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       email: payload.email,
       displayName: payload.displayName,

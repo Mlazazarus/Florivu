@@ -78,16 +78,20 @@ export function useAuth() {
     email: string,
     password: string,
     referredByUserId?: string | null,
+    captchaToken?: string | null,
   ) => {
     const normalizedReferredByUserId = referredByUserId?.trim() || null;
+    const normalizedCaptchaToken = captchaToken?.trim() || null;
     logInfo('Auth', 'Attempting sign up.', {
       email,
+      hasCaptcha: Boolean(normalizedCaptchaToken),
       hasReferralInvite: Boolean(normalizedReferredByUserId),
     });
     const options =
       typeof window === 'undefined'
         ? undefined
         : {
+            captchaToken: normalizedCaptchaToken ?? undefined,
             emailRedirectTo: window.location.href,
             data: normalizedReferredByUserId
               ? {
@@ -102,6 +106,7 @@ export function useAuth() {
     }
     logInfo('Auth', 'Sign up succeeded.', {
       email,
+      hasCaptcha: Boolean(normalizedCaptchaToken),
       hasReferralInvite: Boolean(normalizedReferredByUserId),
     });
   };

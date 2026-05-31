@@ -1,4 +1,13 @@
 import { FriendProfile, UserProfile } from '../types';
+import {
+  acceptLocalFriendRequestInStore,
+  addLocalFriendByDisplayNameInStore,
+  fetchLocalCompletedFriendReferralCountFromStore,
+  fetchLocalFriendsFromStore,
+  fetchLocalIncomingFriendRequestsFromStore,
+  rejectLocalFriendRequestInStore,
+  searchLocalProfilesByDisplayNameInStore,
+} from './localFallbackStore';
 import { logError, logInfo } from './logger';
 
 export interface AddFriendResult {
@@ -7,21 +16,11 @@ export interface AddFriendResult {
   isMutual: boolean;
 }
 
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const bodyText = await response.text();
-    throw new Error(`Local friends API ${response.status}: ${bodyText}`);
-  }
-
-  return (await response.json()) as T;
-}
-
 export async function fetchLocalFriends(userId: string): Promise<FriendProfile[]> {
   logInfo('LocalFriends', 'Fetching friends from local fallback store.', { userId });
 
   try {
-    const response = await fetch(`/api/local-friends?userId=${encodeURIComponent(userId)}`);
-    return await parseJsonResponse<FriendProfile[]>(response);
+    return await fetchLocalFriendsFromStore(userId);
   } catch (error) {
     logError('LocalFriends', 'Failed to fetch local fallback friends.', error);
     throw error;
@@ -34,11 +33,7 @@ export async function fetchLocalCompletedFriendReferralCount(userId: string): Pr
   });
 
   try {
-    const response = await fetch(
-      `/api/local-friends/referrals/count?userId=${encodeURIComponent(userId)}`,
-    );
-    const payload = await parseJsonResponse<{ count?: number }>(response);
-    return Number(payload.count ?? 0);
+    return await fetchLocalCompletedFriendReferralCountFromStore(userId);
   } catch (error) {
     logError('LocalFriends', 'Failed to fetch local fallback completed referral count.', error);
     throw error;
@@ -55,12 +50,7 @@ export async function acceptLocalFriendRequest(
   });
 
   try {
-    const response = await fetch('/api/local-friends/accept', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, friendUserId }),
-    });
-    return await parseJsonResponse<AddFriendResult>(response);
+    return await acceptLocalFriendRequestInStore(userId, friendUserId);
   } catch (error) {
     logError('LocalFriends', 'Failed to accept local fallback friend request.', error);
     throw error;
@@ -73,8 +63,7 @@ export async function fetchLocalIncomingFriendRequests(userId: string): Promise<
   });
 
   try {
-    const response = await fetch(`/api/local-friends/incoming?userId=${encodeURIComponent(userId)}`);
-    return await parseJsonResponse<UserProfile[]>(response);
+    return await fetchLocalIncomingFriendRequestsFromStore(userId);
   } catch (error) {
     logError('LocalFriends', 'Failed to fetch local fallback incoming friend requests.', error);
     throw error;
@@ -91,11 +80,7 @@ export async function rejectLocalFriendRequest(
   });
 
   try {
-    const searchParams = new URLSearchParams({ userId, friendUserId });
-    const response = await fetch(`/api/local-friends/request?${searchParams.toString()}`, {
-      method: 'DELETE',
-    });
-    return await parseJsonResponse<{ ok: boolean }>(response);
+    return await rejectLocalFriendRequestInStore(userId, friendUserId);
   } catch (error) {
     logError('LocalFriends', 'Failed to reject local fallback friend request.', error);
     throw error;
@@ -109,12 +94,7 @@ export async function searchLocalProfilesByDisplayName(
   logInfo('LocalFriends', 'Searching local profiles by display name.', { userId, query });
 
   try {
-    const searchParams = new URLSearchParams({
-      userId,
-      query,
-    });
-    const response = await fetch(`/api/local-friends/search?${searchParams.toString()}`);
-    return await parseJsonResponse<UserProfile[]>(response);
+    return await searchLocalProfilesByDisplayNameInStore(userId, query);
   } catch (error) {
     logError('LocalFriends', 'Failed to search local profiles.', error);
     throw error;
@@ -131,12 +111,7 @@ export async function addLocalFriendByDisplayName(
   });
 
   try {
-    const response = await fetch('/api/local-friends', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, displayName }),
-    });
-    return await parseJsonResponse<AddFriendResult>(response);
+    return await addLocalFriendByDisplayNameInStore(userId, displayName);
   } catch (error) {
     logError('LocalFriends', 'Failed to add local fallback friend.', error);
     throw error;

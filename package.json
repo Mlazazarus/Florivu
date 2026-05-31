@@ -13,6 +13,7 @@
     "start": "node scripts/start-preview.mjs"
   },
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^2.0.2",
     "@supabase/supabase-js": "^2.43.4",
     "heic2any": "^0.0.4",
     "react": "18.2.0",
