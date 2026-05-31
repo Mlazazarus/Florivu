@@ -6,7 +6,7 @@ Launch Florivu as a public PWA with a static frontend plus serverless `/api/*` r
 
 - a real public URL over HTTPS
 - installability on iPhone and Android home screens
-- a hosting shape that fits Cloudflare Pages well
+- a hosting shape that fits Cloudflare Workers static assets well
 - a simple Codex workflow where you keep editing the same web codebase and push updates through Git
 
 Florivu still depends on same-origin server routes for:
@@ -54,18 +54,18 @@ npm run build
 npm run start
 ```
 
-`npm run start` launches `vite preview` for local verification. For Cloudflare Pages, build from the repository root and deploy:
+`npm run start` launches `vite preview` for local verification. For Cloudflare Workers, build from the repository root and deploy:
 
 - static assets from `dist`
-- Pages Functions from `functions`
+- API routes from `src/index.ts`, which maps the `/api/*` routes to the shared Cloudflare handlers under `functions`
 
-The included `wrangler.toml` points Pages at `dist`.
+The included `wrangler.toml` configures the Worker entrypoint plus static asset serving from `dist`.
 
 If you prefer container deployment, use the included `Dockerfile`.
 
 ## Cloudflare
 
-Create the Cloudflare Pages project from this repository, then provide these environment variables:
+Create the Cloudflare Workers build from this repository, then provide these environment variables:
 
 - `EXPO_PUBLIC_SUPABASE_URL`
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`

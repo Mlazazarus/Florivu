@@ -1,7 +1,7 @@
 import { createClient, type User } from '@supabase/supabase-js';
 
 export interface AppEnv {
-  [key: string]: string | undefined;
+  [key: string]: unknown;
   CARE_ALERT_APP_URL?: string;
   CARE_ALERT_FROM_EMAIL?: string;
   EXPO_PUBLIC_PLANTNET_API_KEY?: string;
@@ -46,7 +46,7 @@ export function errorResponse(
 
 export function getEnvValue(env: AppEnv, ...keys: string[]) {
   for (const key of keys) {
-    const value = env[key]?.trim();
+    const value = typeof env[key] === 'string' ? env[key].trim() : '';
     if (value) {
       return value;
     }
