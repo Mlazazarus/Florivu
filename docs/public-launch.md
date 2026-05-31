@@ -55,6 +55,14 @@ Florivu can stay in a private repository and still deploy publicly on Render. Th
 
 Render just needs access to the private GitHub repository that contains this standalone Florivu project.
 
+## GitHub handoff
+
+Create an empty private GitHub repository named `Mlazazarus/Florivu`, then push this standalone repo:
+
+```bash
+git push -u origin main
+```
+
 ## Render
 
 The repository root can include a `render.yaml` Blueprint so Render can create the service with the correct build and start commands.
