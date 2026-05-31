@@ -26,6 +26,7 @@ Minimum required environment variables:
 - `EXPO_PUBLIC_SUPABASE_URL` or `VITE_SUPABASE_URL`
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `EXPO_PUBLIC_HCAPTCHA_SITE_KEY` or `VITE_HCAPTCHA_SITE_KEY`
+- `HCAPTCHA_SECRET` or `HCAPTCHA_SECRET_KEY`
 - `PLANTNET_API_KEY`
 - `VITE_PUBLIC_APP_URL`
 
@@ -40,8 +41,8 @@ Before launch, apply `supabase/schema.sql` so the production database has the cu
 For protected account creation:
 
 - create or reuse an hCaptcha site and add the Florivu public domain plus any Cloudflare preview domain you intend to test from
-- in Supabase, open `Authentication > Bot and Abuse Protection`, enable CAPTCHA protection, choose `hCaptcha`, and paste the hCaptcha secret key
 - in the Florivu app env vars, set the matching public site key as `EXPO_PUBLIC_HCAPTCHA_SITE_KEY`
+- in the Florivu worker runtime vars, set the matching secret as `HCAPTCHA_SECRET`
 - Florivu now requires a completed hCaptcha challenge before `signUp` will run
 
 ## Deploying
@@ -70,6 +71,7 @@ Create the Cloudflare Workers build from this repository, then provide these env
 - `EXPO_PUBLIC_SUPABASE_URL`
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `EXPO_PUBLIC_HCAPTCHA_SITE_KEY`
+- `HCAPTCHA_SECRET`
 - `PLANTNET_API_KEY`
 - `VITE_PUBLIC_APP_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` if account deletion should work

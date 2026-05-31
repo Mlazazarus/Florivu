@@ -3,6 +3,15 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { logError, logInfo } from '../lib/logger';
 
+function extractMessage(payload: unknown) {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const message = Reflect.get(payload, 'message');
+  return typeof message === 'string' && message.trim() ? message.trim() : null;
+}
+
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user,    setUser]    = useState<User | null>(null);
@@ -82,28 +91,60 @@ export function useAuth() {
   ) => {
     const normalizedReferredByUserId = referredByUserId?.trim() || null;
     const normalizedCaptchaToken = captchaToken?.trim() || null;
+    const emailRedirectTo =
+      typeof window === 'undefined' ? undefined : window.location.href;
     logInfo('Auth', 'Attempting sign up.', {
       email,
       hasCaptcha: Boolean(normalizedCaptchaToken),
       hasReferralInvite: Boolean(normalizedReferredByUserId),
     });
-    const options =
-      typeof window === 'undefined'
-        ? undefined
-        : {
-            captchaToken: normalizedCaptchaToken ?? undefined,
-            emailRedirectTo: window.location.href,
-            data: normalizedReferredByUserId
-              ? {
-                  referred_by_user_id: normalizedReferredByUserId,
-                }
-              : undefined,
-          };
-    const { error } = await supabase.auth.signUp({ email, password, options });
-    if (error) {
-      logError('Auth', 'Sign up failed.', error);
+
+    const response = await fetch('/api/auth/sign-up', {
+      body: JSON.stringify({
+        captchaToken: normalizedCaptchaToken,
+        email,
+        emailRedirectTo,
+        password,
+        referredByUserId: normalizedReferredByUserId,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | {
+          message?: string;
+          session?: {
+            access_token?: string;
+            refresh_token?: string;
+          } | null;
+        }
+      | null;
+
+    if (!response.ok) {
+      const errorMessage = extractMessage(payload) ?? 'Sign up failed.';
+      const error = new Error(errorMessage);
+      logError('Auth', 'Sign up failed.', {
+        email,
+        error,
+        status: response.status,
+      });
       throw error;
     }
+
+    if (payload?.session?.access_token && payload.session.refresh_token) {
+      const { error } = await supabase.auth.setSession({
+        access_token: payload.session.access_token,
+        refresh_token: payload.session.refresh_token,
+      });
+      if (error) {
+        logError('Auth', 'Sign up session hydration failed.', error);
+        throw error;
+      }
+    }
+
     logInfo('Auth', 'Sign up succeeded.', {
       email,
       hasCaptcha: Boolean(normalizedCaptchaToken),

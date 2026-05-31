@@ -1,4 +1,5 @@
 import { onRequestPost as handleDeleteAccount } from '../functions/api/account/delete';
+import { onRequestPost as handleSignUp } from '../functions/api/auth/sign-up';
 import { onRequestPost as handleSendCareAlertEmail } from '../functions/api/care-alerts/send-email';
 import { onRequestPost as handlePlantIdentify } from '../functions/api/plantnet/identify';
 import { onRequestGet as handleReverseGeocode } from '../functions/api/reverse-geocode';
@@ -28,6 +29,9 @@ type RouteHandler = (
 const routeHandlers: Record<string, Partial<Record<string, RouteHandler>>> = {
   '/api/account/delete': {
     POST: handleDeleteAccount,
+  },
+  '/api/auth/sign-up': {
+    POST: handleSignUp,
   },
   '/api/care-alerts/send-email': {
     POST: handleSendCareAlertEmail,
