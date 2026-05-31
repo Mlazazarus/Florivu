@@ -2,8 +2,8 @@ import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from
 import appLogo from '../florivuLogo.png';
 import AchievementsPanel from './components/AchievementsPanel';
 import AuthPanel, { type AuthMode } from './components/AuthPanel';
+import CareTrackingPanel from './components/CareTrackingPanel';
 import CollectionMapView from './components/CollectionMapView';
-import DebugLogPanel from './components/DebugLogPanel';
 import FriendsPanel from './components/FriendsPanel';
 import MarketplacePanel from './components/MarketplacePanel';
 import ObservationCard from './components/ObservationCard';
@@ -14,9 +14,10 @@ import ProfilePanel, {
 } from './components/ProfilePanel';
 import TaxonomyTree from './components/TaxonomyTree';
 import { useAuth } from './hooks/useAuth';
+import { useCareSchedules } from './hooks/useCareSchedules';
 import { useFriends } from './hooks/useFriends';
 import { usePlants } from './hooks/usePlants';
-import { useProfile } from './hooks/useProfile';
+import { type SaveProfileInput, useProfile } from './hooks/useProfile';
 import {
   type AchievementMetrics,
   getEarnedAchievements,
@@ -29,6 +30,14 @@ import {
   isProfileTitleUnlocked,
 } from './lib/achievements';
 import { deleteAccount } from './lib/accountApi';
+import { sendCareAlertEmail } from './lib/careAlertEmailApi';
+import {
+  describeCareCadence,
+  getBrowserTimeZone,
+  getCalendarDateKey,
+  isCareTaskDue,
+  localDateInputToIso,
+} from './lib/careTasks';
 import { IMAGE_FILE_ACCEPT, prepareImageFile } from './lib/imageFile';
 import { resolveObservationLocation } from './lib/observationLocation';
 import { findPlantCatalogMatch } from './lib/plantCatalog';
@@ -42,6 +51,7 @@ import { uploadPlantPhoto, uploadProfilePhoto } from './lib/storageHelper';
 import { formatError, logError, logInfo } from './lib/logger';
 import { observationLabelOptions } from './components/ObservationLabels';
 import {
+  CareTaskSchedule,
   Observation,
   OrganType,
   PlantNetResponse,
@@ -53,6 +63,7 @@ import {
 type AppTab =
   | 'identify'
   | 'collection'
+  | 'care'
   | 'marketplace'
   | 'profile'
   | 'friends'
@@ -116,6 +127,12 @@ const tabHeroContent: Record<AppTab, { eyebrow: string; title: string; descripti
     title: 'Browse your collection your way',
     description:
       'Switch between a gallery of observations, a taxonomy view, and a map built from saved ZIP codes.',
+  },
+  care: {
+    eyebrow: 'Care Tracking',
+    title: 'See what your house plants need next',
+    description:
+      'Review every house plant in one table, spot overdue care at a glance, and mark tasks complete as you work through the shelf.',
   },
   marketplace: {
     eyebrow: 'Marketplace',
@@ -306,6 +323,7 @@ function isAppTab(value: string | null): value is AppTab {
   return (
     value === 'identify' ||
     value === 'collection' ||
+    value === 'care' ||
     value === 'marketplace' ||
     value === 'profile' ||
     value === 'friends' ||
@@ -450,6 +468,17 @@ export default function App() {
     fetchProfile,
     saveProfile,
   } = useProfile(user?.id, user?.email);
+  const {
+    careTasks,
+    loading: careTasksLoading,
+    saving: careTasksSaving,
+    error: careTasksError,
+    initialized: careTasksInitialized,
+    storageMode: careTasksMode,
+    fetchCareTasks,
+    syncBundledCareTasks,
+    completeCareTask,
+  } = useCareSchedules(user?.id);
 
   const [activeTab, setActiveTab] = useState<AppTab>(() => getStoredActiveTab());
   const [email, setEmail] = useState('');
@@ -473,6 +502,11 @@ export default function App() {
   const [collectionView, setCollectionView] = useState<CollectionView>('gallery');
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [careAlertsEnabled, setCareAlertsEnabled] = useState(false);
+  const [careAlertEmail, setCareAlertEmail] = useState('');
+  const [careAlertTimezone, setCareAlertTimezone] = useState(() => getBrowserTimeZone());
+  const [savingCareAlertSettings, setSavingCareAlertSettings] = useState(false);
+  const [sendingCareAlertEmail, setSendingCareAlertEmail] = useState(false);
   const [observationGeoMetrics, setObservationGeoMetrics] = useState(
     emptyObservationGeoMetrics,
   );
@@ -483,6 +517,7 @@ export default function App() {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const achievementSyncInFlightRef = useRef(false);
   const referralSyncInFlightRef = useRef(false);
+  const careAlertEmailInFlightRef = useRef(false);
 
   useEffect(() => {
     logInfo('App', 'Florivu web app mounted.', { origin: window.location.origin });
@@ -511,6 +546,32 @@ export default function App() {
 
     void fetchProfile();
   }, [fetchProfile, passwordRecoveryActive, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || passwordRecoveryActive) {
+      return;
+    }
+
+    void fetchCareTasks();
+  }, [fetchCareTasks, passwordRecoveryActive, user?.id]);
+
+  useEffect(() => {
+    if (!profile) {
+      return;
+    }
+
+    setCareAlertsEnabled(profile.care_alerts_enabled ?? false);
+    setCareAlertEmail(profile.care_alert_email ?? user?.email ?? '');
+    setCareAlertTimezone(profile.care_alert_timezone ?? getBrowserTimeZone());
+  }, [profile, user?.email]);
+
+  useEffect(() => {
+    if (!user?.id || !careTasksInitialized || observations.length === 0) {
+      return;
+    }
+
+    void syncBundledCareTasks(observations.filter((observation) => observation.is_house_plant));
+  }, [careTasksInitialized, observations, syncBundledCareTasks, user?.id]);
 
   const collectionZipCodes = getNormalizedObservationZipCodes(observations);
   const collectionZipCodeKey = Array.from(collectionZipCodes)
@@ -571,6 +632,14 @@ export default function App() {
 
     setBanner({ tone: 'error', message: friendsError });
   }, [friendsError]);
+
+  useEffect(() => {
+    if (!careTasksError) {
+      return;
+    }
+
+    setBanner({ tone: 'error', message: careTasksError });
+  }, [careTasksError]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -688,6 +757,28 @@ export default function App() {
     matchesCollectionFilters(observation, collectionFilters),
   );
   const visibleObservations = sortCollectionObservations(filteredObservations, collectionSort);
+  const observationsById = Object.fromEntries(
+    observations.map((observation) => [observation.id, observation]),
+  );
+  const activeCareTasks = careTasks
+    .filter(
+      (task) =>
+        task.task_key !== 'rotate' &&
+        observationsById[task.observation_id]?.is_house_plant,
+    )
+    .sort((left, right) => {
+      const dueDelta =
+        new Date(left.next_due_at).getTime() - new Date(right.next_due_at).getTime();
+      if (dueDelta !== 0) {
+        return dueDelta;
+      }
+
+      return left.sort_order - right.sort_order;
+    });
+  const dueCareTasks = activeCareTasks.filter((task) => isCareTaskDue(task));
+  const selectedObservationCareTasks = selectedObservation
+    ? activeCareTasks.filter((task) => task.observation_id === selectedObservation.id)
+    : [];
   const taxonomy = getTaxonomyTree();
   const collectionTaxonomy = buildTaxonomyTree(filteredObservations);
   const filteredZipCodes = getNormalizedObservationZipCodes(filteredObservations);
@@ -708,11 +799,175 @@ export default function App() {
   const userEmail = user?.email ?? 'Account';
   const userLabel = profile?.display_name?.trim() || userEmail;
   const userInitial = userLabel.charAt(0).toUpperCase();
+  const dueCareTaskCount = dueCareTasks.length;
+  const nextDueCareTask = activeCareTasks[0] ?? null;
   const activeAuthMode: AuthMode = passwordRecoveryActive ? 'reset-password' : authMode;
   const showAuthScreen = !session || passwordRecoveryActive;
   const activeCollectionFilterLabel = formatCollectionFilterSummary(collectionFilters);
   const inviteReferral = readInviteReferralFromUrl();
   const inviteReferralName = inviteReferral?.inviterName || 'a Florivu friend';
+
+  const persistProfileSnapshot = useCallback(
+    async (overrides: Partial<SaveProfileInput>) => {
+      if (!profile) {
+        throw new Error('Profile unavailable.');
+      }
+
+      return saveProfile({
+        display_name: profile.display_name,
+        profile_photo_url: profile.profile_photo_url ?? null,
+        home_zip_code: profile.home_zip_code ?? null,
+        marketplace_zip_code: profile.marketplace_zip_code ?? null,
+        facebook_url: profile.facebook_url ?? null,
+        facebook_user_id: profile.facebook_user_id ?? null,
+        facebook_name: profile.facebook_name ?? null,
+        facebook_connected_at: profile.facebook_connected_at ?? null,
+        earned_achievement_ids: earnedAchievementIds,
+        referred_by_user_id: profile.referred_by_user_id ?? null,
+        selected_avatar_border_id: profile.selected_avatar_border_id ?? null,
+        selected_profile_title_id: profile.selected_profile_title_id ?? null,
+        featured_house_plant_observation_id:
+          profile.featured_house_plant_observation_id ?? null,
+        featured_non_house_plant_observation_id:
+          profile.featured_non_house_plant_observation_id ?? null,
+        care_alerts_enabled: profile.care_alerts_enabled ?? false,
+        care_alert_email: profile.care_alert_email ?? user?.email ?? null,
+        care_alert_timezone: profile.care_alert_timezone ?? getBrowserTimeZone(),
+        care_alert_last_sent_at: profile.care_alert_last_sent_at ?? null,
+        is_public: profile.is_public,
+        ...overrides,
+      });
+    },
+    [earnedAchievementIds, profile, saveProfile, user?.email],
+  );
+
+  const handleSaveCareAlertSettings = useCallback(async () => {
+    if (!profile) {
+      throw new Error('Profile unavailable.');
+    }
+
+    setSavingCareAlertSettings(true);
+
+    try {
+      await persistProfileSnapshot({
+        care_alerts_enabled: careAlertsEnabled,
+        care_alert_email: careAlertEmail.trim() || null,
+        care_alert_timezone: careAlertTimezone.trim() || getBrowserTimeZone(),
+      });
+      setBanner({ tone: 'success', message: 'Care alert settings updated.' });
+    } catch (saveError) {
+      setBanner({ tone: 'error', message: formatError(saveError) });
+      throw saveError;
+    } finally {
+      setSavingCareAlertSettings(false);
+    }
+  }, [
+    careAlertEmail,
+    careAlertTimezone,
+    careAlertsEnabled,
+    persistProfileSnapshot,
+    profile,
+  ]);
+
+  const handleSendCareAlertEmail = useCallback(
+    async (options: { automatic?: boolean } = {}) => {
+      if (!profile) {
+        throw new Error('Profile unavailable.');
+      }
+
+      const recipientEmail = (profile.care_alert_email ?? user?.email ?? '').trim();
+      if (!recipientEmail) {
+        throw new Error('Add a care alert email address in Settings first.');
+      }
+
+      if (dueCareTasks.length === 0) {
+        if (!options.automatic) {
+          setBanner({ tone: 'success', message: 'No care reminders are due right now.' });
+        }
+        return;
+      }
+
+      if (careAlertEmailInFlightRef.current) {
+        return;
+      }
+
+      careAlertEmailInFlightRef.current = true;
+      setSendingCareAlertEmail(true);
+
+      try {
+        const deliveryResult = await sendCareAlertEmail({
+          email: recipientEmail,
+          displayName: profile.display_name,
+          timeZone: profile.care_alert_timezone ?? careAlertTimezone ?? getBrowserTimeZone(),
+          tasks: dueCareTasks,
+          observationsById,
+        });
+
+        if (deliveryResult.sent) {
+          await persistProfileSnapshot({
+            care_alert_last_sent_at: new Date().toISOString(),
+          });
+        }
+
+        if (!options.automatic) {
+          setBanner({
+            tone: deliveryResult.sent ? 'success' : 'error',
+            message: deliveryResult.sent
+              ? deliveryResult.message
+              : `${deliveryResult.message}${deliveryResult.previewText ? ' A preview was generated on the local server.' : ''}`,
+          });
+        }
+      } catch (sendError) {
+        if (!options.automatic) {
+          setBanner({ tone: 'error', message: formatError(sendError) });
+        }
+        throw sendError;
+      } finally {
+        careAlertEmailInFlightRef.current = false;
+        setSendingCareAlertEmail(false);
+      }
+    },
+    [
+      careAlertTimezone,
+      dueCareTasks,
+      observationsById,
+      persistProfileSnapshot,
+      profile,
+      user?.email,
+    ],
+  );
+
+  useEffect(() => {
+    if (
+      !profile?.care_alerts_enabled ||
+      dueCareTasks.length === 0 ||
+      !profile.care_alert_email?.trim()
+    ) {
+      return;
+    }
+
+    const timeZone = profile.care_alert_timezone ?? careAlertTimezone ?? getBrowserTimeZone();
+    const todayKey = getCalendarDateKey(new Date().toISOString(), timeZone);
+    const lastSentKey = profile.care_alert_last_sent_at
+      ? getCalendarDateKey(profile.care_alert_last_sent_at, timeZone)
+      : null;
+
+    if (lastSentKey === todayKey) {
+      return;
+    }
+
+    void handleSendCareAlertEmail({ automatic: true }).catch((automaticEmailError) => {
+      logError('App', 'Automatic care alert email failed.', automaticEmailError);
+    });
+  }, [
+    careAlertTimezone,
+    dueCareTasks.length,
+    handleSendCareAlertEmail,
+    profile?.care_alert_email,
+    profile?.care_alert_last_sent_at,
+    profile?.care_alert_timezone,
+    profile?.care_alerts_enabled,
+  ]);
 
   useEffect(() => {
     if (
@@ -1283,6 +1538,13 @@ export default function App() {
 
     try {
       const updatedObservation = await updateObservationLabels(observation.id, labels);
+      if (updatedObservation.is_house_plant) {
+        try {
+          await syncBundledCareTasks([updatedObservation]);
+        } catch (careTaskSyncError) {
+          logError('App', 'Observation label save succeeded, but care task sync failed.', careTaskSyncError);
+        }
+      }
       if (selectedObservation?.id === updatedObservation.id) {
         setSelectedObservation(updatedObservation);
       }
@@ -1298,6 +1560,39 @@ export default function App() {
     } catch (updateError) {
       setBanner({ tone: 'error', message: formatError(updateError) });
       throw updateError;
+    }
+  };
+
+  const handleCompleteCareTask = async (
+    observation: Observation,
+    task: CareTaskSchedule,
+    completedOn: string,
+  ) => {
+    const completedAtIso = localDateInputToIso(completedOn);
+
+    if (!completedAtIso) {
+      setBanner({ tone: 'error', message: 'Choose a valid completion date.' });
+      throw new Error('Choose a valid completion date.');
+    }
+
+    setBanner(null);
+
+    try {
+      const updatedTask = await completeCareTask(task, completedAtIso);
+      if (selectedObservation?.id === observation.id) {
+        setSelectedObservation(observation);
+      }
+
+      setBanner({
+        tone: 'success',
+        message: `${observation.common_name}: ${updatedTask.title.toLowerCase()} completed. Next reminder scheduled ${new Intl.DateTimeFormat(
+          'en-US',
+          { dateStyle: 'medium' },
+        ).format(new Date(updatedTask.next_due_at))}.`,
+      });
+    } catch (completeError) {
+      setBanner({ tone: 'error', message: formatError(completeError) });
+      throw completeError;
     }
   };
 
@@ -1430,6 +1725,13 @@ export default function App() {
               type="button"
             >
               My Plants
+            </button>
+            <button
+              className={activeTab === 'care' ? 'tab-button active' : 'tab-button'}
+              onClick={() => setActiveTab('care')}
+              type="button"
+            >
+              Care Tracker
             </button>
             <button
               className={activeTab === 'friends' ? 'tab-button active' : 'tab-button'}
@@ -1842,6 +2144,20 @@ export default function App() {
           </section>
         ) : null}
 
+        {activeTab === 'care' ? (
+          <section className="panel-stack">
+            <CareTrackingPanel
+              careTasks={activeCareTasks}
+              loading={careTasksLoading}
+              observations={observations}
+              onCompleteTask={handleCompleteCareTask}
+              onOpenObservation={setSelectedObservation}
+              saving={careTasksSaving}
+              storageMode={careTasksMode}
+            />
+          </section>
+        ) : null}
+
         {activeTab === 'marketplace' ? (
           <section className="panel-stack">
             <MarketplacePanel observations={observations} onOpenProfile={openProfile} profile={profile} />
@@ -1863,8 +2179,9 @@ export default function App() {
                   <span>Signed in as</span>
                   <strong>{userLabel}</strong>
                   <p>
-                    Use the header tabs for discovery, marketplace, your collection, and friends.
-                    The account menu keeps profile, achievements, and settings in one place.
+                    Use the header tabs for discovery, your collection, care tracking,
+                    marketplace, and friends. The account menu keeps profile,
+                    achievements, and settings in one place.
                   </p>
                 </div>
                 <div className="settings-card">
@@ -1883,7 +2200,149 @@ export default function App() {
                     {uniqueSpeciesCount} unique plants across {taxonomy.length} families.
                   </p>
                 </div>
+                <div className="settings-card">
+                  <span>Care reminders</span>
+                  <strong>{dueCareTaskCount} due now</strong>
+                  <p>
+                    {nextDueCareTask
+                      ? `Next up: ${observationsById[nextDueCareTask.observation_id]?.common_name ?? 'Saved plant'} - ${nextDueCareTask.title.toLowerCase()}.`
+                      : 'Mark house plants in My Plants to start building care schedules.'}
+                  </p>
+                </div>
               </div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-header">
+                <div>
+                  <p className="eyebrow">Care alerts</p>
+                  <h2>Email reminders for your house plants</h2>
+                </div>
+              </div>
+
+              <form
+                className="care-alert-settings"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleSaveCareAlertSettings();
+                }}
+              >
+                <div className="care-alert-settings__grid">
+                  <div className="profile-toggle-card">
+                    <span>Enable alerts</span>
+                    <label className="profile-toggle">
+                      <input
+                        checked={careAlertsEnabled}
+                        onChange={(event) => setCareAlertsEnabled(event.target.checked)}
+                        type="checkbox"
+                      />
+                      <strong>
+                        {careAlertsEnabled
+                          ? 'Email reminders are enabled'
+                          : 'Email reminders are paused'}
+                      </strong>
+                    </label>
+                    <p>
+                      Florivu will use each plant&apos;s saved care schedule and send due reminders
+                      by email first.
+                    </p>
+                  </div>
+
+                  <label className="field">
+                    <span>Reminder email</span>
+                    <input
+                      autoComplete="email"
+                      inputMode="email"
+                      onChange={(event) => setCareAlertEmail(event.target.value)}
+                      placeholder={user?.email ?? 'you@example.com'}
+                      type="email"
+                      value={careAlertEmail}
+                    />
+                  </label>
+
+                  <label className="field">
+                    <span>Time zone</span>
+                    <input
+                      onChange={(event) => setCareAlertTimezone(event.target.value)}
+                      placeholder="America/Los_Angeles"
+                      value={careAlertTimezone}
+                    />
+                  </label>
+
+                  <div className="profile-note-card">
+                    <span>Delivery status</span>
+                    <strong>
+                      {profile?.care_alert_last_sent_at
+                        ? `Last email: ${new Intl.DateTimeFormat('en-US', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          }).format(new Date(profile.care_alert_last_sent_at))}`
+                        : 'No care email sent yet'}
+                    </strong>
+                    <p>
+                      Delivery works from the local server when `RESEND_API_KEY` and
+                      `CARE_ALERT_FROM_EMAIL` are configured.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="profile-editor__actions">
+                  <p className="profile-autosave-status" role="status">
+                    {careTasksLoading || careTasksSaving
+                      ? 'Refreshing care schedules...'
+                      : `${activeCareTasks.length} total care reminders tracked. Storage: ${careTasksMode === 'local' ? 'this device' : 'your account'}.`}
+                  </p>
+                  <div className="care-alert-settings__actions">
+                    <button
+                      className="secondary-button"
+                      disabled={sendingCareAlertEmail || dueCareTaskCount === 0}
+                      onClick={() => void handleSendCareAlertEmail()}
+                      type="button"
+                    >
+                      {sendingCareAlertEmail ? 'Sending reminder...' : 'Send due email now'}
+                    </button>
+                    <button
+                      className="primary-button"
+                      disabled={savingCareAlertSettings}
+                      type="submit"
+                    >
+                      {savingCareAlertSettings ? 'Saving settings...' : 'Save care alert settings'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {dueCareTaskCount === 0 ? (
+                <div className="empty-state empty-state--compact">
+                  <strong>No reminders are due right now.</strong>
+                  <span>
+                    Mark a saved observation as a house plant, then complete care tasks as you go
+                    so Florivu can roll the next reminder date forward.
+                  </span>
+                </div>
+              ) : (
+                <div className="care-alert-due-list">
+                  {dueCareTasks.slice(0, 6).map((task) => {
+                    const observation = observationsById[task.observation_id];
+
+                    return (
+                      <article className="care-alert-due-card" key={task.id}>
+                        <div>
+                          <span className="care-alert-due-card__eyebrow">
+                            {observation?.common_name ?? 'Saved plant'}
+                          </span>
+                          <strong>{task.title}</strong>
+                          <p>{task.instructions}</p>
+                        </div>
+                        <div className="care-alert-due-card__meta">
+                          <span>Due now</span>
+                          <strong>{describeCareCadence(task.cadence_days)}</strong>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
         ) : null}
@@ -1960,15 +2419,16 @@ export default function App() {
 
       {selectedObservation ? (
         <ObservationModal
+          careTasks={selectedObservationCareTasks}
           observation={selectedObservation}
           onClose={() => setSelectedObservation(null)}
+          onCompleteCareTask={handleCompleteCareTask}
           onDelete={handleDeleteObservation}
           onOpenTaxonomy={openObservationTaxonomy}
           onSaveLabels={handleSaveObservationLabels}
           onSaveZipCode={handleSaveObservationZipCode}
         />
       ) : null}
-      <DebugLogPanel />
     </div>
   );
 }

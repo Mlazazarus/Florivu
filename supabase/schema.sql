@@ -1,5 +1,11 @@
 create extension if not exists "pgcrypto";
 
+drop trigger if exists discussion_reply_touch_thread on discussion_replies;
+drop function if exists public.touch_discussion_thread_on_reply();
+drop table if exists discussion_replies;
+drop table if exists discussion_threads;
+drop table if exists discussion_boards;
+
 create table if not exists observations (
   id              uuid primary key default gen_random_uuid(),
   user_id         uuid references auth.users(id) on delete cascade not null,
@@ -36,9 +42,30 @@ create table if not exists profiles (
   selected_profile_title_id text,
   featured_house_plant_observation_id uuid references observations(id) on delete set null,
   featured_non_house_plant_observation_id uuid references observations(id) on delete set null,
+  care_alerts_enabled boolean not null default false,
+  care_alert_email text,
+  care_alert_timezone text,
+  care_alert_last_sent_at timestamptz,
   is_public          boolean not null default false,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
+);
+
+create table if not exists care_task_schedules (
+  id                uuid primary key default gen_random_uuid(),
+  observation_id    uuid references observations(id) on delete cascade not null,
+  user_id           uuid references auth.users(id) on delete cascade not null,
+  task_key          text not null,
+  title             text not null,
+  instructions      text not null,
+  cadence_days      integer not null check (cadence_days > 0),
+  sort_order        integer not null default 0,
+  source            text not null default 'bundled',
+  last_completed_at timestamptz,
+  next_due_at       timestamptz not null,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  unique (observation_id, task_key)
 );
 
 create table if not exists friendships (
@@ -67,15 +94,44 @@ alter table profiles add column if not exists selected_avatar_border_id text;
 alter table profiles add column if not exists selected_profile_title_id text;
 alter table profiles add column if not exists featured_house_plant_observation_id uuid references observations(id) on delete set null;
 alter table profiles add column if not exists featured_non_house_plant_observation_id uuid references observations(id) on delete set null;
+alter table profiles add column if not exists care_alerts_enabled boolean not null default false;
+alter table profiles add column if not exists care_alert_email text;
+alter table profiles add column if not exists care_alert_timezone text;
+alter table profiles add column if not exists care_alert_last_sent_at timestamptz;
 alter table profiles add column if not exists is_public boolean not null default false;
 alter table profiles add column if not exists updated_at timestamptz not null default now();
+alter table care_task_schedules add column if not exists sort_order integer not null default 0;
+alter table care_task_schedules add column if not exists source text not null default 'bundled';
+alter table care_task_schedules add column if not exists last_completed_at timestamptz;
+alter table care_task_schedules add column if not exists updated_at timestamptz not null default now();
 
 create unique index if not exists profiles_display_name_lower_unique_idx
   on profiles (lower(display_name));
+create index if not exists care_task_schedules_user_due_idx
+  on care_task_schedules (user_id, next_due_at asc);
 
 update profiles
 set updated_at = now()
 where updated_at is null;
+
+update profiles
+set care_alerts_enabled = false
+where care_alerts_enabled is null;
+
+update profiles
+set care_alert_email = nullif(care_alert_email, '')
+where care_alert_email = '';
+
+update profiles
+set care_alert_timezone = 'UTC'
+where care_alert_timezone is null;
+
+update care_task_schedules
+set updated_at = coalesce(updated_at, created_at, now())
+where updated_at is null;
+
+delete from care_task_schedules
+where task_key = 'rotate';
 
 create or replace function public.find_profile_by_display_name(target_display_name text)
 returns table (
@@ -277,6 +333,7 @@ for each row execute function public.handle_referred_profile_friend_invite();
 alter table observations enable row level security;
 alter table profiles enable row level security;
 alter table friendships enable row level security;
+alter table care_task_schedules enable row level security;
 
 create policy "Users can view own observations"
   on observations for select using (auth.uid() = user_id);
@@ -307,6 +364,15 @@ create policy "Users can insert own profile"
   on profiles for insert with check (auth.uid() = user_id);
 create policy "Users can update own profile"
   on profiles for update using (auth.uid() = user_id);
+
+create policy "Users can view own care tasks"
+  on care_task_schedules for select using (auth.uid() = user_id);
+create policy "Users can insert own care tasks"
+  on care_task_schedules for insert with check (auth.uid() = user_id);
+create policy "Users can update own care tasks"
+  on care_task_schedules for update using (auth.uid() = user_id);
+create policy "Users can delete own care tasks"
+  on care_task_schedules for delete using (auth.uid() = user_id);
 
 create or replace function public.handle_new_user()
 returns trigger

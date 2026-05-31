@@ -67,6 +67,13 @@ function createDefaultProfile(
     selected_profile_title_id: null,
     featured_house_plant_observation_id: null,
     featured_non_house_plant_observation_id: null,
+    care_alerts_enabled: false,
+    care_alert_email: userEmail?.trim() || null,
+    care_alert_timezone:
+      typeof Intl !== 'undefined'
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+        : 'UTC',
+    care_alert_last_sent_at: null,
     is_public: false,
     created_at: now,
     updated_at: now,
@@ -103,6 +110,10 @@ export interface SaveProfileInput {
   selected_profile_title_id?: string | null;
   featured_house_plant_observation_id?: string | null;
   featured_non_house_plant_observation_id?: string | null;
+  care_alerts_enabled?: boolean;
+  care_alert_email?: string | null;
+  care_alert_timezone?: string | null;
+  care_alert_last_sent_at?: string | null;
   is_public: boolean;
 }
 
@@ -295,6 +306,25 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
       input.featured_non_house_plant_observation_id !== undefined
         ? input.featured_non_house_plant_observation_id?.trim() || null
         : existingProfile.featured_non_house_plant_observation_id ?? null;
+    const nextCareAlertsEnabled =
+      input.care_alerts_enabled !== undefined
+        ? input.care_alerts_enabled
+        : existingProfile.care_alerts_enabled ?? false;
+    const nextCareAlertEmail =
+      input.care_alert_email !== undefined
+        ? input.care_alert_email?.trim() || null
+        : existingProfile.care_alert_email ?? (userEmail?.trim() || null);
+    const nextCareAlertTimezone =
+      input.care_alert_timezone !== undefined
+        ? input.care_alert_timezone?.trim() || null
+        : existingProfile.care_alert_timezone ??
+          (typeof Intl !== 'undefined'
+            ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+            : 'UTC');
+    const nextCareAlertLastSentAt =
+      input.care_alert_last_sent_at !== undefined
+        ? input.care_alert_last_sent_at?.trim() || null
+        : existingProfile.care_alert_last_sent_at ?? null;
     const nextProfile: UserProfile = {
       ...existingProfile,
       user_id: userId,
@@ -312,6 +342,10 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
       selected_profile_title_id: nextSelectedProfileTitleId ?? null,
       featured_house_plant_observation_id: nextFeaturedHousePlantObservationId,
       featured_non_house_plant_observation_id: nextFeaturedNonHousePlantObservationId,
+      care_alerts_enabled: nextCareAlertsEnabled,
+      care_alert_email: nextCareAlertEmail,
+      care_alert_timezone: nextCareAlertTimezone,
+      care_alert_last_sent_at: nextCareAlertLastSentAt,
       is_public: input.is_public,
       updated_at: now,
     };

@@ -36,6 +36,10 @@ export interface UserProfile {
   selected_profile_title_id?: string | null;
   featured_house_plant_observation_id?: string | null;
   featured_non_house_plant_observation_id?: string | null;
+  care_alerts_enabled?: boolean;
+  care_alert_email?: string | null;
+  care_alert_timezone?: string | null;
+  care_alert_last_sent_at?: string | null;
   is_public: boolean;
   is_placeholder?: boolean;
   created_at: string;
@@ -115,6 +119,24 @@ export interface Observation {
   catalog_plant_id?: string | null;
   care_profile_id?: string | null;
   created_at: string;
+}
+
+export type CareTaskKey = 'water' | 'rotate' | 'feed' | 'refresh-soil';
+
+export interface CareTaskSchedule {
+  id: string;
+  observation_id: string;
+  user_id: string;
+  task_key: CareTaskKey;
+  title: string;
+  instructions: string;
+  cadence_days: number;
+  sort_order: number;
+  source: 'bundled';
+  last_completed_at?: string | null;
+  next_due_at: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ZipCodeMapLocation {

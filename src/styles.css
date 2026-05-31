@@ -1174,6 +1174,218 @@ h3 {
   font-size: 0.86rem;
 }
 
+.care-alert-settings {
+  display: grid;
+  gap: 1rem;
+}
+
+.care-alert-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.9rem;
+}
+
+.care-alert-settings__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.care-alert-due-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.care-alert-due-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 247, 242, 0.98)),
+    linear-gradient(135deg, rgba(210, 169, 99, 0.1), transparent 58%);
+  border: 1px solid rgba(22, 52, 38, 0.08);
+}
+
+.care-alert-due-card__eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #63776a;
+}
+
+.care-alert-due-card strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1rem;
+}
+
+.care-alert-due-card p {
+  margin: 0.4rem 0 0;
+  color: #54675b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.care-alert-due-card__meta {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 8rem;
+  align-content: start;
+  text-align: right;
+}
+
+.care-alert-due-card__meta span {
+  font-size: 0.72rem;
+  color: #6b7d71;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.care-tracking-layout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.care-tracking-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.care-tracking-table-wrap {
+  overflow-x: auto;
+}
+
+.care-tracking-table {
+  width: 100%;
+  min-width: 74rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.care-tracking-table th,
+.care-tracking-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid rgba(22, 52, 38, 0.08);
+  vertical-align: top;
+}
+
+.care-tracking-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(246, 250, 244, 0.98);
+  color: #62756a;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.care-tracking-table tbody tr:hover {
+  background: rgba(248, 251, 246, 0.76);
+}
+
+.care-tracking-plant {
+  display: grid;
+  grid-template-columns: 3.6rem minmax(0, 1fr);
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.care-tracking-plant img {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.9rem;
+  object-fit: cover;
+}
+
+.care-tracking-plant__copy {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.care-tracking-plant__copy strong {
+  font-size: 0.95rem;
+}
+
+.care-tracking-plant__copy span {
+  color: #5c6f64;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.care-tracking-count,
+.care-tracking-next {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.care-tracking-count strong,
+.care-tracking-next strong {
+  font-size: 0.95rem;
+}
+
+.care-tracking-count span,
+.care-tracking-next span {
+  color: #62756a;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.care-task-table-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.8rem;
+  border-radius: 0.95rem;
+  background: rgba(250, 251, 248, 0.96);
+  border: 1px solid rgba(22, 52, 38, 0.08);
+}
+
+.care-task-table-card--muted {
+  background: rgba(244, 247, 242, 0.9);
+}
+
+.care-task-table-card strong {
+  font-size: 0.86rem;
+  line-height: 1.3;
+}
+
+.care-task-table-card > span:last-of-type {
+  color: #62756a;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.care-task-table-card .ghost-link {
+  justify-self: start;
+}
+
+.care-task-table-card__status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(39, 95, 68, 0.08);
+  color: #2d6549;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.care-task-table-card__status--due {
+  background: rgba(188, 90, 46, 0.12);
+  color: #9a4f22;
+}
+
 .profile-layout {
   display: grid;
   gap: 0.9rem;
@@ -3009,6 +3221,10 @@ h3 {
   margin-bottom: 1rem;
 }
 
+.detail-grid__editable--care-schedule {
+  margin-bottom: 1rem;
+}
+
 .detail-grid__editable-header {
   display: flex;
   justify-content: space-between;
@@ -3101,6 +3317,105 @@ h3 {
 
 .detail-grid__save {
   justify-self: start;
+}
+
+.care-task-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.care-task-card {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.95rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 248, 243, 0.98)),
+    linear-gradient(135deg, rgba(210, 169, 99, 0.1), transparent 55%);
+  border: 1px solid rgba(22, 52, 38, 0.08);
+}
+
+.care-task-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.care-task-card__header strong {
+  display: block;
+}
+
+.care-task-card__header span {
+  color: #5f7367;
+  font-size: 0.78rem;
+}
+
+.care-task-card p {
+  margin: 0;
+  color: #405448;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.care-task-card__status {
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(39, 95, 68, 0.08);
+  color: #2d6549;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.care-task-card__status--due {
+  background: rgba(188, 90, 46, 0.12);
+  color: #9a4f22;
+}
+
+.care-task-card__dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.care-task-card__dates div {
+  padding: 0.75rem 0.8rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(22, 52, 38, 0.08);
+}
+
+.care-task-card__dates span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7f72;
+}
+
+.care-task-card__dates strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.86rem;
+}
+
+.care-task-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.care-task-card__date-field {
+  min-width: 11rem;
+}
+
+.empty-state--compact {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(22, 52, 38, 0.08);
 }
 
 .catalog-summary-card {
@@ -3219,77 +3534,6 @@ h3 {
   margin-top: 1rem;
 }
 
-.debug-panel {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
-  z-index: 50;
-  width: min(24rem, calc(100vw - 1.5rem));
-  border: 1px solid rgba(22, 52, 38, 0.12);
-  border-radius: 1rem;
-  background: rgba(249, 251, 246, 0.95);
-  box-shadow: 0 18px 48px rgba(12, 25, 20, 0.2);
-  backdrop-filter: blur(12px);
-}
-
-.debug-panel > summary {
-  padding: 0.85rem 1rem;
-  cursor: pointer;
-  list-style: none;
-  font-weight: 700;
-}
-
-.debug-panel > summary::-webkit-details-marker {
-  display: none;
-}
-
-.debug-panel__body {
-  max-height: min(20rem, 45vh);
-  overflow: auto;
-  padding: 0 0.85rem 0.85rem;
-}
-
-.debug-panel__empty {
-  margin: 0;
-  color: #64786c;
-}
-
-.debug-entry {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(22, 52, 38, 0.08);
-}
-
-.debug-entry header {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.8rem;
-}
-
-.debug-entry p,
-.debug-entry pre {
-  margin: 0.45rem 0 0;
-}
-
-.debug-entry pre {
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 0.75rem;
-  color: #475b50;
-}
-
-.debug-entry--warn {
-  border-color: rgba(194, 133, 45, 0.18);
-}
-
-.debug-entry--error {
-  border-color: rgba(163, 61, 47, 0.22);
-}
-
 @keyframes pulse {
   0%,
   100% {
@@ -3335,6 +3579,8 @@ h3 {
 
   .header-stats,
   .settings-grid,
+  .care-alert-settings__grid,
+  .care-tracking-summary,
   .achievement-overview__stats {
     width: 100%;
   }
@@ -3441,6 +3687,8 @@ h3 {
   .detail-grid,
   .header-stats,
   .settings-grid,
+  .care-tracking-summary,
+  .care-task-card__dates,
   .collection-map-view__summary,
   .achievement-overview__stats,
   .achievement-grid,
@@ -3542,7 +3790,10 @@ h3 {
   .collection-view-toggle,
   .marketplace-platform-row,
   .marketplace-action-row,
-  .profile-chip-row {
+  .profile-chip-row,
+  .care-task-card__actions,
+  .care-alert-settings__actions,
+  .care-alert-due-card {
     flex-direction: column;
   }
 
@@ -3596,9 +3847,13 @@ h3 {
     width: 100%;
   }
 
-  .debug-panel {
-    right: 0.75rem;
-    bottom: 0.75rem;
-    width: calc(100vw - 1.5rem);
+  .care-alert-due-card__meta {
+    text-align: left;
+    min-width: 0;
   }
+
+  .care-tracking-table {
+    min-width: 58rem;
+  }
+
 }

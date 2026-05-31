@@ -44,8 +44,28 @@ interface LocalProfileRecord {
   selected_profile_title_id?: string | null;
   featured_house_plant_observation_id?: string | null;
   featured_non_house_plant_observation_id?: string | null;
+  care_alerts_enabled?: boolean;
+  care_alert_email?: string | null;
+  care_alert_timezone?: string | null;
+  care_alert_last_sent_at?: string | null;
   is_public: boolean;
   is_placeholder?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface LocalCareTaskScheduleRecord {
+  id: string;
+  observation_id: string;
+  user_id: string;
+  task_key: 'water' | 'rotate' | 'feed' | 'refresh-soil';
+  title: string;
+  instructions: string;
+  cadence_days: number;
+  sort_order: number;
+  source: 'bundled';
+  last_completed_at?: string | null;
+  next_due_at: string;
   created_at: string;
   updated_at: string;
 }
@@ -594,6 +614,7 @@ function zipCodeMapPlugin(): Plugin {
 
 function localObservationStorePlugin(): Plugin {
   const storePath = resolve(process.cwd(), '.local-data', 'observations.json');
+  const careTaskStorePath = resolve(process.cwd(), '.local-data', 'care-task-schedules.json');
 
   function normalizeObservationRecord(observation: LocalObservationRecord): LocalObservationRecord {
     return {
@@ -625,6 +646,25 @@ function localObservationStorePlugin(): Plugin {
   async function writeObservations(observations: LocalObservationRecord[]) {
     await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
     await writeFile(storePath, JSON.stringify(observations, null, 2), 'utf8');
+  }
+
+  async function readCareTasks() {
+    try {
+      const contents = await readFile(careTaskStorePath, 'utf8');
+      const parsed = JSON.parse(contents);
+      return Array.isArray(parsed) ? (parsed as LocalCareTaskScheduleRecord[]) : [];
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async function writeCareTasks(tasks: LocalCareTaskScheduleRecord[]) {
+    await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
+    await writeFile(careTaskStorePath, JSON.stringify(tasks, null, 2), 'utf8');
   }
 
   async function readJsonBody(req: IncomingMessage) {
@@ -787,6 +827,7 @@ function localObservationStorePlugin(): Plugin {
         );
         const userId = requestUrl.searchParams.get('userId');
         const observations = await readObservations();
+        const careTasks = await readCareTasks();
         const nextObservations = observations.filter(
           (observation) => !(observation.id === id && (!userId || observation.user_id === userId)),
         );
@@ -798,6 +839,11 @@ function localObservationStorePlugin(): Plugin {
         }
 
         await writeObservations(nextObservations);
+        await writeCareTasks(
+          careTasks.filter(
+            (task) => !(task.observation_id === id && (!userId || task.user_id === userId)),
+          ),
+        );
         console.info('[LocalObservationStore] Deleted observation.', { id, userId });
         res.statusCode = 200;
         res.end(JSON.stringify({ ok: true }));
@@ -946,6 +992,19 @@ function localProfileStorePlugin(): Plugin {
           ...existingProfile,
           ...profile,
           display_name: normalizedDisplayName,
+          care_alerts_enabled: profile.care_alerts_enabled ?? existingProfile?.care_alerts_enabled ?? false,
+          care_alert_email:
+            profile.care_alert_email ??
+            existingProfile?.care_alert_email ??
+            null,
+          care_alert_timezone:
+            profile.care_alert_timezone ??
+            existingProfile?.care_alert_timezone ??
+            'UTC',
+          care_alert_last_sent_at:
+            profile.care_alert_last_sent_at ??
+            existingProfile?.care_alert_last_sent_at ??
+            null,
           created_at: existingProfile?.created_at ?? profile.created_at ?? now,
           updated_at: now,
         };
@@ -1002,6 +1061,474 @@ function localProfileStorePlugin(): Plugin {
 
   return {
     name: 'local-profile-store',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
+function localCareTaskStorePlugin(): Plugin {
+  const storePath = resolve(process.cwd(), '.local-data', 'care-task-schedules.json');
+
+  function normalizeTaskRecord(task: LocalCareTaskScheduleRecord): LocalCareTaskScheduleRecord {
+    return {
+      ...task,
+      sort_order: Number.isFinite(task.sort_order) ? task.sort_order : 0,
+      source: 'bundled',
+      last_completed_at: task.last_completed_at ?? null,
+    };
+  }
+
+  async function readTasks() {
+    try {
+      const contents = await readFile(storePath, 'utf8');
+      const parsed = JSON.parse(contents);
+      return Array.isArray(parsed)
+        ? (parsed as LocalCareTaskScheduleRecord[]).map((task) => normalizeTaskRecord(task))
+        : [];
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async function writeTasks(tasks: LocalCareTaskScheduleRecord[]) {
+    await mkdir(resolve(process.cwd(), '.local-data'), { recursive: true });
+    await writeFile(storePath, JSON.stringify(tasks, null, 2), 'utf8');
+  }
+
+  async function readJsonBody(req: IncomingMessage) {
+    const request = new Request(`http://local${req.url ?? '/'}`, {
+      method: req.method,
+      headers: req.headers as HeadersInit,
+      body: Readable.toWeb(req as never) as BodyInit,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    return (await request.json()) as unknown;
+  }
+
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (!requestUrl.pathname.startsWith('/api/local-care-tasks')) {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+      if (req.method === 'GET' && requestUrl.pathname === '/api/local-care-tasks') {
+        const userId = requestUrl.searchParams.get('userId');
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const tasks = (await readTasks())
+          .filter((task) => task.user_id === userId)
+          .sort((left, right) => {
+            const dueDelta =
+              new Date(left.next_due_at).getTime() - new Date(right.next_due_at).getTime();
+            if (dueDelta !== 0) {
+              return dueDelta;
+            }
+
+            return left.sort_order - right.sort_order;
+          });
+
+        res.statusCode = 200;
+        res.end(JSON.stringify(tasks));
+        return;
+      }
+
+      if (req.method === 'POST' && requestUrl.pathname === '/api/local-care-tasks') {
+        const body = await readJsonBody(req);
+        const inputTasks = Array.isArray(body) ? body : [];
+
+        if (inputTasks.length === 0) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'An array of care tasks is required.' }));
+          return;
+        }
+
+        const now = new Date().toISOString();
+        const tasks = await readTasks();
+        const storedTasks = inputTasks.map((task) => {
+          const record = task as Omit<
+            LocalCareTaskScheduleRecord,
+            'id' | 'created_at' | 'updated_at'
+          >;
+
+          return normalizeTaskRecord({
+            ...record,
+            id: randomUUID(),
+            created_at: now,
+            updated_at: now,
+          });
+        });
+
+        tasks.unshift(...storedTasks);
+        await writeTasks(tasks);
+        res.statusCode = 201;
+        res.end(JSON.stringify(storedTasks));
+        return;
+      }
+
+      if (req.method === 'PATCH' && requestUrl.pathname.startsWith('/api/local-care-tasks/')) {
+        const id = decodeURIComponent(requestUrl.pathname.slice('/api/local-care-tasks/'.length));
+        const userId = requestUrl.searchParams.get('userId');
+        const body = (await readJsonBody(req)) as Record<string, unknown>;
+
+        if (!userId) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ message: 'userId query parameter is required.' }));
+          return;
+        }
+
+        const tasks = await readTasks();
+        let updatedTask: LocalCareTaskScheduleRecord | null = null;
+        const nextTasks = tasks.map((task) => {
+          if (task.id !== id || task.user_id !== userId) {
+            return task;
+          }
+
+          updatedTask = normalizeTaskRecord({
+            ...task,
+            title: typeof body.title === 'string' ? body.title.trim() || task.title : task.title,
+            instructions:
+              typeof body.instructions === 'string'
+                ? body.instructions.trim() || task.instructions
+                : task.instructions,
+            cadence_days:
+              typeof body.cadence_days === 'number' && Number.isFinite(body.cadence_days)
+                ? Math.max(1, Math.round(body.cadence_days))
+                : task.cadence_days,
+            sort_order:
+              typeof body.sort_order === 'number' && Number.isFinite(body.sort_order)
+                ? Math.round(body.sort_order)
+                : task.sort_order,
+            last_completed_at:
+              typeof body.last_completed_at === 'string' || body.last_completed_at === null
+                ? (body.last_completed_at as string | null)
+                : task.last_completed_at ?? null,
+            next_due_at:
+              typeof body.next_due_at === 'string' ? body.next_due_at : task.next_due_at,
+            updated_at: new Date().toISOString(),
+          });
+          return updatedTask;
+        });
+
+        if (!updatedTask) {
+          res.statusCode = 404;
+          res.end(JSON.stringify({ message: 'Care task not found.' }));
+          return;
+        }
+
+        await writeTasks(nextTasks);
+        res.statusCode = 200;
+        res.end(JSON.stringify(updatedTask));
+        return;
+      }
+
+      res.statusCode = 405;
+      res.end(JSON.stringify({ message: 'Method not allowed.' }));
+    } catch (error) {
+      console.error('[LocalCareTaskStore] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message:
+            error instanceof Error ? error.message : 'Unexpected local care task store error.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'local-care-task-store',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
+function careAlertEmailPlugin(mode: string): Plugin {
+  const env = loadEnv(mode, process.cwd(), '');
+  const resendApiKey = env.RESEND_API_KEY ?? '';
+  const fromEmail = env.CARE_ALERT_FROM_EMAIL ?? '';
+  const publicAppUrl = env.VITE_PUBLIC_APP_URL ?? env.CARE_ALERT_APP_URL ?? '';
+
+  function escapeHtml(value: string) {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDueDate(iso: string, timeZone: string) {
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: timeZone || 'UTC',
+        dateStyle: 'medium',
+      }).format(new Date(iso));
+    } catch {
+      return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso));
+    }
+  }
+
+  function buildPlainTextEmail(input: {
+    displayName: string;
+    email: string;
+    timeZone: string;
+    tasks: Array<{
+      observationName: string;
+      scientificName: string;
+      taskTitle: string;
+      instructions: string;
+      cadenceDays: number;
+      nextDueAt: string;
+    }>;
+  }) {
+    const greetingName = input.displayName.trim() || input.email.trim();
+    const lines = [
+      `Hi ${greetingName},`,
+      '',
+      'These Florivu care reminders are ready:',
+      '',
+      ...input.tasks.flatMap((task, index) => [
+        `${index + 1}. ${task.observationName} - ${task.taskTitle}`,
+        `   Due: ${formatDueDate(task.nextDueAt, input.timeZone)}`,
+        `   Repeat every ${task.cadenceDays} day${task.cadenceDays === 1 ? '' : 's'}`,
+        `   ${task.instructions}`,
+        task.scientificName ? `   ${task.scientificName}` : '',
+        '',
+      ]),
+      publicAppUrl ? `Open Florivu: ${publicAppUrl}` : '',
+      'When you finish one of these steps in Florivu, the next reminder date will roll forward automatically.',
+    ];
+
+    return lines.filter(Boolean).join('\n');
+  }
+
+  function buildHtmlEmail(input: {
+    displayName: string;
+    email: string;
+    timeZone: string;
+    tasks: Array<{
+      observationName: string;
+      scientificName: string;
+      taskTitle: string;
+      instructions: string;
+      cadenceDays: number;
+      nextDueAt: string;
+    }>;
+  }) {
+    const greetingName = escapeHtml(input.displayName.trim() || input.email.trim());
+    const taskItems = input.tasks
+      .map((task) => {
+        const scientificName = task.scientificName
+          ? `<div style="color:#617364;font-size:13px;">${escapeHtml(task.scientificName)}</div>`
+          : '';
+        return `
+          <li style="margin:0 0 16px;padding:16px;border:1px solid #d9e4d9;border-radius:14px;background:#fbfdf9;">
+            <div style="font-size:16px;font-weight:700;color:#1f3528;">${escapeHtml(task.observationName)} · ${escapeHtml(task.taskTitle)}</div>
+            ${scientificName}
+            <div style="margin-top:8px;color:#395742;font-size:14px;">Due ${escapeHtml(formatDueDate(task.nextDueAt, input.timeZone))} · every ${task.cadenceDays} day${task.cadenceDays === 1 ? '' : 's'}</div>
+            <p style="margin:10px 0 0;color:#4f6356;font-size:14px;line-height:1.55;">${escapeHtml(task.instructions)}</p>
+          </li>
+        `;
+      })
+      .join('');
+    const openAppLink = publicAppUrl
+      ? `<p style="margin-top:20px;"><a href="${escapeHtml(publicAppUrl)}" style="display:inline-block;padding:12px 16px;border-radius:999px;background:#2c6a4a;color:#ffffff;text-decoration:none;font-weight:700;">Open Florivu</a></p>`
+      : '';
+
+    return `
+      <div style="font-family:Georgia,serif;background:#f4f7f1;padding:24px;color:#203529;">
+        <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:20px;padding:28px;border:1px solid #dbe6dc;">
+          <p style="margin:0 0 8px;color:#5f7666;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;">Florivu care alerts</p>
+          <h1 style="margin:0 0 16px;font-size:28px;">Hi ${greetingName}</h1>
+          <p style="margin:0 0 20px;color:#4d6355;line-height:1.6;">These plant care reminders are ready. Mark a task complete in Florivu after you finish it and the next reminder date will roll forward automatically.</p>
+          <ol style="margin:0;padding:0;list-style:none;">${taskItems}</ol>
+          ${openAppLink}
+        </div>
+      </div>
+    `;
+  }
+
+  async function sendWithResend(input: {
+    email: string;
+    displayName: string;
+    timeZone: string;
+    tasks: Array<{
+      observationName: string;
+      scientificName: string;
+      taskTitle: string;
+      instructions: string;
+      cadenceDays: number;
+      nextDueAt: string;
+    }>;
+  }) {
+    const todayLabel = formatDueDate(new Date().toISOString(), input.timeZone);
+    const subject = `Florivu care reminders for ${todayLabel}`;
+    const text = buildPlainTextEmail(input);
+    const html = buildHtmlEmail(input);
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [input.email],
+        subject,
+        text,
+        html,
+      }),
+    });
+
+    const bodyText = await response.text();
+    if (!response.ok) {
+      throw new Error(`Resend email failed with ${response.status}: ${bodyText}`);
+    }
+
+    return {
+      subject,
+      previewText: text,
+      responseBody: bodyText,
+    };
+  }
+
+  async function readJsonBody(req: IncomingMessage) {
+    const request = new Request(`http://local${req.url ?? '/'}`, {
+      method: req.method,
+      headers: req.headers as HeadersInit,
+      body: Readable.toWeb(req as never) as BodyInit,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    return (await request.json()) as {
+      email?: unknown;
+      displayName?: unknown;
+      timeZone?: unknown;
+      tasks?: unknown;
+    };
+  }
+
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (req.method !== 'POST' || requestUrl.pathname !== '/api/care-alerts/send-email') {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+      const body = await readJsonBody(req);
+      const email = typeof body.email === 'string' ? body.email.trim() : '';
+      const displayName = typeof body.displayName === 'string' ? body.displayName.trim() : '';
+      const timeZone = typeof body.timeZone === 'string' ? body.timeZone.trim() || 'UTC' : 'UTC';
+      const tasks = Array.isArray(body.tasks)
+        ? body.tasks.filter(
+            (task): task is {
+              observationName: string;
+              scientificName: string;
+              taskTitle: string;
+              instructions: string;
+              cadenceDays: number;
+              nextDueAt: string;
+            } =>
+              Boolean(task) &&
+              typeof (task as Record<string, unknown>).observationName === 'string' &&
+              typeof (task as Record<string, unknown>).taskTitle === 'string' &&
+              typeof (task as Record<string, unknown>).instructions === 'string' &&
+              typeof (task as Record<string, unknown>).cadenceDays === 'number' &&
+              typeof (task as Record<string, unknown>).nextDueAt === 'string',
+          )
+        : [];
+
+      if (!email || tasks.length === 0) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: 'email and at least one care task are required.' }));
+        return;
+      }
+
+      const previewText = buildPlainTextEmail({
+        email,
+        displayName,
+        timeZone,
+        tasks,
+      });
+
+      if (!resendApiKey || !fromEmail) {
+        res.statusCode = 200;
+        res.end(
+          JSON.stringify({
+            configured: false,
+            sent: false,
+            message:
+              'Care alert email provider is not configured. Set RESEND_API_KEY and CARE_ALERT_FROM_EMAIL to enable delivery.',
+            previewText,
+          }),
+        );
+        return;
+      }
+
+      await sendWithResend({
+        email,
+        displayName,
+        timeZone,
+        tasks,
+      });
+
+      res.statusCode = 200;
+      res.end(
+        JSON.stringify({
+          configured: true,
+          sent: true,
+          message: `Care reminder email sent to ${email}.`,
+          previewText,
+        }),
+      );
+    } catch (error) {
+      console.error('[CareAlertEmail] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message:
+            error instanceof Error ? error.message : 'Unexpected care alert email failure.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'care-alert-email',
     configureServer(server) {
       server.middlewares.use(handler);
     },
@@ -1100,6 +1627,10 @@ function localFriendsStorePlugin(): Plugin {
       selected_profile_title_id: null,
       featured_house_plant_observation_id: null,
       featured_non_house_plant_observation_id: null,
+      care_alerts_enabled: false,
+      care_alert_email: null,
+      care_alert_timezone: 'UTC',
+      care_alert_last_sent_at: null,
       is_public: false,
       is_placeholder: true,
       created_at: now,
@@ -1498,6 +2029,7 @@ function accountAdminPlugin(mode: string): Plugin {
   const observationStorePath = resolve(process.cwd(), '.local-data', 'observations.json');
   const profileStorePath = resolve(process.cwd(), '.local-data', 'profiles.json');
   const friendshipStorePath = resolve(process.cwd(), '.local-data', 'friendships.json');
+  const careTaskStorePath = resolve(process.cwd(), '.local-data', 'care-task-schedules.json');
 
   async function readLocalArray<T>(filePath: string): Promise<T[]> {
     try {
@@ -1589,6 +2121,12 @@ function accountAdminPlugin(mode: string): Plugin {
         ),
       );
 
+      const localCareTasks = await readLocalArray<LocalCareTaskScheduleRecord>(careTaskStorePath);
+      await writeLocalArray(
+        careTaskStorePath,
+        localCareTasks.filter((record) => record.user_id !== userId),
+      );
+
       console.info('[AccountAdmin] Deleted account.', { userId });
       res.statusCode = 200;
       res.end(JSON.stringify({ ok: true }));
@@ -1622,7 +2160,9 @@ export default defineConfig(({ mode }) => ({
     zipCodeMapPlugin(),
     localObservationStorePlugin(),
     localProfileStorePlugin(),
+    localCareTaskStorePlugin(),
     localFriendsStorePlugin(),
+    careAlertEmailPlugin(mode),
     accountAdminPlugin(mode),
   ],
   envPrefix: ['VITE_', 'EXPO_PUBLIC_'],

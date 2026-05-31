@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { describeCareCadence, isoToLocalDateInput, isCareTaskDue } from '../lib/careTasks';
 import {
   formatCatalogLabel,
   formatCatalogMatchSource,
   resolveObservationCatalogMatch,
 } from '../lib/plantCatalog';
-import { Observation } from '../types';
+import { CareTaskSchedule, Observation } from '../types';
 import { observationLabelOptions } from './ObservationLabels';
 
 const fullDateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -12,8 +13,14 @@ const fullDateFormatter = new Intl.DateTimeFormat('en-US', {
 });
 
 interface ObservationModalProps {
+  careTasks: CareTaskSchedule[];
   observation: Observation;
   onClose: () => void;
+  onCompleteCareTask: (
+    observation: Observation,
+    task: CareTaskSchedule,
+    completedOn: string,
+  ) => Promise<void>;
   onDelete: (observation: Observation) => void;
   onOpenTaxonomy: (observation: Observation) => void;
   onSaveLabels: (
@@ -24,8 +31,10 @@ interface ObservationModalProps {
 }
 
 export default function ObservationModal({
+  careTasks,
   observation,
   onClose,
+  onCompleteCareTask,
   onDelete,
   onOpenTaxonomy,
   onSaveLabels,
@@ -36,6 +45,8 @@ export default function ObservationModal({
   const [housePlant, setHousePlant] = useState(observation.is_house_plant);
   const [savingLabels, setSavingLabels] = useState(false);
   const [savingZipCode, setSavingZipCode] = useState(false);
+  const [completingCareTaskId, setCompletingCareTaskId] = useState<string | null>(null);
+  const [careCompletionDates, setCareCompletionDates] = useState<Record<string, string>>({});
   const catalogMatch = resolveObservationCatalogMatch(observation);
   const catalogCareDetails = catalogMatch
     ? [
@@ -78,7 +89,13 @@ export default function ObservationModal({
     setHousePlant(observation.is_house_plant);
     setSavingLabels(false);
     setSavingZipCode(false);
-  }, [observation]);
+    setCompletingCareTaskId(null);
+    setCareCompletionDates(
+      Object.fromEntries(
+        careTasks.map((task) => [task.id, isoToLocalDateInput(new Date().toISOString())]),
+      ),
+    );
+  }, [careTasks, observation]);
 
   const handleLabelToggle = async (field: 'is_favorite' | 'is_house_plant') => {
     if (savingLabels) {
@@ -116,6 +133,20 @@ export default function ObservationModal({
       await onSaveZipCode(observation, zipCode);
     } finally {
       setSavingZipCode(false);
+    }
+  };
+
+  const handleCompleteTask = async (task: CareTaskSchedule, completedOn: string) => {
+    setCompletingCareTaskId(task.id);
+
+    try {
+      await onCompleteCareTask(observation, task, completedOn);
+      setCareCompletionDates((currentDates) => ({
+        ...currentDates,
+        [task.id]: isoToLocalDateInput(new Date().toISOString()),
+      }));
+    } finally {
+      setCompletingCareTaskId(null);
     }
   };
 
@@ -206,6 +237,115 @@ export default function ObservationModal({
                     <p>{detail.value}</p>
                   </div>
                 ))}
+              </div>
+            </section>
+          ) : null}
+
+          {housePlant ? (
+            <section
+              className="detail-grid__editable detail-grid__editable--care-schedule"
+              aria-label="House plant care reminders"
+            >
+              <div className="detail-grid__editable-header">
+                <span className="detail-grid__editable-title">Care reminders</span>
+                <span className="detail-grid__editable-status">
+                  {careTasks.length > 0
+                    ? `${careTasks.length} scheduled step${careTasks.length === 1 ? '' : 's'}`
+                    : 'Building reminders'}
+                </span>
+              </div>
+
+              {careTasks.length === 0 ? (
+                <div className="empty-state empty-state--compact">
+                  <strong>No care reminders yet.</strong>
+                  <span>
+                    Florivu will add bundled houseplant reminders here after it syncs this plant.
+                  </span>
+                </div>
+              ) : (
+                <div className="care-task-list">
+                  {careTasks.map((task) => {
+                    const completionDate =
+                      careCompletionDates[task.id] ?? isoToLocalDateInput(new Date().toISOString());
+                    const completingThisTask = completingCareTaskId === task.id;
+
+                    return (
+                      <article className="care-task-card" key={task.id}>
+                        <div className="care-task-card__header">
+                          <div>
+                            <strong>{task.title}</strong>
+                            <span>{describeCareCadence(task.cadence_days)}</span>
+                          </div>
+                          <span
+                            className={
+                              isCareTaskDue(task)
+                                ? 'care-task-card__status care-task-card__status--due'
+                                : 'care-task-card__status'
+                            }
+                          >
+                            {isCareTaskDue(task) ? 'Due now' : 'Upcoming'}
+                          </span>
+                        </div>
+                        <p>{task.instructions}</p>
+                        <div className="care-task-card__dates">
+                          <div>
+                            <span>Last done</span>
+                            <strong>
+                              {task.last_completed_at
+                                ? fullDateFormatter.format(new Date(task.last_completed_at))
+                                : 'Not logged yet'}
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Next reminder</span>
+                            <strong>{fullDateFormatter.format(new Date(task.next_due_at))}</strong>
+                          </div>
+                        </div>
+                        <div className="care-task-card__actions">
+                          <button
+                            className="secondary-button"
+                            disabled={Boolean(completingCareTaskId)}
+                            onClick={() => void handleCompleteTask(task, isoToLocalDateInput(new Date().toISOString()))}
+                            type="button"
+                          >
+                            {completingThisTask ? 'Saving...' : 'Done today'}
+                          </button>
+                          <label className="field care-task-card__date-field">
+                            <span>Done on</span>
+                            <input
+                              disabled={Boolean(completingCareTaskId)}
+                              onChange={(event) =>
+                                setCareCompletionDates((currentDates) => ({
+                                  ...currentDates,
+                                  [task.id]: event.target.value,
+                                }))
+                              }
+                              type="date"
+                              value={completionDate}
+                            />
+                          </label>
+                          <button
+                            className="ghost-link"
+                            disabled={Boolean(completingCareTaskId)}
+                            onClick={() => void handleCompleteTask(task, completionDate)}
+                            type="button"
+                          >
+                            Save date
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          ) : catalogMatch ? (
+            <section className="detail-grid__editable detail-grid__editable--care-schedule" aria-label="House plant reminders">
+              <div className="empty-state empty-state--compact">
+                <strong>House plant reminders are off for this observation.</strong>
+                <span>
+                  Turn on the House Plant tag above to start water, soil, feeding, and rotation reminders.
+                </span>
               </div>
             </section>
           ) : null}
