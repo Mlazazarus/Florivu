@@ -433,6 +433,7 @@ export default function App() {
     signIn,
     signOut,
     signUp,
+    resendSignUpConfirmation,
   } = useAuth();
   const {
     observations,
@@ -1107,6 +1108,33 @@ export default function App() {
     }
   };
 
+  const handleResendConfirmationEmail = async () => {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setBanner({
+        tone: 'error',
+        message: 'Enter your email first, then resend the confirmation email.',
+      });
+      return;
+    }
+
+    setBanner(null);
+    setAuthBusy(true);
+
+    try {
+      await resendSignUpConfirmation(normalizedEmail);
+      setBanner({
+        tone: 'success',
+        message:
+          'Confirmation email sent if that account exists. Check spam or junk too, and wait about a minute between resend attempts.',
+      });
+    } catch (resendError) {
+      setBanner({ tone: 'error', message: formatError(resendError) });
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -1181,8 +1209,9 @@ export default function App() {
         }
 
         resetCaptchaAfterSubmit = true;
-        await signUp(
-          email.trim(),
+        const normalizedEmail = email.trim();
+        const signUpResult = await signUp(
+          normalizedEmail,
           password,
           inviteReferral?.referredByUserId ?? null,
           authCaptchaToken,
@@ -1190,14 +1219,18 @@ export default function App() {
         if (inviteReferral) {
           writeStoredSignupReferral({
             ...inviteReferral,
-            signupEmail: email.trim().toLowerCase(),
+            signupEmail: normalizedEmail.toLowerCase(),
           });
         }
         setBanner({
           tone: 'success',
-          message: inviteReferral
-            ? `Your account is ready. Check your inbox if email confirmation is turned on, then add ${inviteReferralName} back in Friends.`
-            : 'Your account is ready. Check your inbox if email confirmation is turned on.',
+          message: signUpResult.requiresEmailConfirmation
+            ? inviteReferral
+              ? `Confirmation email sent to ${normalizedEmail}. Check spam or junk too, then add ${inviteReferralName} back in Friends after you confirm.`
+              : `Confirmation email sent to ${normalizedEmail}. Check spam or junk too.`
+            : inviteReferral
+              ? `Your account is ready. Add ${inviteReferralName} back in Friends.`
+              : 'Your account is ready.',
         });
         setPassword('');
       } else {
@@ -1741,6 +1774,7 @@ export default function App() {
               onResetPasswordChange={setResetPassword}
               onResetPasswordConfirmChange={setResetPasswordConfirm}
               onModeChange={handleAuthModeChange}
+              onResendConfirmationEmail={handleResendConfirmationEmail}
               onSubmit={handleAuthSubmit}
             />
           </div>

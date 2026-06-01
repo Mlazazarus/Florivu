@@ -22,6 +22,7 @@ interface AuthPanelProps {
   onCaptchaExpire?: () => void;
   onCaptchaVerify?: (token: string) => void;
   onModeChange: (mode: AuthMode) => void;
+  onResendConfirmationEmail?: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
@@ -44,6 +45,7 @@ export default function AuthPanel({
   onCaptchaExpire,
   onCaptchaVerify,
   onModeChange,
+  onResendConfirmationEmail,
   onSubmit,
 }: AuthPanelProps) {
   const isSignUp = mode === 'sign-up';
@@ -198,6 +200,17 @@ export default function AuthPanel({
             type="button"
           >
             Forgot password?
+          </button>
+        ) : null}
+
+        {(isSignIn || isSignUp) && onResendConfirmationEmail ? (
+          <button
+            className="ghost-link"
+            disabled={busy}
+            onClick={onResendConfirmationEmail}
+            type="button"
+          >
+            Resend confirmation email
           </button>
         ) : null}
 

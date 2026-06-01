@@ -2,6 +2,7 @@ node_modules/
 dist/
 .tools/
 .env
+.env.supabase-auth.local
 .local-data/
 logs/
 *.log

@@ -12,6 +12,10 @@ function extractMessage(payload: unknown) {
   return typeof message === 'string' && message.trim() ? message.trim() : null;
 }
 
+interface SignUpResult {
+  requiresEmailConfirmation: boolean;
+}
+
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user,    setUser]    = useState<User | null>(null);
@@ -88,7 +92,7 @@ export function useAuth() {
     password: string,
     referredByUserId?: string | null,
     captchaToken?: string | null,
-  ) => {
+  ): Promise<SignUpResult> => {
     const normalizedReferredByUserId = referredByUserId?.trim() || null;
     const normalizedCaptchaToken = captchaToken?.trim() || null;
     const emailRedirectTo =
@@ -145,12 +149,42 @@ export function useAuth() {
       }
     }
 
+    const requiresEmailConfirmation = !(
+      payload?.session?.access_token && payload.session.refresh_token
+    );
+
     logInfo('Auth', 'Sign up succeeded.', {
       email,
       hasCaptcha: Boolean(normalizedCaptchaToken),
       hasReferralInvite: Boolean(normalizedReferredByUserId),
+      requiresEmailConfirmation,
     });
+    return { requiresEmailConfirmation };
   };
+
+  const resendSignUpConfirmation = async (email: string) => {
+    const redirectTo =
+      typeof window === 'undefined'
+        ? undefined
+        : new URL(window.location.pathname, window.location.origin).toString();
+
+    logInfo('Auth', 'Resending signup confirmation email.', { email, redirectTo });
+    const { error } = await supabase.auth.resend({
+      email,
+      type: 'signup',
+      options: {
+        emailRedirectTo: redirectTo,
+      },
+    });
+
+    if (error) {
+      logError('Auth', 'Resend signup confirmation failed.', error);
+      throw error;
+    }
+
+    logInfo('Auth', 'Signup confirmation email resent.', { email });
+  };
+
   const signOut = async () => {
     logInfo('Auth', 'Attempting sign out.');
     const { error } = await supabase.auth.signOut();
@@ -171,6 +205,7 @@ export function useAuth() {
     clearPasswordRecovery,
     signIn,
     signUp,
+    resendSignUpConfirmation,
     signOut,
   };
 }
