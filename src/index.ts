@@ -1,6 +1,7 @@
 import { onRequestPost as handleDeleteAccount } from '../functions/api/account/delete';
 import { onRequestPost as handleSignUp } from '../functions/api/auth/sign-up';
 import { onRequestPost as handleSendCareAlertEmail } from '../functions/api/care-alerts/send-email';
+import { onRequestPost as handleSendFriendInviteEmail } from '../functions/api/friends/send-invite';
 import { onRequestPost as handlePlantIdentify } from '../functions/api/plantnet/identify';
 import { onRequestGet as handleReverseGeocode } from '../functions/api/reverse-geocode';
 import { onRequestGet as handleZipCodeMap } from '../functions/api/zip-code-map';
@@ -35,6 +36,9 @@ const routeHandlers: Record<string, Partial<Record<string, RouteHandler>>> = {
   },
   '/api/care-alerts/send-email': {
     POST: handleSendCareAlertEmail,
+  },
+  '/api/friends/send-invite': {
+    POST: handleSendFriendInviteEmail,
   },
   '/api/plantnet/identify': {
     POST: handlePlantIdentify,

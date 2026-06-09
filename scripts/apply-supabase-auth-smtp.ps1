@@ -77,16 +77,25 @@ $projectRef = Get-RequiredValue -Values $config -Name "SUPABASE_PROJECT_REF"
 $accessToken = Get-RequiredValue -Values $config -Name "SUPABASE_ACCESS_TOKEN"
 
 $payload = @{
+    site_url = $config["SITE_URL"]
     external_email_enabled = Convert-ToBoolean -Value $config["EXTERNAL_EMAIL_ENABLED"] -DefaultValue $true
     mailer_autoconfirm = Convert-ToBoolean -Value $config["MAILER_AUTOCONFIRM"] -DefaultValue $false
     mailer_secure_email_change_enabled = Convert-ToBoolean -Value $config["MAILER_SECURE_EMAIL_CHANGE_ENABLED"] -DefaultValue $true
     smtp_admin_email = Get-RequiredValue -Values $config -Name "SMTP_ADMIN_EMAIL"
     smtp_sender_name = Get-RequiredValue -Values $config -Name "SMTP_SENDER_NAME"
     smtp_host = Get-RequiredValue -Values $config -Name "SMTP_HOST"
-    smtp_port = [int](Get-RequiredValue -Values $config -Name "SMTP_PORT")
+    smtp_port = Get-RequiredValue -Values $config -Name "SMTP_PORT"
     smtp_user = Get-RequiredValue -Values $config -Name "SMTP_USER"
     smtp_pass = Get-RequiredValue -Values $config -Name "SMTP_PASS"
+    uri_allow_list = $config["URI_ALLOW_LIST"]
 }
+
+$payload = $payload.GetEnumerator() |
+    Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_.Value) } |
+    ForEach-Object {
+        @{ $_.Key = $_.Value }
+    } |
+    ForEach-Object -Begin { $merged = @{} } -Process { $merged += $_ } -End { $merged }
 
 $headers = @{
     Authorization = "Bearer $accessToken"
@@ -99,6 +108,8 @@ $response = Invoke-RestMethod -Uri $uri -Method Patch -Headers $headers -Body $b
 
 [pscustomobject]@{
     project_ref = $projectRef
+    site_url = $payload.site_url
+    uri_allow_list = $payload.uri_allow_list
     external_email_enabled = $payload.external_email_enabled
     mailer_autoconfirm = $payload.mailer_autoconfirm
     smtp_admin_email = $payload.smtp_admin_email

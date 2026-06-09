@@ -24,8 +24,14 @@ This file is gitignored.
 - `EXTERNAL_EMAIL_ENABLED=true`
 - `MAILER_AUTOCONFIRM=false`
 - `MAILER_SECURE_EMAIL_CHANGE_ENABLED=true`
+- `SITE_URL=https://florivu.laztronics.workers.dev`
+- `URI_ALLOW_LIST=https://florivu.laztronics.workers.dev/**,http://localhost:3000/**`
 
 `MAILER_AUTOCONFIRM=false` keeps email confirmation on for new accounts.
+
+The live Supabase project URL configuration must not stay on `http://localhost:3000`, or password reset and signup email flows can redirect to localhost instead of the hosted Florivu app.
+
+If your email templates use `{{ .SiteURL }}` for confirmation or recovery links, switch them to `{{ .RedirectTo }}` so the `redirectTo` / `emailRedirectTo` value from the client is respected.
 
 ## Apply via API
 

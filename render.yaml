@@ -19,6 +19,8 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      - key: FRIEND_INVITE_FROM_EMAIL
+        sync: false
       - key: CARE_ALERT_FROM_EMAIL
         sync: false
       - key: CARE_ALERT_APP_URL

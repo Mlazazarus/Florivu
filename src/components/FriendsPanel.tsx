@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import FriendProfileModal from './FriendProfileModal';
 import { getAvatarBorderClassName } from '../lib/achievements';
+import { sendFriendInviteEmail } from '../lib/friendInviteEmailApi';
 import { FriendProfile, UserProfile } from '../types';
 
 interface FriendsPanelProps {
@@ -45,6 +46,7 @@ export default function FriendsPanel({
     tone: 'error' | 'success';
     message: string;
   } | null>(null);
+  const [inviteSending, setInviteSending] = useState(false);
   const trimmedDisplayName = displayName.trim();
   const trimmedInviteEmail = inviteEmail.trim();
   const inviteSenderLabel = inviteSenderName.trim() || 'A fellow plant collector';
@@ -95,23 +97,6 @@ export default function FriendsPanel({
     return `${speciesLabel} | ${observationLabel}`;
   };
   const isValidInviteEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  const buildInviteMailtoLink = (recipientEmail: string) => {
-    const inviteBody = [
-      'Hi,',
-      '',
-      `${inviteSenderLabel} invited you to join Florivu.`,
-      personalizedInviteUrl
-        ? `Open Florivu here: ${personalizedInviteUrl}`
-        : 'Open the Florivu app link I sent you separately and create your account.',
-      `Once you are in, add ${inviteSenderLabel} back on the Friends tab so you both connect.`,
-      '',
-      'See you in Florivu!',
-    ].join('\n');
-    const subject = encodeURIComponent('Join me on Florivu');
-    const body = encodeURIComponent(inviteBody);
-
-    return `mailto:${recipientEmail}?subject=${subject}&body=${body}`;
-  };
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -155,7 +140,7 @@ export default function FriendsPanel({
     setSelectedFriend(friend);
   };
 
-  const handleInviteSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleInviteSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!isValidInviteEmail(trimmedInviteEmail)) {
@@ -166,17 +151,33 @@ export default function FriendsPanel({
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      window.location.href = buildInviteMailtoLink(trimmedInviteEmail);
-    }
+    setInviteSending(true);
 
-    setInviteFeedback({
-      tone: 'success',
-      message: inviteAppUrl
-        ? `Email draft ready for ${trimmedInviteEmail}.`
-        : `Email draft ready for ${trimmedInviteEmail}. Add your live Florivu link before sending if you are running locally.`,
-    });
-    setInviteEmail('');
+    try {
+      const result = await sendFriendInviteEmail({
+        appUrl: inviteAppUrl,
+        email: trimmedInviteEmail,
+        senderName: inviteSenderLabel,
+        senderUserId: inviteSenderUserId,
+      });
+
+      setInviteFeedback({
+        tone: result.sent ? 'success' : 'error',
+        message: result.message,
+      });
+
+      if (result.sent) {
+        setInviteEmail('');
+      }
+    } catch (error) {
+      setInviteFeedback({
+        tone: 'error',
+        message:
+          error instanceof Error ? error.message : 'Unable to send the Florivu invite email.',
+      });
+    } finally {
+      setInviteSending(false);
+    }
   };
 
   return (
@@ -197,9 +198,9 @@ export default function FriendsPanel({
           <div>
             <h3 id="email-invite-heading">Invite someone by email</h3>
             <p className="friends-panel__section-copy">
-              Use this when a friend has not joined Florivu yet. We will open an email draft with
-              your invite message. If they create an account from your invite and add you back, it
-              counts toward Seed Spreader and Dandilion.
+              Use this when a friend has not joined Florivu yet. We will send the invite email for
+              you. If they create an account from your invite and add you back, it counts toward
+              Seed Spreader and Dandilion.
             </p>
           </div>
           <span className="tag">Email invite</span>
@@ -222,8 +223,12 @@ export default function FriendsPanel({
               value={inviteEmail}
             />
           </label>
-          <button className="secondary-button" disabled={!trimmedInviteEmail} type="submit">
-            Compose invite
+          <button
+            className="secondary-button"
+            disabled={inviteSending || !trimmedInviteEmail}
+            type="submit"
+          >
+            {inviteSending ? 'Sending...' : 'Send invite email'}
           </button>
         </form>
 

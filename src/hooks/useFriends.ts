@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { FREE_ACCOUNT_TIER, normalizeAccountTier } from '../lib/accountTier';
 import {
   AddFriendResult,
   acceptLocalFriendRequest,
@@ -21,6 +22,7 @@ interface FriendshipRow {
 interface FriendStatsRow {
   user_id: string;
   display_name: string;
+  account_tier?: string | null;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
   marketplace_zip_code?: string | null;
@@ -70,6 +72,7 @@ function buildFallbackProfile(userId: string): UserProfile {
   return {
     user_id: userId,
     display_name: `Friend ${userId.slice(0, 8)}`,
+    account_tier: FREE_ACCOUNT_TIER,
     profile_photo_url: null,
     home_zip_code: null,
     marketplace_zip_code: null,
@@ -125,6 +128,7 @@ function sortFriendProfilesByStats<T extends FriendProfile>(profiles: T[]) {
 function toUserProfile(row: {
   user_id: string;
   display_name: string;
+  account_tier?: string | null;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
   marketplace_zip_code?: string | null;
@@ -148,6 +152,7 @@ function toUserProfile(row: {
   return {
     user_id: row.user_id,
     display_name: row.display_name,
+    account_tier: normalizeAccountTier(row.account_tier),
     profile_photo_url: row.profile_photo_url ?? null,
     home_zip_code: row.home_zip_code ?? null,
     marketplace_zip_code: row.marketplace_zip_code ?? null,
@@ -287,8 +292,8 @@ export function useFriends(userId: string | undefined) {
           throw profileError;
         }
 
-        for (const friendProfile of (profileRows ?? []) as UserProfile[]) {
-          profileMap.set(friendProfile.user_id, friendProfile);
+        for (const friendProfile of (profileRows ?? []) as FriendStatsRow[]) {
+          profileMap.set(friendProfile.user_id, toUserProfile(friendProfile));
         }
       }
 

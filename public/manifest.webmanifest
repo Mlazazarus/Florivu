@@ -1,7 +1,7 @@
 {
   "name": "Florivu",
   "short_name": "Florivu",
-  "description": "Identify plants from a photo, save them to your collection, and browse your taxonomy tree.",
+  "description": "Identify plants from photos, save discoveries, revisit care tips, track care tasks, and browse your collection across gallery, taxonomy, and map views.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -5,6 +5,7 @@ import {
   saveLocalObservation,
   updateLocalObservation,
 } from '../lib/localObservationApi';
+import { recoverObservationsFromSupabaseOrLocal } from '../lib/localFallbackRecovery';
 import { logError, logInfo } from '../lib/logger';
 import { supabase } from '../lib/supabase';
 import { Observation, TaxonomyFamily } from '../types';
@@ -124,22 +125,23 @@ export function usePlants(userId: string | undefined) {
     logInfo('Plants', 'Fetching observations.', { userId });
 
     try {
-      const { data, error } = await supabase
-        .from('observations')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      setObservations((data ?? []).map((observation) => normalizeObservation(observation as Observation)));
-      setStorageMode('supabase');
-      logInfo('Plants', 'Observation fetch complete.', {
-        userId,
-        count: data?.length ?? 0,
-      });
+      const recoveredObservations = await recoverObservationsFromSupabaseOrLocal(userId);
+      setObservations(recoveredObservations.observations.map(normalizeObservation));
+      setStorageMode(recoveredObservations.storageMode);
+      logInfo(
+        'Plants',
+        recoveredObservations.recoveredCount > 0
+          ? 'Recovered local observations into the Florivu account.'
+          : recoveredObservations.storageMode === 'local'
+            ? 'Using the local collection copy after recovery could not reach Supabase.'
+            : 'Observation fetch complete.',
+        {
+          userId,
+          count: recoveredObservations.observations.length,
+          recoveredCount: recoveredObservations.recoveredCount,
+          storageMode: recoveredObservations.storageMode,
+        },
+      );
     } catch (fetchError: any) {
       if (shouldUseLocalObservationFallback(fetchError)) {
         const localObservations = await fetchLocalObservations(userId);

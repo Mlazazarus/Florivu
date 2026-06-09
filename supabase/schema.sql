@@ -29,6 +29,7 @@ create table if not exists observations (
 create table if not exists profiles (
   user_id            uuid primary key references auth.users(id) on delete cascade,
   display_name       text not null,
+  account_tier       text not null default 'free' constraint profiles_account_tier_check check (account_tier in ('free', 'plus')),
   profile_photo_url  text,
   home_zip_code      text,
   marketplace_zip_code text,
@@ -82,6 +83,7 @@ alter table observations add column if not exists is_house_plant boolean not nul
 alter table observations add column if not exists catalog_plant_id text;
 alter table observations add column if not exists care_profile_id text;
 alter table profiles add column if not exists profile_photo_url text;
+alter table profiles add column if not exists account_tier text;
 alter table profiles add column if not exists home_zip_code text;
 alter table profiles add column if not exists marketplace_zip_code text;
 alter table profiles add column if not exists facebook_url text;
@@ -100,6 +102,7 @@ alter table profiles add column if not exists care_alert_timezone text;
 alter table profiles add column if not exists care_alert_last_sent_at timestamptz;
 alter table profiles add column if not exists is_public boolean not null default false;
 alter table profiles add column if not exists updated_at timestamptz not null default now();
+alter table profiles alter column account_tier set default 'free';
 alter table care_task_schedules add column if not exists sort_order integer not null default 0;
 alter table care_task_schedules add column if not exists source text not null default 'bundled';
 alter table care_task_schedules add column if not exists last_completed_at timestamptz;
@@ -115,6 +118,10 @@ set updated_at = now()
 where updated_at is null;
 
 update profiles
+set account_tier = 'free'
+where account_tier is null or account_tier not in ('free', 'plus');
+
+update profiles
 set care_alerts_enabled = false
 where care_alerts_enabled is null;
 
@@ -125,6 +132,23 @@ where care_alert_email = '';
 update profiles
 set care_alert_timezone = 'UTC'
 where care_alert_timezone is null;
+
+alter table profiles alter column account_tier set not null;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_account_tier_check'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table profiles
+      add constraint profiles_account_tier_check
+      check (account_tier in ('free', 'plus'));
+  end if;
+end;
+$$;
 
 update care_task_schedules
 set updated_at = coalesce(updated_at, created_at, now())
@@ -137,6 +161,7 @@ create or replace function public.find_profile_by_display_name(target_display_na
 returns table (
   user_id uuid,
   display_name text,
+  account_tier text,
   profile_photo_url text,
   is_public boolean,
   created_at timestamptz,
@@ -149,6 +174,7 @@ as $$
   select
     p.user_id,
     p.display_name,
+    p.account_tier,
     p.profile_photo_url,
     p.is_public,
     p.created_at,
@@ -169,6 +195,7 @@ create or replace function public.search_profiles_by_display_name(
 returns table (
   user_id uuid,
   display_name text,
+  account_tier text,
   profile_photo_url text,
   is_public boolean,
   created_at timestamptz,
@@ -184,6 +211,7 @@ as $$
   select
     p.user_id,
     p.display_name,
+    p.account_tier,
     p.profile_photo_url,
     p.is_public,
     p.created_at,
@@ -213,6 +241,7 @@ create or replace function public.get_mutual_friend_stats()
 returns table (
   user_id uuid,
   display_name text,
+  account_tier text,
   profile_photo_url text,
   home_zip_code text,
   facebook_url text,
@@ -258,6 +287,7 @@ as $$
   select
     m.friend_user_id as user_id,
     coalesce(p.display_name, 'Friend ' || left(replace(m.friend_user_id::text, '-', ''), 8)) as display_name,
+    coalesce(p.account_tier, 'free') as account_tier,
     p.profile_photo_url,
     p.home_zip_code,
     p.facebook_url,
@@ -329,6 +359,45 @@ drop trigger if exists on_profile_referral_saved on profiles;
 create trigger on_profile_referral_saved
 after insert or update of referred_by_user_id on profiles
 for each row execute function public.handle_referred_profile_friend_invite();
+
+create or replace function public.enforce_daily_discovery_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  next_account_tier text := 'free';
+  discovery_day date := timezone('utc', coalesce(new.created_at, new.date_found, now()))::date;
+  discovery_count integer := 0;
+begin
+  select coalesce(p.account_tier, 'free')
+    into next_account_tier
+  from profiles as p
+  where p.user_id = new.user_id;
+
+  if next_account_tier = 'plus' then
+    return new;
+  end if;
+
+  select count(*)::integer
+    into discovery_count
+  from observations as o
+  where o.user_id = new.user_id
+    and timezone('utc', coalesce(o.created_at, o.date_found, now()))::date = discovery_day;
+
+  if discovery_count >= 10 then
+    raise exception 'Free accounts can save up to 10 plant discoveries per day. Upgrade to Plus for unlimited discoveries.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_observation_before_insert_enforce_daily_discovery_limit on observations;
+create trigger on_observation_before_insert_enforce_daily_discovery_limit
+before insert on observations
+for each row execute function public.enforce_daily_discovery_limit();
 
 alter table observations enable row level security;
 alter table profiles enable row level security;
@@ -406,8 +475,8 @@ begin
     next_display_name := base_display_name || '-' || left(replace(new.id::text, '-', ''), 6);
   end if;
 
-  insert into profiles (user_id, display_name, referred_by_user_id)
-  values (new.id, next_display_name, next_referred_by_user_id)
+  insert into profiles (user_id, display_name, referred_by_user_id, account_tier)
+  values (new.id, next_display_name, next_referred_by_user_id, 'free')
   on conflict (user_id) do nothing;
 
   return new;

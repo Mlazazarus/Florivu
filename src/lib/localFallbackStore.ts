@@ -1,3 +1,11 @@
+import {
+  FREE_ACCOUNT_TIER,
+  FREE_DISCOVERY_LIMIT_ERROR,
+  countObservationsForUtcDay,
+  getObservationDiscoveryDayKey,
+  hasReachedFreeDiscoveryLimit,
+  normalizeAccountTier,
+} from './accountTier';
 import { CareTaskSchedule, FriendProfile, Observation, UserProfile } from '../types';
 
 const DB_NAME = 'florivu-local-fallback';
@@ -162,6 +170,7 @@ function normalizeProfileRecord(
     user_id: profile.user_id,
     display_name: displayName,
     display_name_lower: displayName.toLowerCase(),
+    account_tier: normalizeAccountTier(profile.account_tier ?? existingProfile?.account_tier),
     profile_photo_url: normalizeOptionalString(profile.profile_photo_url),
     home_zip_code: normalizeOptionalString(profile.home_zip_code),
     marketplace_zip_code: normalizeOptionalString(profile.marketplace_zip_code),
@@ -200,7 +209,10 @@ function normalizeProfileRecord(
 
 function toUserProfile(record: LocalProfileRecord): UserProfile {
   const { display_name_lower: _, ...profile } = record;
-  return profile;
+  return {
+    ...profile,
+    account_tier: normalizeAccountTier(profile.account_tier),
+  };
 }
 
 function normalizeCareTaskRecord(task: CareTaskSchedule): CareTaskSchedule {
@@ -238,6 +250,7 @@ function buildFallbackProfile(userId: string): UserProfile {
   return {
     user_id: userId,
     display_name: `Friend ${userId.slice(0, 8)}`,
+    account_tier: FREE_ACCOUNT_TIER,
     profile_photo_url: null,
     home_zip_code: null,
     marketplace_zip_code: null,
@@ -428,8 +441,30 @@ export async function saveLocalObservationToStore(
 ): Promise<Observation> {
   const storedObservation = normalizeStoredObservation(observation);
   const db = await openLocalFallbackDb();
-  const transaction = db.transaction(OBSERVATIONS_STORE, 'readwrite');
-  transaction.objectStore(OBSERVATIONS_STORE).put(storedObservation);
+  const transaction = db.transaction([OBSERVATIONS_STORE, PROFILES_STORE], 'readwrite');
+  const observationStore = transaction.objectStore(OBSERVATIONS_STORE);
+  const profileStore = transaction.objectStore(PROFILES_STORE);
+  const [storedProfile, existingObservations] = await Promise.all([
+    requestToPromise(profileStore.get(storedObservation.user_id)) as Promise<
+      LocalProfileRecord | undefined
+    >,
+    requestToPromise(
+      observationStore.index(BY_USER_ID_INDEX).getAll(IDBKeyRange.only(storedObservation.user_id)),
+    ) as Promise<Observation[]>,
+  ]);
+  const accountTier = normalizeAccountTier(storedProfile?.account_tier);
+
+  if (accountTier !== 'plus') {
+    const discoveryDayKey = getObservationDiscoveryDayKey(storedObservation);
+    const discoveryCount = countObservationsForUtcDay(existingObservations, discoveryDayKey);
+
+    if (hasReachedFreeDiscoveryLimit(discoveryCount)) {
+      transaction.abort();
+      throw new Error(FREE_DISCOVERY_LIMIT_ERROR);
+    }
+  }
+
+  observationStore.put(storedObservation);
   await transactionToPromise(transaction);
   return storedObservation;
 }

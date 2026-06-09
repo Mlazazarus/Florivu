@@ -15,6 +15,7 @@ Florivu still depends on same-origin server routes for:
 - `/api/reverse-geocode`
 - `/api/zip-code-map`
 - `/api/care-alerts/send-email`
+- `/api/friends/send-invite`
 - `/api/account/delete`
 
 Florivu no longer depends on server-side `local-*` fallback routes. Local fallback persistence now lives in browser IndexedDB, while Supabase remains the real production datastore.
@@ -33,7 +34,10 @@ Minimum required environment variables:
 Needed for specific features:
 
 - `SUPABASE_SERVICE_ROLE_KEY` for account deletion
-- `RESEND_API_KEY` and `CARE_ALERT_FROM_EMAIL` for care reminder emails
+- `FRIEND_INVITE_WEBHOOK_URL` and `FRIEND_INVITE_WEBHOOK_SECRET` if friend invites should relay through a PHP or other external mail endpoint
+- either `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL`, and `SMTP_SENDER_NAME`
+- or `RESEND_API_KEY` plus `CARE_ALERT_FROM_EMAIL`
+- `FRIEND_INVITE_FROM_EMAIL` if friend invite emails should come from a dedicated sender
 - `CARE_ALERT_APP_URL` if you want email links to point at a specific public origin
 
 Before launch, apply `supabase/schema.sql` so the production database has the current Florivu tables and columns. The app has local fallbacks for missing tables, but that fallback is for resilience, not for a clean public rollout.
@@ -75,7 +79,10 @@ Create the Cloudflare Workers build from this repository, then provide these env
 - `PLANTNET_API_KEY`
 - `VITE_PUBLIC_APP_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` if account deletion should work
-- `RESEND_API_KEY` and `CARE_ALERT_FROM_EMAIL` if care reminder emails should work
+- `FRIEND_INVITE_WEBHOOK_URL` and `FRIEND_INVITE_WEBHOOK_SECRET` if friend invites should relay through a PHP or other external mail endpoint
+- either `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL`, and `SMTP_SENDER_NAME`
+- or `RESEND_API_KEY` and `CARE_ALERT_FROM_EMAIL` if care reminder emails should work
+- `FRIEND_INVITE_FROM_EMAIL` if friend invite emails should use a dedicated sender
 - `CARE_ALERT_APP_URL` if email links should point to a specific public URL
 
 The account deletion and care reminder email routes now expect the signed-in Supabase bearer token from the app, so those endpoints are no longer public-body-only actions.

@@ -19,10 +19,12 @@ export interface PlantNetResponse {
 }
 
 export type OrganType = 'flower' | 'leaf' | 'fruit' | 'bark' | 'auto';
+export type AccountTier = 'free' | 'plus';
 
 export interface UserProfile {
   user_id: string;
   display_name: string;
+  account_tier: AccountTier;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
   marketplace_zip_code?: string | null;

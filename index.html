@@ -3,21 +3,95 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Florivu</title>
+    <title>Florivu | Plant Identification, Collections, and Care Tracking</title>
     <meta
       name="description"
-      content="Identify plants from a photo, save them to your collection, and browse your taxonomy tree."
+      content="Identify plants from a photo, save favorites, revisit care tips, track care tasks, and grow a Florivu plant collection from any device."
     />
+    <meta
+      name="keywords"
+      content="plant identification, plant care, plant collection, house plant tracker, taxonomy tree, plant discovery, Florivu"
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
     <meta name="theme-color" content="#2e7254" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="canonical" href="%VITE_PUBLIC_APP_URL%" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Florivu" />
+    <meta property="og:title" content="Florivu | Plant Identification, Collections, and Care Tracking" />
+    <meta
+      property="og:description"
+      content="Identify plants, save favorites, revisit care tips, track care tasks, and browse your collection across gallery, taxonomy, and map views."
+    />
+    <meta property="og:url" content="%VITE_PUBLIC_APP_URL%" />
+    <meta property="og:image" content="%VITE_PUBLIC_APP_URL%/icons/icon-512.png" />
+    <meta property="og:image:alt" content="Florivu app icon" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Florivu | Plant Identification, Collections, and Care Tracking" />
+    <meta
+      name="twitter:description"
+      content="Identify plants, save favorites, revisit care tips, and track care routines in one Florivu collection."
+    />
+    <meta name="twitter:image" content="%VITE_PUBLIC_APP_URL%/icons/icon-512.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "%VITE_PUBLIC_APP_URL%/#website",
+            "name": "Florivu",
+            "url": "%VITE_PUBLIC_APP_URL%",
+            "description": "Identify plants from a photo, save favorites, revisit care tips, track care tasks, and grow a Florivu collection from any device.",
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "%VITE_PUBLIC_APP_URL%/#application",
+            "name": "Florivu",
+            "url": "%VITE_PUBLIC_APP_URL%",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Web Browser, iOS, Android",
+            "browserRequirements": "Requires JavaScript and a modern browser.",
+            "description": "Florivu helps people identify plants from photos, save discoveries, browse their taxonomy tree, revisit care tips, track care tasks, and connect with plant friends.",
+            "image": "%VITE_PUBLIC_APP_URL%/icons/icon-512.png",
+            "isAccessibleForFree": true,
+            "featureList": [
+              "Plant identification from uploaded or captured photos",
+              "Saved plant collection with gallery, taxonomy, and map views",
+              "House plant care tracking and reminder emails",
+              "Favorites, notes, and profile customization",
+              "Friend invites and collection sharing"
+            ],
+            "publisher": {
+              "@id": "%VITE_PUBLIC_APP_URL%/#organization"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "%VITE_PUBLIC_APP_URL%/#organization",
+            "name": "Florivu",
+            "url": "%VITE_PUBLIC_APP_URL%",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "%VITE_PUBLIC_APP_URL%/icons/icon-512.png"
+            }
+          }
+        ]
+      }
+    </script>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      Florivu helps you identify plants from photos, save discoveries, revisit care tips, and track
+      care tasks from any device.
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -7,6 +7,15 @@ import { Readable } from 'node:stream';
 import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { createClient } from '@supabase/supabase-js';
+import {
+  buildFriendInviteHtmlEmail,
+  buildFriendInvitePlainTextEmail,
+  buildFriendInviteUrl,
+  getFriendInviteEmailSubject,
+  isValidEmailAddress,
+  maskEmailForLogs,
+  normalizeAbsoluteUrl,
+} from './functions/_shared/friendInviteEmail';
 
 interface LocalObservationRecord {
   id: string;
@@ -135,9 +144,9 @@ function plantNetProxyPlugin(mode: string): Plugin {
             'Content-Type': `multipart/form-data; boundary=${boundary}`,
           },
         },
-        (upstreamResponse) => {
+        (upstreamResponse: IncomingMessage) => {
           const responseBuffers: Buffer[] = [];
-          upstreamResponse.on('data', (chunk) => {
+          upstreamResponse.on('data', (chunk: Buffer | string) => {
             responseBuffers.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
           });
           upstreamResponse.on('end', () => {
@@ -1538,6 +1547,169 @@ function careAlertEmailPlugin(mode: string): Plugin {
   };
 }
 
+function friendInviteEmailPlugin(mode: string): Plugin {
+  const env = loadEnv(mode, process.cwd(), '');
+  const resendApiKey = env.RESEND_API_KEY ?? '';
+  const fromEmail = env.FRIEND_INVITE_FROM_EMAIL ?? env.CARE_ALERT_FROM_EMAIL ?? '';
+  const publicAppUrl = env.VITE_PUBLIC_APP_URL ?? env.CARE_ALERT_APP_URL ?? '';
+
+  async function readJsonBody(req: IncomingMessage) {
+    const request = new Request(`http://local${req.url ?? '/'}`, {
+      method: req.method,
+      headers: req.headers as HeadersInit,
+      body: Readable.toWeb(req as never) as BodyInit,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    return (await request.json()) as {
+      appUrl?: unknown;
+      email?: unknown;
+      senderName?: unknown;
+      senderUserId?: unknown;
+    };
+  }
+
+  const handler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const requestUrl = new URL(req.url ?? '/', 'http://local');
+
+    if (req.method !== 'POST' || requestUrl.pathname !== '/api/friends/send-invite') {
+      next();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+      const body = await readJsonBody(req);
+      const appUrl = typeof body.appUrl === 'string' ? body.appUrl.trim() : '';
+      const email = typeof body.email === 'string' ? body.email.trim() : '';
+      const senderName = typeof body.senderName === 'string' ? body.senderName.trim() : '';
+      const senderUserId =
+        typeof body.senderUserId === 'string' ? body.senderUserId.trim() : '';
+      const inviteUrl =
+        buildFriendInviteUrl({
+          appUrl: normalizeAbsoluteUrl(appUrl) || publicAppUrl,
+          senderName,
+          senderUserId,
+        });
+      const maskedRecipient = maskEmailForLogs(email);
+
+      if (!isValidEmailAddress(email)) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: 'Enter a valid email address to send an invite.' }));
+        return;
+      }
+
+      if (!inviteUrl) {
+        res.statusCode = 400;
+        res.end(
+          JSON.stringify({
+            message:
+              'Invite link is not configured. Set VITE_PUBLIC_APP_URL before sending invites.',
+          }),
+        );
+        return;
+      }
+
+      const previewText = buildFriendInvitePlainTextEmail({
+        inviteUrl,
+        senderName,
+      });
+
+      console.info('[FriendInviteDev]', {
+        hasConfiguredAppUrl: Boolean(normalizeAbsoluteUrl(appUrl) || publicAppUrl),
+        hasResendApiKey: Boolean(resendApiKey),
+        recipient: maskedRecipient,
+        senderUserId,
+      });
+
+      if (!resendApiKey || !fromEmail) {
+        console.warn('[FriendInviteDev] Email provider not configured.', {
+          recipient: maskedRecipient,
+          senderUserId,
+        });
+        res.statusCode = 200;
+        res.end(
+          JSON.stringify({
+            configured: false,
+            sent: false,
+            message:
+              'Friend invite email provider is not configured. Set RESEND_API_KEY and FRIEND_INVITE_FROM_EMAIL or CARE_ALERT_FROM_EMAIL to enable delivery.',
+            previewText,
+          }),
+        );
+        return;
+      }
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [email],
+          subject: getFriendInviteEmailSubject(),
+          text: previewText,
+          html: buildFriendInviteHtmlEmail({
+            inviteUrl,
+            senderName,
+          }),
+        }),
+      });
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        console.error('[FriendInviteDev] Resend request failed.', {
+          recipient: maskedRecipient,
+          responseBody: responseText,
+          senderUserId,
+          status: response.status,
+        });
+        throw new Error(`Resend email failed with ${response.status}: ${responseText}`);
+      }
+
+      console.info('[FriendInviteDev] Invite email sent.', {
+        recipient: maskedRecipient,
+        senderUserId,
+      });
+      res.statusCode = 200;
+      res.end(
+        JSON.stringify({
+          configured: true,
+          sent: true,
+          message: `Invite email sent to ${email}.`,
+          previewText,
+        }),
+      );
+    } catch (error) {
+      console.error('[FriendInviteEmail] Request failed.', error);
+      res.statusCode = 500;
+      res.end(
+        JSON.stringify({
+          message:
+            error instanceof Error ? error.message : 'Unexpected friend invite email failure.',
+        }),
+      );
+    }
+  };
+
+  return {
+    name: 'friend-invite-email',
+    configureServer(server) {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler);
+    },
+  };
+}
+
 function localFriendsStorePlugin(): Plugin {
   const friendshipStorePath = resolve(process.cwd(), '.local-data', 'friendships.json');
   const profileStorePath = resolve(process.cwd(), '.local-data', 'profiles.json');
@@ -2159,6 +2331,7 @@ export default defineConfig(({ mode }) => ({
     reverseGeocodePlugin(),
     zipCodeMapPlugin(),
     careAlertEmailPlugin(mode),
+    friendInviteEmailPlugin(mode),
     accountAdminPlugin(mode),
   ],
   envPrefix: ['VITE_', 'EXPO_PUBLIC_'],

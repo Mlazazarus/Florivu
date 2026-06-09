@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { FREE_ACCOUNT_TIER, normalizeAccountTier } from '../lib/accountTier';
+import { recoverProfileFromSupabaseOrLocal } from '../lib/localFallbackRecovery';
 import { fetchLocalProfile, saveLocalProfile } from '../lib/localProfileApi';
 import { logError, logInfo } from '../lib/logger';
 import { supabase } from '../lib/supabase';
-import { UserProfile } from '../types';
+import { AccountTier, UserProfile } from '../types';
 
 function shouldUseLocalProfileFallback(error: unknown) {
   const message =
@@ -54,6 +56,7 @@ function createDefaultProfile(
   return {
     user_id: userId,
     display_name: defaultDisplayName(userEmail, userId, variant),
+    account_tier: FREE_ACCOUNT_TIER,
     profile_photo_url: null,
     home_zip_code: null,
     marketplace_zip_code: null,
@@ -80,6 +83,26 @@ function createDefaultProfile(
   };
 }
 
+function normalizeUserProfile(profile: UserProfile): UserProfile {
+  return {
+    ...profile,
+    account_tier: normalizeAccountTier(profile.account_tier),
+  };
+}
+
+function normalizeOptionalInputString(value: string | null | undefined) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
 const LOCAL_PROFILE_MIRROR_ERROR =
   'Profile saved to your Florivu account, but the local device copy could not be refreshed.';
 const LOCAL_PROFILE_FETCH_MIRROR_ERROR =
@@ -97,6 +120,7 @@ async function mirrorProfileToLocalStore(profile: UserProfile) {
 
 export interface SaveProfileInput {
   display_name: string;
+  account_tier?: AccountTier;
   profile_photo_url?: string | null;
   home_zip_code?: string | null;
   marketplace_zip_code?: string | null;
@@ -115,6 +139,111 @@ export interface SaveProfileInput {
   care_alert_timezone?: string | null;
   care_alert_last_sent_at?: string | null;
   is_public: boolean;
+}
+
+export function buildProfileForSave(args: {
+  existingProfile: UserProfile;
+  input: SaveProfileInput;
+  userId: string;
+  userEmail: string | undefined;
+  now?: string;
+}): UserProfile {
+  const { existingProfile, input, userId, userEmail } = args;
+  const now = args.now ?? new Date().toISOString();
+  const nextEarnedAchievementIds =
+    input.earned_achievement_ids !== undefined
+      ? Array.from(new Set(input.earned_achievement_ids))
+      : existingProfile.earned_achievement_ids ?? [];
+  const nextReferredByUserId =
+    input.referred_by_user_id !== undefined
+      ? input.referred_by_user_id?.trim() || null
+      : existingProfile.referred_by_user_id ?? null;
+  const nextSelectedAvatarBorderId =
+    input.selected_avatar_border_id !== undefined
+      ? input.selected_avatar_border_id
+      : existingProfile.selected_avatar_border_id ?? null;
+  const nextSelectedProfileTitleId =
+    input.selected_profile_title_id !== undefined
+      ? input.selected_profile_title_id
+      : existingProfile.selected_profile_title_id ?? null;
+  const nextFeaturedHousePlantObservationId =
+    input.featured_house_plant_observation_id !== undefined
+      ? input.featured_house_plant_observation_id?.trim() || null
+      : existingProfile.featured_house_plant_observation_id ?? null;
+  const nextFeaturedNonHousePlantObservationId =
+    input.featured_non_house_plant_observation_id !== undefined
+      ? input.featured_non_house_plant_observation_id?.trim() || null
+      : existingProfile.featured_non_house_plant_observation_id ?? null;
+  const nextAccountTier =
+    input.account_tier !== undefined
+      ? normalizeAccountTier(input.account_tier)
+      : normalizeAccountTier(existingProfile.account_tier);
+  const nextCareAlertsEnabled =
+    input.care_alerts_enabled !== undefined
+      ? input.care_alerts_enabled
+      : existingProfile.care_alerts_enabled ?? false;
+  const nextCareAlertEmail =
+    input.care_alert_email !== undefined
+      ? input.care_alert_email?.trim() || null
+      : existingProfile.care_alert_email ?? (userEmail?.trim() || null);
+  const nextCareAlertTimezone =
+    input.care_alert_timezone !== undefined
+      ? input.care_alert_timezone?.trim() || null
+      : existingProfile.care_alert_timezone ??
+        (typeof Intl !== 'undefined'
+          ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+          : 'UTC');
+  const nextCareAlertLastSentAt =
+    input.care_alert_last_sent_at !== undefined
+      ? input.care_alert_last_sent_at?.trim() || null
+      : existingProfile.care_alert_last_sent_at ?? null;
+
+  return {
+    ...existingProfile,
+    user_id: userId,
+    display_name: input.display_name.trim() || defaultDisplayName(userEmail, userId),
+    account_tier: nextAccountTier,
+    profile_photo_url:
+      input.profile_photo_url !== undefined
+        ? input.profile_photo_url
+        : existingProfile.profile_photo_url ?? null,
+    home_zip_code:
+      normalizeOptionalInputString(input.home_zip_code) !== undefined
+        ? normalizeOptionalInputString(input.home_zip_code)
+        : existingProfile.home_zip_code ?? null,
+    marketplace_zip_code:
+      normalizeOptionalInputString(input.marketplace_zip_code) !== undefined
+        ? normalizeOptionalInputString(input.marketplace_zip_code)
+        : existingProfile.marketplace_zip_code ?? null,
+    facebook_url:
+      normalizeOptionalInputString(input.facebook_url) !== undefined
+        ? normalizeOptionalInputString(input.facebook_url)
+        : existingProfile.facebook_url ?? null,
+    facebook_user_id:
+      normalizeOptionalInputString(input.facebook_user_id) !== undefined
+        ? normalizeOptionalInputString(input.facebook_user_id)
+        : existingProfile.facebook_user_id ?? null,
+    facebook_name:
+      normalizeOptionalInputString(input.facebook_name) !== undefined
+        ? normalizeOptionalInputString(input.facebook_name)
+        : existingProfile.facebook_name ?? null,
+    facebook_connected_at:
+      normalizeOptionalInputString(input.facebook_connected_at) !== undefined
+        ? normalizeOptionalInputString(input.facebook_connected_at)
+        : existingProfile.facebook_connected_at ?? null,
+    earned_achievement_ids: nextEarnedAchievementIds,
+    referred_by_user_id: nextReferredByUserId,
+    selected_avatar_border_id: nextSelectedAvatarBorderId ?? null,
+    selected_profile_title_id: nextSelectedProfileTitleId ?? null,
+    featured_house_plant_observation_id: nextFeaturedHousePlantObservationId,
+    featured_non_house_plant_observation_id: nextFeaturedNonHousePlantObservationId,
+    care_alerts_enabled: nextCareAlertsEnabled,
+    care_alert_email: nextCareAlertEmail,
+    care_alert_timezone: nextCareAlertTimezone,
+    care_alert_last_sent_at: nextCareAlertLastSentAt,
+    is_public: input.is_public,
+    updated_at: now,
+  };
 }
 
 export function useProfile(userId: string | undefined, userEmail: string | undefined) {
@@ -184,10 +313,11 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
           throw saveError;
         }
 
-        const mirroredLocally = await mirrorProfileToLocalStore(savedProfile as UserProfile);
+        const normalizedSavedProfile = normalizeUserProfile(savedProfile as UserProfile);
+        const mirroredLocally = await mirrorProfileToLocalStore(normalizedSavedProfile);
 
         return {
-          profile: savedProfile as UserProfile,
+          profile: normalizedSavedProfile,
           storageMode: 'supabase',
           localMirrorHealthy: mirroredLocally,
         };
@@ -210,35 +340,41 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
     };
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const recoveredProfile = await recoverProfileFromSupabaseOrLocal(userId, userEmail);
 
-      if (fetchError) {
-        throw fetchError;
-      }
+      if (recoveredProfile.profile) {
+        const mirroredLocally =
+          recoveredProfile.storageMode === 'supabase'
+            ? await mirrorProfileToLocalStore(recoveredProfile.profile)
+            : true;
 
-      if (data) {
-        const profileFromSupabase = data as UserProfile;
-        const mirroredLocally = await mirrorProfileToLocalStore(profileFromSupabase);
-
-        setProfile(profileFromSupabase);
-        setStorageMode('supabase');
-        setError(mirroredLocally ? null : LOCAL_PROFILE_FETCH_MIRROR_ERROR);
-        logInfo('Profile', 'Profile fetch complete.', {
-          userId,
-          hasProfile: true,
-          mirroredLocally,
-        });
+        setProfile(recoveredProfile.profile);
+        setStorageMode(recoveredProfile.storageMode);
+        setError(
+          recoveredProfile.storageMode === 'supabase' && !mirroredLocally
+            ? LOCAL_PROFILE_FETCH_MIRROR_ERROR
+            : null,
+        );
+        logInfo(
+          'Profile',
+          recoveredProfile.recovered
+            ? 'Recovered profile fields from local fallback data.'
+            : recoveredProfile.storageMode === 'local'
+              ? 'Using the local profile copy after recovery could not reach Supabase.'
+              : 'Profile fetch complete.',
+          {
+            userId,
+            hasProfile: true,
+            mirroredLocally,
+            storageMode: recoveredProfile.storageMode,
+          },
+        );
       } else {
         const {
           profile: savedProfile,
           storageMode: nextStorageMode,
           localMirrorHealthy,
-        } =
-          await persistDefaultProfile();
+        } = await persistDefaultProfile();
 
         setProfile(savedProfile);
         setStorageMode(nextStorageMode);
@@ -281,74 +417,12 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
     }
 
     const existingProfile = profile ?? createDefaultProfile(userId, userEmail);
-    const now = new Date().toISOString();
-    const nextEarnedAchievementIds =
-      input.earned_achievement_ids !== undefined
-        ? Array.from(new Set(input.earned_achievement_ids))
-        : existingProfile.earned_achievement_ids ?? [];
-    const nextReferredByUserId =
-      input.referred_by_user_id !== undefined
-        ? input.referred_by_user_id?.trim() || null
-        : existingProfile.referred_by_user_id ?? null;
-    const nextSelectedAvatarBorderId =
-      input.selected_avatar_border_id !== undefined
-        ? input.selected_avatar_border_id
-        : existingProfile.selected_avatar_border_id ?? null;
-    const nextSelectedProfileTitleId =
-      input.selected_profile_title_id !== undefined
-        ? input.selected_profile_title_id
-        : existingProfile.selected_profile_title_id ?? null;
-    const nextFeaturedHousePlantObservationId =
-      input.featured_house_plant_observation_id !== undefined
-        ? input.featured_house_plant_observation_id?.trim() || null
-        : existingProfile.featured_house_plant_observation_id ?? null;
-    const nextFeaturedNonHousePlantObservationId =
-      input.featured_non_house_plant_observation_id !== undefined
-        ? input.featured_non_house_plant_observation_id?.trim() || null
-        : existingProfile.featured_non_house_plant_observation_id ?? null;
-    const nextCareAlertsEnabled =
-      input.care_alerts_enabled !== undefined
-        ? input.care_alerts_enabled
-        : existingProfile.care_alerts_enabled ?? false;
-    const nextCareAlertEmail =
-      input.care_alert_email !== undefined
-        ? input.care_alert_email?.trim() || null
-        : existingProfile.care_alert_email ?? (userEmail?.trim() || null);
-    const nextCareAlertTimezone =
-      input.care_alert_timezone !== undefined
-        ? input.care_alert_timezone?.trim() || null
-        : existingProfile.care_alert_timezone ??
-          (typeof Intl !== 'undefined'
-            ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-            : 'UTC');
-    const nextCareAlertLastSentAt =
-      input.care_alert_last_sent_at !== undefined
-        ? input.care_alert_last_sent_at?.trim() || null
-        : existingProfile.care_alert_last_sent_at ?? null;
-    const nextProfile: UserProfile = {
-      ...existingProfile,
-      user_id: userId,
-      display_name: input.display_name.trim() || defaultDisplayName(userEmail, userId),
-      profile_photo_url: input.profile_photo_url ?? null,
-      home_zip_code: input.home_zip_code?.trim() || null,
-      marketplace_zip_code: input.marketplace_zip_code?.trim() || null,
-      facebook_url: input.facebook_url?.trim() || null,
-      facebook_user_id: input.facebook_user_id?.trim() || null,
-      facebook_name: input.facebook_name?.trim() || null,
-      facebook_connected_at: input.facebook_connected_at?.trim() || null,
-      earned_achievement_ids: nextEarnedAchievementIds,
-      referred_by_user_id: nextReferredByUserId,
-      selected_avatar_border_id: nextSelectedAvatarBorderId ?? null,
-      selected_profile_title_id: nextSelectedProfileTitleId ?? null,
-      featured_house_plant_observation_id: nextFeaturedHousePlantObservationId,
-      featured_non_house_plant_observation_id: nextFeaturedNonHousePlantObservationId,
-      care_alerts_enabled: nextCareAlertsEnabled,
-      care_alert_email: nextCareAlertEmail,
-      care_alert_timezone: nextCareAlertTimezone,
-      care_alert_last_sent_at: nextCareAlertLastSentAt,
-      is_public: input.is_public,
-      updated_at: now,
-    };
+    const nextProfile = buildProfileForSave({
+      existingProfile,
+      input,
+      userId,
+      userEmail,
+    });
     const previousProfile = profile;
 
     setSaving(true);
@@ -379,12 +453,13 @@ export function useProfile(userId: string | undefined, userEmail: string | undef
       }
 
       const savedProfile = data as UserProfile;
-      const mirroredLocally = await mirrorProfileToLocalStore(savedProfile);
-      setProfile(savedProfile);
+      const normalizedSavedProfile = normalizeUserProfile(savedProfile);
+      const mirroredLocally = await mirrorProfileToLocalStore(normalizedSavedProfile);
+      setProfile(normalizedSavedProfile);
       setStorageMode('supabase');
       setError(mirroredLocally ? null : LOCAL_PROFILE_MIRROR_ERROR);
       logInfo('Profile', 'Profile saved.', { userId });
-      return savedProfile;
+      return normalizedSavedProfile;
     } catch (saveError) {
       if (shouldUseLocalProfileFallback(saveError)) {
         const savedProfile = await saveLocalProfile(nextProfile);

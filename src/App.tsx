@@ -32,6 +32,16 @@ import {
 import { deleteAccount } from './lib/accountApi';
 import { sendCareAlertEmail } from './lib/careAlertEmailApi';
 import {
+  FREE_DAILY_DISCOVERY_LIMIT,
+  FREE_DISCOVERY_LIMIT_ERROR,
+  PLUS_ACCOUNT_TIER,
+  countObservationsForUtcDay,
+  getFreeDiscoveriesRemaining,
+  getUtcDayKey,
+  hasReachedFreeDiscoveryLimit,
+  normalizeAccountTier,
+} from './lib/accountTier';
+import {
   describeCareCadence,
   getBrowserTimeZone,
   getCalendarDateKey,
@@ -813,6 +823,20 @@ export default function App() {
   const userInitial = userLabel.charAt(0).toUpperCase();
   const dueCareTaskCount = dueCareTasks.length;
   const nextDueCareTask = activeCareTasks[0] ?? null;
+  const accountTier = normalizeAccountTier(profile?.account_tier);
+  const todayDiscoveryCount = countObservationsForUtcDay(
+    observations,
+    getUtcDayKey(new Date().toISOString()),
+  );
+  const remainingFreeDiscoveries = getFreeDiscoveriesRemaining(todayDiscoveryCount);
+  const discoveryLimitReached =
+    accountTier !== PLUS_ACCOUNT_TIER && hasReachedFreeDiscoveryLimit(todayDiscoveryCount);
+  const accountPlanLabel =
+    accountTier === PLUS_ACCOUNT_TIER ? 'Florivu Plus' : 'Florivu Free';
+  const accountPlanSummary =
+    accountTier === PLUS_ACCOUNT_TIER
+      ? 'Unlimited plant discoveries are active for this account.'
+      : `${todayDiscoveryCount} of ${FREE_DAILY_DISCOVERY_LIMIT} discoveries used today. ${remainingFreeDiscoveries} remaining before the daily limit resets.`;
   const activeAuthMode: AuthMode = passwordRecoveryActive ? 'reset-password' : authMode;
   const showAuthScreen = !session || passwordRecoveryActive;
   const activeCollectionFilterLabel = formatCollectionFilterSummary(collectionFilters);
@@ -1003,7 +1027,7 @@ export default function App() {
       display_name: profile.display_name,
       profile_photo_url: profile.profile_photo_url ?? null,
       home_zip_code: profile.home_zip_code ?? null,
-      marketplace_zip_code: null,
+      marketplace_zip_code: profile.marketplace_zip_code ?? null,
       facebook_url: profile.facebook_url ?? null,
       facebook_user_id: profile.facebook_user_id ?? null,
       facebook_name: profile.facebook_name ?? null,
@@ -1067,7 +1091,7 @@ export default function App() {
       display_name: profile.display_name,
       profile_photo_url: profile.profile_photo_url ?? null,
       home_zip_code: profile.home_zip_code ?? null,
-      marketplace_zip_code: null,
+      marketplace_zip_code: profile.marketplace_zip_code ?? null,
       facebook_url: profile.facebook_url ?? null,
       facebook_user_id: profile.facebook_user_id ?? null,
       facebook_name: profile.facebook_name ?? null,
@@ -1389,7 +1413,7 @@ export default function App() {
         display_name: values.displayName,
         profile_photo_url: nextProfilePhotoUrl,
         home_zip_code: values.homeZipCode,
-        marketplace_zip_code: null,
+        marketplace_zip_code: profile?.marketplace_zip_code ?? null,
         facebook_url: values.facebookUrl,
         facebook_user_id: values.facebookUserId,
         facebook_name: values.facebookName,
@@ -1523,6 +1547,11 @@ export default function App() {
   const handleSaveResult = async (result: PlantNetResult) => {
     if (!user || !selectedFile) {
       setBanner({ tone: 'error', message: 'Sign in and choose a photo before saving.' });
+      return;
+    }
+
+    if (discoveryLimitReached) {
+      setBanner({ tone: 'error', message: FREE_DISCOVERY_LIMIT_ERROR });
       return;
     }
 
@@ -2077,11 +2106,18 @@ export default function App() {
 
                         <button
                           className="secondary-button"
-                          disabled={savingSpecies === result.species.scientificNameWithoutAuthor}
+                          disabled={
+                            savingSpecies === result.species.scientificNameWithoutAuthor ||
+                            discoveryLimitReached
+                          }
                           onClick={() => handleSaveResult(result)}
                           type="button"
                         >
-                          {savingSpecies === result.species.scientificNameWithoutAuthor ? 'Saving...' : 'Add to My Plants'}
+                          {savingSpecies === result.species.scientificNameWithoutAuthor
+                            ? 'Saving...'
+                            : discoveryLimitReached
+                              ? 'Free plan limit reached'
+                              : 'Add to My Plants'}
                         </button>
                       </article>
                     );
@@ -2283,6 +2319,11 @@ export default function App() {
                   </p>
                 </div>
                 <div className="settings-card">
+                  <span>Plan</span>
+                  <strong>{accountPlanLabel}</strong>
+                  <p>{accountPlanSummary}</p>
+                </div>
+                <div className="settings-card">
                   <span>Collection summary</span>
                   <strong>{observations.length} saved plants</strong>
                   <p>
@@ -2369,8 +2410,8 @@ export default function App() {
                         : 'No care email sent yet'}
                     </strong>
                     <p>
-                      Delivery works from the local server when `RESEND_API_KEY` and
-                      `CARE_ALERT_FROM_EMAIL` are configured.
+                      Delivery works from the local server when either SMTP settings or
+                      `RESEND_API_KEY` plus `CARE_ALERT_FROM_EMAIL` are configured.
                     </p>
                   </div>
                 </div>

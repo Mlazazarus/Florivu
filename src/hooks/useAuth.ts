@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { logError, logInfo } from '../lib/logger';
+import { logError, logInfo, logWarn } from '../lib/logger';
 
 function extractMessage(payload: unknown) {
   if (!payload || typeof payload !== 'object') {
@@ -14,6 +14,29 @@ function extractMessage(payload: unknown) {
 
 interface SignUpResult {
   requiresEmailConfirmation: boolean;
+}
+
+function getConfiguredAuthRedirectUrl() {
+  const configuredPublicUrl = import.meta.env.VITE_PUBLIC_APP_URL?.trim() ?? '';
+  if (configuredPublicUrl) {
+    try {
+      const redirectUrl = new URL(configuredPublicUrl);
+      redirectUrl.hash = '';
+      redirectUrl.search = '';
+      return redirectUrl.toString();
+    } catch (error) {
+      logWarn('Auth', 'Ignoring invalid VITE_PUBLIC_APP_URL for auth redirects.', {
+        configuredPublicUrl,
+        error,
+      });
+    }
+  }
+
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  return new URL(window.location.pathname, window.location.origin).toString();
 }
 
 export function useAuth() {
@@ -51,7 +74,7 @@ export function useAuth() {
   }, []);
 
   const requestPasswordReset = async (email: string) => {
-    const redirectTo = new URL(window.location.pathname, window.location.origin).toString();
+    const redirectTo = getConfiguredAuthRedirectUrl();
 
     logInfo('Auth', 'Requesting password reset.', { email, redirectTo });
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
@@ -95,8 +118,7 @@ export function useAuth() {
   ): Promise<SignUpResult> => {
     const normalizedReferredByUserId = referredByUserId?.trim() || null;
     const normalizedCaptchaToken = captchaToken?.trim() || null;
-    const emailRedirectTo =
-      typeof window === 'undefined' ? undefined : window.location.href;
+    const emailRedirectTo = getConfiguredAuthRedirectUrl();
     logInfo('Auth', 'Attempting sign up.', {
       email,
       hasCaptcha: Boolean(normalizedCaptchaToken),
@@ -163,10 +185,7 @@ export function useAuth() {
   };
 
   const resendSignUpConfirmation = async (email: string) => {
-    const redirectTo =
-      typeof window === 'undefined'
-        ? undefined
-        : new URL(window.location.pathname, window.location.origin).toString();
+    const redirectTo = getConfiguredAuthRedirectUrl();
 
     logInfo('Auth', 'Resending signup confirmation email.', { email, redirectTo });
     const { error } = await supabase.auth.resend({

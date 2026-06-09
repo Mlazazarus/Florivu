@@ -9,6 +9,7 @@ import {
   calculateNextDueAt,
   getBundledCareTaskTemplates,
 } from '../lib/careTasks';
+import { recoverCareTasksFromSupabaseOrLocal } from '../lib/localFallbackRecovery';
 import { logError, logInfo } from '../lib/logger';
 import { supabase } from '../lib/supabase';
 import { CareTaskSchedule, Observation } from '../types';
@@ -75,19 +76,23 @@ export function useCareSchedules(userId: string | undefined) {
     logInfo('CareTasks', 'Fetching care tasks.', { userId });
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('care_task_schedules')
-        .select('*')
-        .eq('user_id', userId)
-        .order('next_due_at', { ascending: true })
-        .order('sort_order', { ascending: true });
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setCareTasks((data ?? []).map((task) => normalizeCareTask(task as CareTaskSchedule)));
-      setStorageMode('supabase');
+      const recoveredCareTasks = await recoverCareTasksFromSupabaseOrLocal(userId);
+      setCareTasks(recoveredCareTasks.careTasks.map(normalizeCareTask));
+      setStorageMode(recoveredCareTasks.storageMode);
+      logInfo(
+        'CareTasks',
+        recoveredCareTasks.recoveredCount > 0
+          ? 'Recovered local care tasks into the Florivu account.'
+          : recoveredCareTasks.storageMode === 'local'
+            ? 'Using the local care schedule copy after recovery could not reach Supabase.'
+            : 'Care task fetch complete.',
+        {
+          userId,
+          count: recoveredCareTasks.careTasks.length,
+          recoveredCount: recoveredCareTasks.recoveredCount,
+          storageMode: recoveredCareTasks.storageMode,
+        },
+      );
     } catch (fetchError) {
       if (shouldUseLocalCareTaskFallback(fetchError)) {
         const localTasks = await fetchLocalCareTasks(userId);

@@ -1,12 +1,22 @@
-const CACHE_NAME = 'florivu-shell-v1';
+const CACHE_PREFIX = 'florivu-static-';
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const PRECACHE_URLS = [
-  '/',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-512-maskable.png',
   '/icons/apple-touch-icon.png',
 ];
+
+function isCacheableStaticRequest(request) {
+  return (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'image' ||
+    request.destination === 'font' ||
+    request.destination === 'manifest'
+  );
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -17,12 +27,22 @@ self.addEventListener('install', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       )
       .then(() => self.clients.claim()),
   );
@@ -42,27 +62,27 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/')));
+    return;
+  }
+
+  if (!isCacheableStaticRequest(request)) {
     return;
   }
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    caches.match(request).then(async (cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      return fetch(request)
-        .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200) {
-            return networkResponse;
-          }
+      const networkResponse = await fetch(request);
+      if (!networkResponse || networkResponse.status !== 200) {
+        return networkResponse;
+      }
 
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
-          return networkResponse;
-        })
-        .catch(() => caches.match('/'));
+      const responseToCache = networkResponse.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+      return networkResponse;
     }),
   );
 });

@@ -6,6 +6,11 @@ import {
   type AppEnv,
   type PagesFunctionContext,
 } from '../../_shared/runtime';
+import {
+  getTransactionalEmailFailureMessage,
+  getTransactionalEmailSetupMessage,
+  sendTransactionalEmail,
+} from '../../_shared/smtpEmail';
 
 interface CareAlertTaskPayload {
   cadenceDays: number;
@@ -156,44 +161,31 @@ export async function onRequestPost(
       tasks,
       timeZone,
     });
-    const resendApiKey = getEnvValue(context.env, 'RESEND_API_KEY');
-    const fromEmail = getEnvValue(context.env, 'CARE_ALERT_FROM_EMAIL');
+    const delivery = await sendTransactionalEmail(context.env, {
+      fromEmailCandidates: [
+        getEnvValue(context.env, 'CARE_ALERT_FROM_EMAIL'),
+        getEnvValue(context.env, 'SMTP_ADMIN_EMAIL'),
+      ],
+      fromNameCandidate: getEnvValue(context.env, 'SMTP_SENDER_NAME') || 'Florivu',
+      html: buildHtmlEmail({
+        email,
+        displayName,
+        publicAppUrl,
+        tasks,
+        timeZone,
+      }),
+      subject: `Florivu care reminders for ${formatDueDate(new Date().toISOString(), timeZone)}`,
+      text: previewText,
+      toEmail: email,
+    });
 
-    if (!resendApiKey || !fromEmail) {
+    if (!delivery.configured) {
       return jsonResponse({
         configured: false,
         sent: false,
-        message:
-          'Care alert email provider is not configured. Set RESEND_API_KEY and CARE_ALERT_FROM_EMAIL to enable delivery.',
+        message: delivery.errorMessage ?? getTransactionalEmailSetupMessage('Care alert'),
         previewText,
       });
-    }
-
-    const todayLabel = formatDueDate(new Date().toISOString(), timeZone);
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromEmail,
-        to: [email],
-        subject: `Florivu care reminders for ${todayLabel}`,
-        text: previewText,
-        html: buildHtmlEmail({
-          email,
-          displayName,
-          publicAppUrl,
-          tasks,
-          timeZone,
-        }),
-      }),
-    });
-    const bodyText = await response.text();
-
-    if (!response.ok) {
-      return errorResponse(500, `Resend email failed with ${response.status}: ${bodyText}`);
     }
 
     return jsonResponse({
@@ -205,7 +197,7 @@ export async function onRequestPost(
   } catch (error) {
     return errorResponse(
       500,
-      error instanceof Error ? error.message : 'Unexpected care alert email failure.',
+      getTransactionalEmailFailureMessage('Care alert', error),
     );
   }
 }
